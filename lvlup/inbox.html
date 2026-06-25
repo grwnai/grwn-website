@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LVL UP — feedback-inbox</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0d0e12;--panel:#16181f;--panel2:#1c1f28;--border:#2b2e38;--text:#e7e9f0;--muted:#99a0ad;--accent:#4fd1c5;--magenta:#ff4fa3;--yellow:#ffd23f}
+*{box-sizing:border-box}
+body{margin:0;background:#07080b;color:var(--text);font-family:'Inter',system-ui,sans-serif;padding:28px;display:flex;justify-content:center}
+.wrap{width:100%;max-width:620px}
+h1{font-family:'Press Start 2P',monospace;font-size:17px;color:var(--magenta);text-shadow:2px 2px 0 var(--accent);margin:0 0 4px}
+.sub{color:var(--muted);font-size:13px;margin-bottom:18px}
+.bar{display:flex;gap:10px;align-items:center;margin-bottom:16px}
+button{background:var(--accent);color:#06231f;border:none;border-radius:10px;font-weight:800;font-size:14px;padding:10px 16px;cursor:pointer;font-family:'Inter'}
+.status{font-size:13px;font-weight:700}
+.ok{color:var(--accent)} .err{color:var(--magenta)}
+.item{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin-bottom:10px}
+.meta{display:flex;justify-content:space-between;gap:10px;font-size:12px;color:var(--muted);margin-bottom:6px}
+.meta b{color:var(--text)}
+.lvl{color:var(--yellow);font-weight:700}
+.msg{font-size:15px;line-height:1.5;white-space:pre-wrap;word-wrap:break-word}
+.empty{color:var(--muted);padding:24px 0;text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>FEEDBACK INBOX</h1>
+  <div class="sub">Alles wat spelers tijdens het spelen insturen — nieuwste bovenaan.</div>
+  <div class="bar"><button id="refresh">↻ Ververs</button><span class="status" id="status">Laden…</span></div>
+  <div id="list"></div>
+</div>
+<script>
+const API="https://ai-team-challenge.vercel.app/api/feedback?top=100";
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]));}
+function when(s){ try{ const d=new Date(s); return d.toLocaleString("nl-NL",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"}); }catch(e){ return ""; } }
+async function load(){
+  const st=document.getElementById("status"), ls=document.getElementById("list");
+  st.textContent="Laden…"; st.className="status";
+  try{
+    const d=await fetch(API,{cache:"no-store"}).then(r=>r.json());
+    if(!d.ok){ st.textContent="API bereikbaar, database niet gekoppeld"; st.className="status err"; ls.innerHTML='<div class="empty">Geen verbinding.</div>'; return; }
+    const rows=d.feedback||[];
+    st.textContent="✓ "+rows.length+" berichten"; st.className="status ok";
+    ls.innerHTML = rows.length ? rows.map(f=>
+      '<div class="item"><div class="meta"><span><b>'+esc(f.name||"Speler")+'</b> · <span class="lvl">Level '+(f.level||1)+'</span></span><span>'+when(f.created_at)+'</span></div><div class="msg">'+esc(f.message||"")+'</div></div>'
+    ).join("") : '<div class="empty">Nog geen feedback binnen.</div>';
+  }catch(e){
+    st.textContent="✗ Kon API niet bereiken"; st.className="status err";
+    ls.innerHTML='<div class="empty">'+esc(String(e))+'</div>';
+  }
+}
+document.getElementById("refresh").onclick=load;
+load();
+</script>
+</body>
+</html>
