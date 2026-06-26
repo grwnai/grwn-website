@@ -58,7 +58,21 @@
     ".grwnc-foot button:hover{background:" + CERU_D + "}.grwnc-foot button:disabled{background:#cfd6d2;cursor:not-allowed}" +
     ".grwnc-foot button svg{width:18px;height:18px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}" +
     ".grwnc-note{font-size:11px;color:#9aa8b5;text-align:center;padding:0 12px 10px;background:#fff}" +
-    "@media(max-width:560px){.grwnc-panel{top:0;left:0;right:0;bottom:auto;width:100%;max-width:100%;height:100dvh;max-height:none;border-radius:0;border:0}.grwnc-btn{right:16px;bottom:16px}.grwnc-teaser{right:16px;left:16px;width:auto;max-width:none}}";
+    "@media(max-width:560px){.grwnc-panel{top:0;left:0;right:0;bottom:auto;width:100%;max-width:100%;height:100dvh;max-height:none;border-radius:0;border:0}.grwnc-btn{right:16px;bottom:16px}.grwnc-teaser{right:16px;left:16px;width:auto;max-width:none}}" +
+    ".grwnbk-ov{position:fixed;inset:0;z-index:100000;background:rgba(15,35,54,.55);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);display:none;align-items:center;justify-content:center;padding:24px;font-family:Inter,system-ui,sans-serif}" +
+    ".grwnbk-ov.open{display:flex;animation:grwncIn .2s ease}" +
+    ".grwnbk-card{background:#fff;border-radius:18px;width:480px;max-width:100%;height:680px;max-height:calc(100vh - 48px);box-shadow:0 30px 80px rgba(15,35,54,.40);display:flex;flex-direction:column;overflow:hidden}" +
+    ".grwnbk-card *{box-sizing:border-box}" +
+    ".grwnbk-head{background:" + CERU + ";color:#fff;padding:13px 16px;display:flex;align-items:center;gap:10px;flex:none}" +
+    ".grwnbk-head .av{width:32px;height:32px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;flex:none;overflow:hidden}" +
+    ".grwnbk-head .av svg{width:32px;height:32px}" +
+    ".grwnbk-head h4{margin:0;font-size:15px;font-weight:700}" +
+    ".grwnbk-head .x{margin-left:auto;background:0;border:0;color:#fff;font-size:22px;line-height:1;cursor:pointer;opacity:.85;padding:2px 4px}" +
+    ".grwnbk-head .x:hover{opacity:1}" +
+    ".grwnbk-frame{flex:1;border:0;width:100%;background:#fff}" +
+    ".grwnbk-foot{flex:none;padding:9px 14px;background:" + CLOUD + ";border-top:1px solid " + LINE + ";font-size:12px;color:" + SLATE + ";text-align:center}" +
+    ".grwnbk-foot a{color:" + CERU_D + ";font-weight:600;text-decoration:none}" +
+    "@media(max-width:560px){.grwnbk-ov{padding:0}.grwnbk-card{height:100dvh;max-height:none;border-radius:0;width:100%}}";
 
   var style = document.createElement("style");
   style.textContent = css;
@@ -91,6 +105,13 @@
         '<button id="grwncSend" aria-label="Versturen"><svg viewBox="0 0 24 24"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg></button>' +
       '</div>' +
       '<div class="grwnc-note">AI-assistent — kan fouten maken. Voor maatwerk: plan een kennismaking.</div>' +
+    '</div>' +
+    '<div class="grwnbk-ov" id="grwnbkOv" role="dialog" aria-modal="true" aria-label="Plan een kennismaking met GRWN">' +
+      '<div class="grwnbk-card">' +
+        '<div class="grwnbk-head"><span class="av">' + GROWIE + '</span><h4>Plan een kennismaking</h4><button class="x" id="grwnbkX" aria-label="Sluiten">&times;</button></div>' +
+        '<iframe class="grwnbk-frame" id="grwnbkFrame" title="Plan een kennismaking met GRWN" loading="lazy"></iframe>' +
+        '<div class="grwnbk-foot">Planner niet zichtbaar? <a href="https://calendar.app.google/Vs8WcaoVoNAvXMmJ9" target="_blank" rel="noopener">Open in een nieuw tabblad ↗</a></div>' +
+      '</div>' +
     '</div>';
   document.body.appendChild(wrap);
 
@@ -215,7 +236,34 @@
   }
 
   var BOOKING_URL = "https://calendar.app.google/Vs8WcaoVoNAvXMmJ9";
-  function bookCall() { window.open(BOOKING_URL, "_blank", "noopener"); }
+  // Voor de planner ín het venster (iframe): vervang BOOKING_EMBED_URL door de officiële
+  // "insluiten op website"-link van Google (Agenda → afspraakschema → Delen → Insluiten;
+  // de src eindigt meestal op ?gv=true). Met de korte link hierboven blokkeert Google vaak het iframe.
+  var BOOKING_EMBED_URL = "https://calendar.app.google/Vs8WcaoVoNAvXMmJ9";
+  var bkOv = document.getElementById("grwnbkOv"),
+      bkFrame = document.getElementById("grwnbkFrame");
+  function openBookingModal() {
+    if (bkFrame && !bkFrame.getAttribute("src")) bkFrame.setAttribute("src", BOOKING_EMBED_URL);
+    if (bkOv) bkOv.classList.add("open");
+    document.body.style.overflow = "hidden";
+  }
+  function closeBookingModal() {
+    if (bkOv) bkOv.classList.remove("open");
+    document.body.style.overflow = "";
+  }
+  window.grwnBook = openBookingModal;
+  function bookCall() { openBookingModal(); }
+  (function () {
+    var x = document.getElementById("grwnbkX");
+    if (x) x.addEventListener("click", closeBookingModal);
+    if (bkOv) bkOv.addEventListener("click", function (e) { if (e.target === bkOv) closeBookingModal(); });
+    document.addEventListener("keydown", function (e) { if (e.key === "Escape") closeBookingModal(); });
+    // Alle afspraak-links op de pagina openen in de modal i.p.v. een nieuw tabblad
+    document.addEventListener("click", function (e) {
+      var a = e.target && e.target.closest ? e.target.closest('a[href*="calendar.app.google"]') : null;
+      if (a) { e.preventDefault(); openBookingModal(); }
+    }, true);
+  })();
 
   btn.addEventListener("click", function () { panel.classList.contains("open") ? closePanel() : openPanel(); });
   closeBtn.addEventListener("click", closePanel);
