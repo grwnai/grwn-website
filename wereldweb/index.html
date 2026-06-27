@@ -71,6 +71,16 @@
   .spin{width:28px;height:28px;border:3px solid var(--line);border-top-color:var(--accent);border-radius:50%;display:inline-block;animation:spin .8s linear infinite;}
   @keyframes spin{to{transform:rotate(360deg);}}
   .nlbox{margin-top:10px;background:rgba(255,180,84,.10);border:1px solid rgba(255,180,84,.35);border-radius:11px;padding:10px 12px;font-size:13px;line-height:1.55;color:#ffe2bd;}
+  .basis{font-size:12px;color:var(--muted);font-style:italic;background:rgba(124,155,255,.08);border:1px solid var(--line);border-radius:9px;padding:8px 11px;margin-top:8px;line-height:1.5;}
+  .basis b{font-style:normal;color:var(--accent2);}
+  .meldrow{margin-top:14px;text-align:center;}
+  .meldrow a{color:var(--muted);font-size:12px;text-decoration:none;}
+  .meldrow a:hover{color:var(--choke);}
+  .wmodal{position:fixed;inset:0;background:rgba(5,8,18,.72);display:flex;align-items:center;justify-content:center;padding:18px;z-index:60;}
+  .wmodal .box{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:20px;max-width:470px;width:100%;max-height:85vh;overflow-y:auto;}
+  .wmodal .box h2{font-size:18px;margin-bottom:6px;}
+  .wmodal .box a{color:var(--accent);}
+  .wmodal .box button{margin-top:8px;background:var(--accent);color:#06231e;border:0;border-radius:10px;font-weight:800;padding:10px 16px;cursor:pointer;font-family:inherit;}
 </style>
 </head>
 <body>
@@ -103,7 +113,7 @@
     </div>
     <div class="panel" id="panel"></div>
   </div>
-  <div class="foot">Vereenvoudigd educatief model van echte afhankelijkheden — bedoeld om te begrijpen, niet als exacte data. © Wereldweb</div>
+  <div class="foot">Vereenvoudigd educatief model van echte afhankelijkheden — bedoeld om te begrijpen, niet als exacte data. <a href="#" onclick="return openBronnen()" style="color:var(--accent2)">Bronnen &amp; uitleg</a> · © Wereldweb</div>
 
 <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
 <script src="https://cdn.jsdelivr.net/npm/topojson-client@3"></script>
@@ -239,7 +249,7 @@ let LEVEL='tiener', MODE='verken';
 let activeDisrupt=null;      // verken-modus
 let selCountry=null;
 let scenario=null, scStep=0, scChosen=null;
-let aiMode='realistisch', aiHistory=[], aiScene=null, aiLoading=false, aiError='';
+let aiMode='realistisch', aiHistory=[], aiScene=null, aiLoading=false, aiError='', aiRetries=0, aiWaiting=false;
 
 /* =======================================================================
    GLOBE (D3 orthografisch, SVG — werkt ook zonder landgrenzen)
@@ -426,7 +436,7 @@ function renderAI(){
     +'<button class="'+(aiMode==='realistisch'?'on':'')+'" style="flex:1" onclick="setAiMode(\'realistisch\')">🎯 Realistisch</button>'
     +'<button class="'+(aiMode==='watals'?'on':'')+'" style="flex:1" onclick="setAiMode(\'watals\')">🔮 Wat-als</button>'
     +'</div></div>';
-  if(aiLoading){ html+='<div class="pcard" style="text-align:center"><div class="spin"></div><p style="margin-top:10px;color:var(--muted)">De AI denkt na over de gevolgen…</p></div>'; panel.innerHTML=html; return; }
+  if(aiLoading||aiWaiting){ html+='<div class="pcard" style="text-align:center"><div class="spin"></div><p style="margin-top:10px;color:var(--muted)">'+(aiWaiting?'De motor is heel even druk — ik probeer het zo opnieuw…':'De AI denkt na over de gevolgen…')+'</p></div>'; panel.innerHTML=html; return; }
   if(aiError){ html+='<div class="pcard" style="border-color:rgba(255,93,108,.4)"><h3>⚠️ Even niet gelukt</h3><p>'+escW(aiError)+'</p></div><div class="scbtns"><button class="btn" onclick="aiStart()">Opnieuw</button></div>'; panel.innerHTML=html; return; }
   if(!aiScene){ html+='<div class="scbtns"><button class="btn" style="width:100%" onclick="aiStart()">▶ Start een scenario</button></div>'; panel.innerHTML=html; return; }
   const s=aiScene;
@@ -435,24 +445,60 @@ function renderAI(){
   if(s.omhoog&&s.omhoog.length) html+='<div class="impact"><span class="ptitle">Prijs/druk omhoog</span><br>'+s.omhoog.map(h=>'<span class="tag up">'+lab(h)+' ↑</span>').join('')+'</div>';
   html+='</div>';
   if(s.nederland) html+='<div class="pcard" style="border-color:rgba(255,180,84,.45)"><h3>🇳🇱 Wat betekent dit voor Nederland?</h3><p>'+escW(s.nederland)+'</p></div>';
+  if(s.basis) html+='<div class="basis">ℹ️ <b>Waarop dit rust:</b> '+escW(s.basis)+'</div>';
   if(s.einde){ html+='<div class="pcard" style="border-color:rgba(95,227,154,.4)"><h3>🏁 Tot zover</h3><p>'+escW(s.slot)+'</p></div><div class="scbtns"><button class="btn" onclick="aiStart()">Nieuw scenario</button></div>'; }
   else if(s.keuzes&&s.keuzes.length){ html+='<div class="ptitle">Wat wil je verder ontdekken?</div><div class="choices">'+s.keuzes.map(k=>'<button class="choice" data-l="'+escA(k.label)+'" onclick="aiChoose(this.dataset.l)">'+escW(k.label)+'</button>').join('')+'</div>'; }
   else { html+='<div class="scbtns"><button class="btn" onclick="aiStart()">Nieuw scenario</button></div>'; }
+  html+='<div class="meldrow"><a href="#" onclick="return flagScene()">🚩 Klopt dit niet? Meld het</a></div>';
   panel.innerHTML=html;
 }
 function aiSceneText(s){ return (s.titel?s.titel+': ':'')+s.situatie+(s.keuzes&&s.keuzes.length?(' [opties: '+s.keuzes.map(k=>k.label).join(' | ')+']'):''); }
+function aiBusy(msg){ return /quota|exceed|429|503|rate|druk|overload|UNAVAILABLE|RESOURCE_EXHAUSTED/i.test(String(msg||'')); }
 function callAI(){
-  aiLoading=true; aiError=''; renderAI();
+  aiLoading=true; aiWaiting=false; aiError=''; renderAI();
   fetch('/api/scenario',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({level:LEVEL,mode:aiMode,history:aiHistory})})
-    .then(r=>r.json().then(j=>({ok:r.ok,j}))).then(({ok,j})=>{
-      aiLoading=false;
-      if(ok&&j&&j.ok&&j.scene){ aiScene=j.scene; aiHistory.push({role:'model',content:aiSceneText(aiScene)}); renderAI(); render(); if(aiScene.geraakt&&aiScene.geraakt[0])focusOn(aiScene.geraakt[0]); }
-      else { aiError=(j&&j.error)||'De AI gaf geen geldig antwoord.'; renderAI(); }
-    }).catch(()=>{ aiLoading=false; aiError='Geen verbinding met de scenario-motor. Dit werkt pas live (op grwn.ai/wereldweb), niet als los offline bestand.'; renderAI(); });
+    .then(r=>r.json().then(j=>({ok:r.ok,status:r.status,j})).catch(()=>({ok:false,status:r.status,j:null})))
+    .then(({ok,status,j})=>{
+      if(ok&&j&&j.ok&&j.scene){ aiRetries=0; aiLoading=false; aiWaiting=false; aiScene=j.scene; aiHistory.push({role:'model',content:aiSceneText(aiScene)}); renderAI(); render(); if(aiScene.geraakt&&aiScene.geraakt[0])focusOn(aiScene.geraakt[0]); return; }
+      const msg=(j&&j.error)||('serverfout '+status);
+      if((aiBusy(msg)||status===503||status===429) && aiRetries<3){
+        aiRetries++; aiLoading=false; aiWaiting=true; renderAI();
+        const m=String(msg).match(/retry in ([\d.]+)s/i);
+        const wait=m?Math.min(9000,(Math.ceil(parseFloat(m[1]))+1)*1000):5000;
+        setTimeout(()=>{ aiWaiting=false; callAI(); }, wait);
+        return;
+      }
+      aiLoading=false; aiWaiting=false;
+      aiError = aiBusy(msg) ? 'De AI-sleutel zit even aan de limiet (Google). Probeer over een halve minuut opnieuw — of zet pay-as-you-go aan voor meer ruimte.' : msg;
+      renderAI();
+    })
+    .catch(()=>{
+      if(aiRetries<2){ aiRetries++; aiLoading=false; aiWaiting=true; renderAI(); setTimeout(()=>{ aiWaiting=false; callAI(); },5000); }
+      else { aiLoading=false; aiWaiting=false; aiError='Geen verbinding met de scenario-motor. Dit werkt pas live (op grwn.ai/wereldweb), niet als los offline bestand.'; renderAI(); }
+    });
 }
-window.aiStart=function(){ aiScene=null; aiError=''; aiHistory=[{role:'user',content:'Start een nieuw scenario over energie en geopolitiek. Geef een pakkende openingssituatie, leg de gevolgen uit voor voedsel/brandstof/prijzen, maak duidelijk wat het voor Nederland betekent, en geef 2-3 richtingen om verder te ontdekken.'}]; callAI(); };
-window.aiChoose=function(label){ aiHistory.push({role:'user',content:'Ik kies: '+label}); callAI(); };
+window.aiStart=function(){ aiScene=null; aiError=''; aiRetries=0; aiHistory=[{role:'user',content:'Start een nieuw scenario over energie en geopolitiek. Geef een pakkende openingssituatie, leg de gevolgen uit voor voedsel/brandstof/prijzen, maak duidelijk wat het voor Nederland betekent, en geef 2-3 richtingen om verder te ontdekken.'}]; callAI(); };
+window.aiChoose=function(label){ aiRetries=0; aiHistory.push({role:'user',content:'Ik kies: '+label}); callAI(); };
 window.setAiMode=function(m){ aiMode=m; if(!aiScene&&!aiLoading) renderAI(); };
+window.flagScene=function(){ const s=aiScene||{}; const subj=encodeURIComponent('Wereldweb — melding over een scenario'); const body=encodeURIComponent('Ik denk dat deze uitleg niet (helemaal) klopt:\n\nTitel: '+(s.titel||'')+'\nSituatie: '+(s.situatie||'')+'\nVoor Nederland: '+(s.nederland||'')+'\nWaarop het rust: '+(s.basis||'')+'\nModus: '+aiMode+' · niveau: '+LEVEL+'\n\nWat klopt er volgens mij niet:\n'); location.href='mailto:info@grwn.ai?subject='+subj+'&body='+body; return false; };
+window.openBronnen=function(){
+  const m=document.createElement('div'); m.className='wmodal';
+  m.innerHTML='<div class="box">'
+    +'<h2>ℹ️ Bronnen & uitleg</h2>'
+    +'<p style="color:var(--muted);font-size:13.5px;line-height:1.6">Wereldweb is een <b>vereenvoudigd, educatief model</b> van echte energie-afhankelijkheden — bedoeld om de grote lijnen te begrijpen, niet als exacte of actuele data. De samenhang is gebaseerd op algemeen bekende, openbare cijfers van o.a.:</p>'
+    +'<ul style="margin:10px 0 12px 18px;font-size:13.5px;line-height:1.7;color:var(--text)">'
+    +'<li><b>IEA</b> — International Energy Agency · <a href="https://www.iea.org" target="_blank" rel="noopener">iea.org</a></li>'
+    +'<li><b>EIA</b> — U.S. Energy Information Administration (o.a. World Oil Transit Chokepoints) · <a href="https://www.eia.gov" target="_blank" rel="noopener">eia.gov</a></li>'
+    +'<li><b>UN Comtrade</b> — handelsstromen tussen landen · <a href="https://comtrade.un.org" target="_blank" rel="noopener">comtrade.un.org</a></li>'
+    +'<li><b>Eurostat / CBS</b> — Europese en Nederlandse cijfers · <a href="https://ec.europa.eu/eurostat" target="_blank" rel="noopener">eurostat</a> · <a href="https://www.cbs.nl" target="_blank" rel="noopener">cbs.nl</a></li>'
+    +'</ul>'
+    +'<p style="color:var(--muted);font-size:13px;line-height:1.6">De <b>Scenario-modus</b> wordt door AI gemaakt. In <b>realistisch</b> blijft de AI binnen dit model en benoemt hij waarop een redenering rust; <b>wat-als</b> is bewust verzonnen en zo gelabeld. Twijfel je aan een uitleg? Gebruik de <b>Meld het</b>-link.</p>'
+    +'<button id="brClose">Sluiten</button></div>';
+  document.body.appendChild(m);
+  document.getElementById('brClose').onclick=()=>m.remove();
+  m.addEventListener('click',e=>{ if(e.target===m) m.remove(); });
+  return false;
+};
 
 /* =======================================================================
    ACTIES

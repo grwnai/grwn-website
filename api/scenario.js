@@ -2,7 +2,7 @@
 // Env var in Vercel: GEMINI_API_KEY  (zelfde als Growie/LVL UP)
 export const maxDuration = 30;
 
-const MODELS = ["gemini-2.5-flash", "gemini-2.0-flash"];
+const MODELS = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-2.0-flash-lite", "gemini-1.5-flash"];
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 const KEYS = "Rusland, SaoediArabie, VS, Qatar, Noorwegen, Irak, VAE, Iran, Algerije, Nigeria, Koeweit, Kazachstan, Duitsland, Italie, Frankrijk, Nederland, Spanje, VK, China, India, Japan, ZuidKorea, Turkije, Polen, Hormuz, Malakka, Suez, BabElMandeb";
@@ -34,9 +34,10 @@ PUBLIEK: de gewone Nederlander (geen expert). Leg het glashelder en concreet uit
 OPDRACHT: gegeven de geschiedenis en de laatste keuze, beschrijf de NIEUWE situatie en leg de gevolgen helder uit. Maak telkens expliciet wat het betekent voor VOEDSEL, BRANDSTOF en PRIJZEN, en -- heel belangrijk -- wat het concreet betekent voor NEDERLAND en de gewone Nederlander (boodschappen, benzine/diesel, energierekening, banen, de haven). Bied daarna 2 of 3 richtingen om verder te ontdekken. Na 3 tot 5 stappen rond je af (einde=true) met een korte slotreflectie. Verzin NOOIT exacte percentages of cijfers alsof ze feitelijk zijn.
 
 Antwoord UITSLUITEND met geldige JSON, exact dit formaat:
-{"titel":"korte titel","situatie":"de situatie en gevolgen (voedsel, brandstof, prijzen), in het juiste niveau","nederland":"wat dit concreet betekent voor Nederland en de gewone Nederlander","geraakt":["sleutel"],"omhoog":["sleutel"],"stromen":[{"van":"sleutel","naar":"sleutel","soort":"gas"}],"keuzes":[{"label":"richting om te ontdekken"}],"einde":false,"slot":""}
+{"titel":"korte titel","situatie":"de situatie en gevolgen (voedsel, brandstof, prijzen), in het juiste niveau","nederland":"wat dit concreet betekent voor Nederland en de gewone Nederlander","basis":"de echte afhankelijkheid of het mechanisme waarop deze redenering rust (en eerlijk: hoe zeker)","geraakt":["sleutel"],"omhoog":["sleutel"],"stromen":[{"van":"sleutel","naar":"sleutel","soort":"gas"}],"keuzes":[{"label":"richting om te ontdekken"}],"einde":false,"slot":""}
 - "geraakt" = direct geraakte landen. "omhoog" = landen waar prijs/druk stijgt. "stromen" = relevante of verstoorde energiestromen (soort = "gas" of "olie").
 - "nederland" = ALTIJD invullen: het concrete gevolg voor Nederland (prijzen, boodschappen, brandstof, energierekening, haven).
+- "basis" = ALTIJD invullen: noem de echte afhankelijkheid of het mechanisme uit het wereldmodel waarop je redenering rust, en wees eerlijk als iets onzeker of speculatief is. Verzin geen feiten of cijfers.
 - Gebruik ALLEEN geldige sleutels uit de lijst. Laat een lijst leeg als niet van toepassing.
 - Bij einde=true: "keuzes" is [] en vul "slot". Anders is "slot" "".`;
 }
@@ -73,7 +74,7 @@ export default async function handler(req, res) {
     let lastErr = "AI tijdelijk niet bereikbaar";
 
     for (const model of MODELS) {
-      for (let attempt = 0; attempt < 2; attempt++) {
+      for (let attempt = 0; attempt < 1; attempt++) {
         let r, d;
         try {
           r = await fetch(
@@ -96,6 +97,7 @@ export default async function handler(req, res) {
           scene.titel = scene.titel || "Scenario";
           ["geraakt", "omhoog", "keuzes", "stromen"].forEach((k) => { if (!Array.isArray(scene[k])) scene[k] = []; });
           scene.nederland = typeof scene.nederland === "string" ? scene.nederland : "";
+          scene.basis = typeof scene.basis === "string" ? scene.basis : "";
           scene.einde = !!scene.einde;
           scene.slot = scene.slot || "";
           return res.status(200).json({ ok: true, scene });
