@@ -177,6 +177,31 @@
   .inputbar textarea{width:100%;background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:13px;
     color:var(--text);font-family:'Inter';font-size:16px;resize:none;height:84px;line-height:1.5}
   .inputbar textarea:focus{outline:none;border-color:var(--accent)}
+  /* Mijn werk-paneel */
+  .workpanel{background:var(--panel);border:1px solid var(--border);border-radius:16px;margin-top:12px;overflow:hidden}
+  .workpanel.flash{animation:wpflash .7s ease}
+  @keyframes wpflash{0%{box-shadow:0 0 0 0 rgba(54,226,196,.5)}100%{box-shadow:0 0 0 12px rgba(54,226,196,0)}}
+  .wp-head{display:flex;align-items:center;justify-content:space-between;padding:16px;cursor:pointer;font-weight:800;font-size:15px;color:var(--accent)}
+  .wp-count{color:var(--muted);font-size:12px;font-weight:700}
+  .wp-chev{color:var(--muted);font-size:13px;transition:transform .2s}
+  .workpanel.collapsed .wp-chev{transform:rotate(-90deg)}
+  .workpanel.collapsed .wp-body{display:none}
+  .wp-body{padding:0 16px 16px}
+  .wp-note{font-size:12.5px;color:var(--muted);line-height:1.5;background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:9px 11px;margin-bottom:12px}
+  .wp-title{font-weight:800;font-size:13px;color:var(--accent);margin-bottom:7px}
+  .wp-text{width:100%;min-height:150px;background:#0B0C24;color:var(--text);border:1px solid var(--border);border-radius:12px;padding:13px;font-family:'Inter',ui-monospace,monospace;font-size:14px;line-height:1.6;resize:vertical}
+  .wp-text:focus{outline:none;border-color:var(--accent)}
+  .wp-btns{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+  .wp-btn{border:none;border-radius:12px;font-family:'Inter';font-weight:800;font-size:14px;cursor:pointer;padding:11px 18px;background:var(--accent);color:#0E1030;box-shadow:0 8px 22px rgba(54,226,196,.32)}
+  .wp-btn:hover{filter:brightness(1.08)}
+  .wp-btn.ghost{background:var(--panel2);color:var(--text);border:1px solid var(--border);box-shadow:none}
+  .wp-btn.ghost:hover{border-color:var(--accent);filter:none}
+  .wp-troph{margin-top:14px}
+  .wp-trophh{font-size:12px;font-weight:700;letter-spacing:.04em;color:var(--muted);margin-bottom:8px}
+  .wp-trophi{display:flex;align-items:center;gap:10px;background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:9px 12px;font-size:14px;margin-bottom:6px}
+  .wp-trophi .t{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .wp-trophi .ok{color:var(--accent);font-weight:800}
+  .wp-trophe{font-size:12.5px;color:var(--muted)}
   .send{background:var(--accent);color:#0E1030;border:none;border-radius:12px;
     font-weight:800;font-size:16px;padding:13px 20px;cursor:pointer;flex:1;box-shadow:0 8px 22px rgba(54,226,196,.32)}
   .send:hover{filter:brightness(1.08)}
@@ -481,6 +506,22 @@
 
   <!-- CHAT -->
   <div class="chat" id="chat" style="display:none"></div>
+  <div id="workPanel" class="workpanel" style="display:none">
+    <div class="wp-head" id="wpToggle">
+      <span>📄 Mijn werk <span id="wpCount" class="wp-count">(0)</span></span>
+      <span class="wp-chev">▾</span>
+    </div>
+    <div class="wp-body" id="wpBody">
+      <div class="wp-note">💡 Dit heb je gemaakt — pas het gerust aan, kopieer of bewaar het.</div>
+      <div class="wp-title" id="wpTitle"></div>
+      <textarea id="wpText" class="wp-text" spellcheck="false"></textarea>
+      <div class="wp-btns">
+        <button class="wp-btn ghost" id="wpCopy">📋 Kopiëren</button>
+        <button class="wp-btn" id="wpSave">🏆 Bewaar in trofeeënkast</button>
+      </div>
+      <div class="wp-troph" id="wpTroph"></div>
+    </div>
+  </div>
   <div id="inputArea" style="display:none">
     <div class="inputbar">
       <textarea id="inMsg" placeholder="Typ hier je antwoord, of druk op 🎙️ om in te spreken"></textarea>
@@ -562,7 +603,7 @@ const S = {
   history:[], demoStep:0, selectedCoach:null,
   transcript:[], started:false,
   mode:"", schoolLevel:"", finished:false, experience:"",
-  freeChat:false, freeAsk:false
+  freeChat:false, freeAsk:false, works:[], trophies:[]
 };
 const COACH = {
   MOTIVATOR:{emoji:"🚀",name:"Motivator"}, UITDAGER:{emoji:"🥊",name:"Uitdager"},
@@ -698,6 +739,11 @@ Zodra de speler de Meesterproef (Level 10) succesvol heeft afgerond: geef een ui
 DASHBOARD-SYNC (VERPLICHT): sluit ELK bericht waarin level, munten, streak, krachtmeters of badges wijzigen — en bij het STATUS-commando — af met EXACT dit machine-leesbare blok met echte getallen, zodat het visuele dashboard van de app meeloopt:
 [[STATE]]level=<1-10>;coins=<n>;streak=<n>;skill=<0-5>;mind=<0-5>;vol=<0-5>;impact=<0-5>;badges=<emoji's gescheiden door spatie of "geen">[[/STATE]]
 
+MIJN WERK (BELANGRIJK): laat de speler in elke challenge iets CONCREETS maken (een prompt, mail, samenvatting, plan, checklist of ideeënlijst). Zodra er een bruikbaar eindresultaat ligt, zet je dat resultaat één keer in dit blok, zodat het in het paneel "Mijn werk" verschijnt en de speler het kan bewaren en gebruiken:
+[[WERK]]<korte titel op de eerste regel>
+<het complete werkstuk dat de speler kan kopiëren>[[/WERK]]
+Gebruik dit blok alleen voor een echt af te leveren werkstuk, niet voor tussenstapjes. Je gewone uitleg en feedback zet je in je bericht eromheen; het [[WERK]]-blok bevat alléén het werkstuk zelf.
+
 Schrijf in het Nederlands en houd berichten compact en interactief.`;
 
 /* ============ DOM ============ */
@@ -712,7 +758,7 @@ function saveState(){
     meters:S.meters, badges:S.badges, history:S.history, transcript:S.transcript,
     demoStep:S.demoStep, provider:S.provider, started:S.started,
     mode:S.mode, schoolLevel:S.schoolLevel, finished:S.finished, experience:S.experience,
-    freeChat:S.freeChat
+    freeChat:S.freeChat, works:S.works, trophies:S.trophies
   })); }catch(e){}
   queueScore();
 }
@@ -1058,6 +1104,40 @@ function applyState(text){
   return text;
 }
 
+/* parse [[WERK]] blokken: pak het werkstuk, toon in "Mijn werk", strip uit chat */
+function applyWork(text){
+  const re=/\[\[WERK\]\]([\s\S]*?)\[\[\/WERK\]\]/g; let m, found=false;
+  while((m=re.exec(text))!==null){
+    const body=(m[1]||"").trim(); if(!body) continue;
+    const nl=body.indexOf("\n");
+    const title=(nl>=0?body.slice(0,nl):body).replace(/^titel:\s*/i,"").trim()||"Mijn werkstuk";
+    const content=(nl>=0?body.slice(nl+1):body).trim();
+    S.works.push({title:title,content:content}); found=true;
+  }
+  if(found){ text=text.replace(/\[\[WERK\]\][\s\S]*?\[\[\/WERK\]\]/g,"").replace(/\n{3,}/g,"\n\n").trim(); renderWorks(true); saveState(); }
+  return text;
+}
+function renderWorks(flash){
+  const panel=$("workPanel"); if(!panel) return;
+  if(!S.works.length){ panel.style.display="none"; return; }
+  panel.style.display="block";
+  const w=S.works[S.works.length-1];
+  $("wpCount").textContent="("+S.works.length+")";
+  $("wpTitle").textContent=w.title;
+  const ta=$("wpText"); if(document.activeElement!==ta){ ta.value=w.content; }
+  const tr=$("wpTroph");
+  if(S.trophies.length){
+    tr.innerHTML='<div class="wp-trophh">🏆 Trofeeënkast ('+S.trophies.length+')</div>'+
+      S.trophies.map(function(t){return '<div class="wp-trophi"><span>📦</span><span class="t">'+esc(t.title)+'</span><span class="ok">✓</span></div>';}).join("");
+  } else { tr.innerHTML='<div class="wp-trophh">🏆 Trofeeënkast</div><div class="wp-trophe">Bewaar je werk om het hier te verzamelen.</div>'; }
+  if(flash){ panel.classList.remove("collapsed"); panel.classList.add("flash"); setTimeout(function(){panel.classList.remove("flash");},700); }
+}
+(function(){
+  const tgl=$("wpToggle"); if(tgl) tgl.onclick=function(){ $("workPanel").classList.toggle("collapsed"); };
+  const cp=$("wpCopy"); if(cp) cp.onclick=function(){ const ta=$("wpText"); if(navigator.clipboard) navigator.clipboard.writeText(ta.value); cp.textContent="✓ Gekopieerd"; setTimeout(function(){cp.textContent="📋 Kopiëren";},1300); };
+  const sv=$("wpSave"); if(sv) sv.onclick=function(){ const w=S.works[S.works.length-1]; if(!w) return; S.trophies.push({title:w.title,content:$("wpText").value}); saveState(); renderWorks(false); sv.textContent="✓ Bewaard!"; setTimeout(function(){sv.textContent="🏆 Bewaar in trofeeënkast";},1500); };
+})();
+
 /* detecteer einde-marker [[FINISH]], strip 'm en toon overwinningsscherm */
 function checkFinish(text){
   if(/\[\[FINISH\]\]/.test(text)){
@@ -1100,6 +1180,7 @@ async function send(text,hidden){
     const reply=await callAI();
     stopTyping();
     let clean=applyState(reply);
+    clean=applyWork(clean);
     clean=checkFinish(clean);
     addMsg(clean,"coach"); bump();
     S.history.push({role:"assistant",content:reply});
@@ -1198,9 +1279,9 @@ function demoReply(text){
         "♟️ Uitstekend doordacht. Dit levert structureel rendement op. +120 punten en je meters stijgen.",
         "💡 Mooi gebouwd! Solide werk. +120 punten en je bouwwerk groeit!"
       );
-      addMsg(fb+"\n\n```\n[AI_CHALLENGE_REPORT]\nPLAYER: "+S.name+" | COACH: "+COACH[S.coach].name+
+      addMsg(applyWork(fb+"\n\n```\n[AI_CHALLENGE_REPORT]\nPLAYER: "+S.name+" | COACH: "+COACH[S.coach].name+
         "\nLEVEL: "+S.level+"/10 | PUNTEN: 🪙 "+S.coins+" | STREAK: 🔥 "+S.streak+
-        "\nMETERS: Vakinhoud: "+S.meters.skill+"/5 | Mindset: "+S.meters.mind+"/5 | Volume: "+S.meters.vol+"/5 | Impact: "+S.meters.impact+"/5\nBADGES: "+(S.badges.join(" ")||"geen")+"\n```\n```\n[AI_KNOWLEDGE_SHARE]\n💡 INZICHT GEDEELD DOOR: "+S.name+"\n✨ GOUDMIJN INZICHT: Wekelijkse statusupdates laten samenvatten met AI bespaart ~30 min/week.\n🛠️ DE KILLER PROMPT / TOOL: \"Vat onderstaande update samen in 3 bullets voor mijn manager: …\"\n```\n\n"+demoCycle(),"coach");
+        "\nMETERS: Vakinhoud: "+S.meters.skill+"/5 | Mindset: "+S.meters.mind+"/5 | Volume: "+S.meters.vol+"/5 | Impact: "+S.meters.impact+"/5\nBADGES: "+(S.badges.join(" ")||"geen")+"\n```\n```\n[AI_KNOWLEDGE_SHARE]\n💡 INZICHT GEDEELD DOOR: "+S.name+"\n✨ GOUDMIJN INZICHT: Wekelijkse statusupdates laten samenvatten met AI bespaart ~30 min/week.\n🛠️ DE KILLER PROMPT / TOOL: \"Vat onderstaande update samen in 3 bullets voor mijn manager: …\"\n```\n\n[[WERK]]Statusupdate-samenvatter (prompt)\nVat onderstaande update samen in 3 heldere bullets voor mijn manager. Schrijf bondig en zakelijk.\n\n[plak hier je wekelijkse update]\n[[/WERK]]\n\n"+demoCycle()),"coach");
       bump();
     }
   },800);
@@ -1222,6 +1303,7 @@ if(loadState()){
   $("setup").style.display="none";
   $("chat").style.display="flex";
   $("inputArea").style.display="block";
+  renderWorks(false);
   if(S.freeChat){
     var _qb=document.querySelector(".quickbar"); if(_qb) _qb.style.display="none";
     $("statusBtn").style.display="none";
