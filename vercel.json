@@ -1,5 +1,6 @@
 {
   "rewrites": [
-    { "source": "/lvlup", "destination": "/lvlup/index.html" }
+    { "source": "/lvlup", "destination": "/lvlup/index.html" },
+    { "source": "/klokkijken", "destination": "/klokkijken/index.html" }
   ]
 }

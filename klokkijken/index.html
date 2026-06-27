@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Klok Spel</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&display=swap');
+  :root{
+    --bg:#0c111e;
+    --card:#161d2e;
+    --card2:#1f2840;
+    --card3:#2a3450;
+    --line:rgba(255,255,255,.08);
+    --line2:rgba(255,255,255,.14);
+    --text:#eef2fb;
+    --muted:#94a1bd;
+    --accent:#7c5cfc;
+    --accent2:#9d7bff;
+    --uur:#3a9bff;
+    --minuut:#ff5a52;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{
+    font-family:'Nunito',-apple-system,'Segoe UI',sans-serif;font-weight:700;
+    color:var(--text);min-height:100%;overflow-x:hidden;-webkit-user-select:none;user-select:none;
+    background:
+      radial-gradient(1100px 560px at 50% -8%, #243150 0%, transparent 58%),
+      linear-gradient(180deg,#0e1422 0%,#0a0e18 100%) fixed;
+  }
+  .wrap{max-width:560px;margin:0 auto;padding:16px 16px 48px;position:relative;}
+
+  /* header */
+  .appbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+  .brand{display:flex;align-items:center;gap:10px;}
+  .brand svg{width:38px;height:38px;}
+  .brand .nm{font-weight:900;font-size:21px;letter-spacing:.3px;}
+  .brand .nm span{color:var(--accent2);}
+  .chips{display:flex;gap:8px;}
+  .chip{display:flex;align-items:center;gap:6px;background:var(--card);border:1px solid var(--line);
+    border-radius:12px;padding:6px 12px;font-weight:800;font-size:15px;}
+  .chip .ic{font-size:15px;}
+
+  .sec{font-size:13px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin:18px 2px 10px;display:flex;align-items:center;}
+  .sec .step{display:inline-flex;align-items:center;justify-content:center;width:21px;height:21px;border-radius:7px;
+    background:var(--accent);color:#fff;font-size:12px;font-weight:900;margin-right:8px;}
+
+  /* selectie & start */
+  .mode.sel{box-shadow:0 0 0 3px var(--accent), 0 10px 24px rgba(0,0,0,.45);}
+  .mode.sel::after{content:'✓';position:absolute;left:10px;top:8px;font-size:14px;font-weight:900;background:#fff;color:var(--accent);width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;}
+  .challenge-banner.sel{box-shadow:0 0 0 3px #fff, 0 0 0 6px var(--accent), 0 10px 24px rgba(181,23,158,.4);}
+  .startbtn{width:100%;margin-top:18px;border:none;cursor:pointer;border-radius:16px;padding:18px;
+    font-family:inherit;font-weight:900;font-size:20px;color:#fff;
+    background:linear-gradient(135deg,var(--accent),var(--accent2));box-shadow:0 10px 24px rgba(124,92,252,.45);transition:transform .1s;}
+  .startbtn:active{transform:scale(.99);}
+  .startbtn.disabled{background:var(--card2);color:var(--muted);box-shadow:none;cursor:default;}
+  .credit{text-align:center;color:var(--muted);font-size:12.5px;font-weight:700;margin-top:16px;line-height:1.5;}
+  .credit b{color:var(--accent2);}
+
+  /* mode cards (CrazyGames-stijl) */
+  .modes{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .mode{position:relative;overflow:hidden;border:none;cursor:pointer;text-align:left;
+    border-radius:20px;padding:16px 16px 14px;min-height:112px;color:#fff;
+    display:flex;flex-direction:column;justify-content:flex-end;gap:2px;
+    box-shadow:0 10px 24px rgba(0,0,0,.35);transition:transform .12s ease, filter .12s ease;}
+  .mode:hover{transform:translateY(-3px);filter:brightness(1.06);}
+  .mode:active{transform:translateY(0) scale(.985);}
+  .mode::before{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.18),rgba(255,255,255,0) 45%);pointer-events:none;}
+  .mode .m-ico{position:absolute;right:8px;top:4px;font-size:50px;line-height:1;opacity:.92;filter:drop-shadow(0 4px 6px rgba(0,0,0,.3));transform:rotate(-8deg);}
+  .mode .m-ttl{font-weight:900;font-size:20px;position:relative;}
+  .mode .m-sub{font-weight:700;font-size:12.5px;opacity:.92;position:relative;}
+  .m-lees{background:linear-gradient(135deg,#37c0ff,#1f7ce0);}
+  .m-zet{background:linear-gradient(135deg,#34db8a,#15a866);}
+  .m-match{background:linear-gradient(135deg,#ff6fb5,#c049c8);}
+  .m-vrij{background:linear-gradient(135deg,#ffc04d,#ff7a1a);}
+
+  /* challenge banner */
+  .challenge-banner{width:100%;margin-top:12px;border:none;cursor:pointer;text-align:left;border-radius:18px;
+    padding:16px;display:flex;align-items:center;gap:14px;color:#fff;
+    background:linear-gradient(135deg,#ff5e62,#ff2a6d 55%,#b5179e);box-shadow:0 10px 24px rgba(181,23,158,.35);
+    transition:transform .12s, filter .12s;position:relative;overflow:hidden;}
+  .challenge-banner::before{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.18),transparent 45%);pointer-events:none;}
+  .challenge-banner:hover{transform:translateY(-3px);filter:brightness(1.06);}
+  .challenge-banner:active{transform:scale(.99);}
+  .challenge-banner .cb-ico{font-size:34px;line-height:1;filter:drop-shadow(0 3px 5px rgba(0,0,0,.3));}
+  .challenge-banner .cb-txt{flex:1;}
+  .challenge-banner .cb-txt b{display:block;font-size:20px;font-weight:900;}
+  .challenge-banner .cb-txt small{font-size:12.5px;font-weight:700;opacity:.95;}
+  .challenge-banner .cb-go{font-size:18px;opacity:.9;background:rgba(255,255,255,.2);width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;}
+  .lb-btn{width:100%;margin-top:10px;border:1px solid var(--line2);background:var(--card);color:var(--text);
+    border-radius:14px;padding:13px;font-family:inherit;font-weight:900;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;}
+  .lb-btn:active{transform:scale(.98);}
+  .lb-btn span{font-size:18px;}
+
+  /* HUD challenge */
+  .hud{display:flex;gap:8px;margin-bottom:10px;}
+  .hud-it{flex:1;text-align:center;background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:7px 4px;font-weight:900;font-size:15px;}
+  .hud-time{color:#ffd36b;}
+  .prog.low > i, .prog .low{background:linear-gradient(90deg,#ff5e62,#ff2a6d)!important;}
+
+  /* settings card */
+  .setcard{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px 16px;margin-top:12px;}
+  .setrow{display:flex;align-items:center;justify-content:space-between;gap:12px;}
+  .setrow + .setrow{margin-top:14px;padding-top:14px;border-top:1px solid var(--line);}
+  .setlbl{font-weight:800;font-size:15px;}
+  .setlbl small{display:block;font-weight:700;font-size:12px;color:var(--muted);margin-top:1px;}
+  .seg{display:flex;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:3px;gap:3px;}
+  .seg-btn{border:none;background:transparent;color:var(--muted);font-family:inherit;font-weight:800;font-size:14px;
+    padding:8px 12px;border-radius:9px;cursor:pointer;white-space:nowrap;}
+  .seg-btn.on{background:var(--accent);color:#fff;box-shadow:0 2px 8px rgba(124,92,252,.5);}
+  .switch{width:52px;height:30px;border-radius:16px;border:1px solid var(--line2);background:var(--card2);position:relative;cursor:pointer;transition:background .15s;flex:0 0 auto;}
+  .switch .knob{position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#cdd5e6;transition:left .15s, background .15s;}
+  .switch.on{background:#2bd47e;border-color:#2bd47e;}
+  .switch.on .knob{left:25px;background:#fff;}
+
+  /* level kiezer */
+  .levels{display:grid;grid-template-columns:repeat(5,1fr);gap:9px;}
+  .lvl{aspect-ratio:1/1;border-radius:14px;background:var(--card2);border:1px solid var(--line);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    font-weight:900;font-size:22px;color:#8b97b3;position:relative;cursor:pointer;transition:transform .1s;}
+  .lvl:hover{transform:translateY(-2px);}
+  .lvl.done{color:#ffd36b;border-color:rgba(255,196,61,.5);background:linear-gradient(180deg,#2a2a1e,#21261c);}
+  .lvl.cur{color:#fff;border-color:var(--accent);background:linear-gradient(180deg,#2a2550,#1f2440);box-shadow:0 0 0 1px var(--accent), 0 6px 16px rgba(124,92,252,.35);}
+  .lvl .star{position:absolute;top:-9px;right:-7px;font-size:18px;}
+  .lvl small{font-size:8.5px;font-weight:800;line-height:1;margin-top:2px;color:inherit;opacity:.8;text-transform:uppercase;}
+
+  /* level uitleg */
+  .lvlinfo{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 16px;margin-top:10px;}
+  .lvlinfo .li-head{font-weight:900;font-size:16px;margin-bottom:6px;}
+  .lvlinfo .li-num{display:inline-block;background:var(--accent);color:#fff;font-size:12px;font-weight:900;
+    padding:2px 9px;border-radius:8px;margin-right:6px;vertical-align:2px;}
+  .lvlinfo .li-ex{font-weight:800;font-size:14px;color:var(--accent2);margin-bottom:7px;}
+  .lvlinfo .li-desc{font-weight:700;font-size:14px;color:var(--text);line-height:1.45;}
+  .lvlinfo .li-can{font-weight:700;font-size:13.5px;color:var(--muted);line-height:1.4;margin-top:7px;
+    border-top:1px solid var(--line);padding-top:8px;}
+  .lvlinfo .li-can b{color:var(--text);font-weight:800;}
+
+  .center{text-align:center;}
+  .hidden{display:none!important;}
+
+  /* PLAY scherm */
+  .play-card{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:16px;box-shadow:0 14px 30px rgba(0,0,0,.4);}
+  .play-head{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+  .iconbtn{width:40px;height:40px;border-radius:12px;background:var(--card2);border:1px solid var(--line);color:var(--text);
+    font-size:18px;cursor:pointer;flex:0 0 auto;display:flex;align-items:center;justify-content:center;}
+  .iconbtn:active{transform:scale(.94);}
+  .play-title{flex:1;text-align:center;font-weight:900;font-size:19px;}
+  .roundchip{font-weight:800;font-size:12.5px;color:var(--muted);background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:5px 10px;}
+
+  .prog{height:10px;background:var(--card2);border-radius:8px;overflow:hidden;margin:0 0 12px;}
+  .prog > i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .4s;border-radius:8px;}
+
+  .vraag{font-weight:800;font-size:20px;text-align:center;margin:2px 0 6px;min-height:26px;}
+  .vraag .tijdtekst{color:var(--accent2);}
+
+  /* mascot bubble (home) */
+  .hero{display:flex;align-items:flex-end;gap:10px;justify-content:center;margin:2px 0 16px;}
+  .hero svg{width:64px;height:auto;flex:0 0 auto;}
+  .bubble{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:9px 12px;font-weight:700;
+    font-size:13.5px;color:var(--text);max-width:230px;position:relative;}
+  .bubble::after{content:'';position:absolute;left:-9px;bottom:14px;width:0;height:0;border:7px solid transparent;border-right-color:var(--card);}
+
+  /* buddy (play) */
+  .buddy{display:flex;flex-direction:column;align-items:center;margin:8px 0 2px;}
+  .bud-ant{width:4px;height:9px;background:#43507a;border-radius:3px;position:relative;}
+  .bud-ant::after{content:'';position:absolute;top:-6px;left:50%;transform:translateX(-50%);width:9px;height:9px;border-radius:50%;background:var(--accent2);}
+  .bud-head{width:54px;height:48px;background:var(--card2);border:1px solid var(--line2);border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:27px;}
+  .buddy.bounce .bud-head{animation:pop .45s;}
+
+  /* klok */
+  .clock-box{display:flex;justify-content:center;margin:6px 0;}
+  svg.clock{width:min(72vw,280px);height:min(72vw,280px);touch-action:none;filter:drop-shadow(0 10px 24px rgba(0,0,0,.45));}
+  .legend{display:flex;justify-content:center;gap:18px;font-size:13.5px;font-weight:800;margin:4px 0 2px;color:var(--muted);}
+  .legend span{display:flex;align-items:center;gap:6px;}
+  .dot{width:13px;height:13px;border-radius:4px;display:inline-block;}
+
+  /* antwoord opties */
+  .opties{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-top:12px;}
+  .opt{padding:16px 12px;border-radius:14px;background:var(--card2);border:1px solid var(--line2);color:var(--text);
+    font-weight:900;font-size:25px;cursor:pointer;transition:transform .08s, background .12s, border-color .12s;
+    min-height:60px;display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.1;}
+  .opties.words .opt{font-size:18px;}
+  .opt:hover{border-color:var(--accent);}
+  .opt:active{transform:scale(.97);}
+  .opt.goed{background:linear-gradient(180deg,#2bd47e,#17a863);border-color:#2bd47e;color:#062;}
+  .opt.fout{background:linear-gradient(180deg,#ff6f66,#e23b32);border-color:#ff6f66;color:#fff;animation:shake .4s;}
+  .opt.disabled{opacity:.5;pointer-events:none;}
+
+  /* uitleg bij antwoord */
+  .explain{background:var(--card2);border:1px solid var(--line2);border-radius:13px;padding:13px 15px;margin-top:12px;
+    font-weight:700;font-size:14.5px;line-height:1.55;color:var(--text);text-align:left;}
+  .explain .ex-h{display:block;font-weight:900;color:var(--accent2);margin-bottom:3px;}
+  .explain b{color:#ffd36b;font-weight:900;}
+  .nextbtn{width:100%;margin-top:11px;border:none;cursor:pointer;border-radius:13px;padding:15px;
+    font-family:inherit;font-weight:900;font-size:18px;color:#fff;background:linear-gradient(135deg,var(--accent),var(--accent2));
+    box-shadow:0 7px 18px rgba(124,92,252,.4);transition:transform .1s;}
+  .nextbtn:active{transform:scale(.98);}
+
+  .feedback{text-align:center;font-weight:900;font-size:21px;min-height:28px;margin:10px 0 2px;}
+  .feedback.goed{color:#4be3a0;}
+  .feedback.fout{color:#ff7b72;}
+  .hint{text-align:center;color:var(--muted);font-size:14px;font-weight:700;min-height:19px;}
+
+  /* uitleg waarom */
+  .explain{background:var(--card2);border:1px solid var(--line2);border-radius:14px;padding:13px 15px;margin:10px 0 2px;text-align:left;}
+  .explain .ex-time{font-weight:900;font-size:18px;color:var(--accent2);text-align:center;margin-bottom:9px;}
+  .explain .ex-line{font-weight:700;font-size:14px;color:var(--text);line-height:1.5;margin:5px 0;}
+  .explain .ex-key{color:#ffd36b;}
+  .verder-btn{width:100%;margin-top:12px;border:none;cursor:pointer;border-radius:14px;padding:15px;font-family:inherit;
+    font-weight:900;font-size:18px;color:#fff;background:linear-gradient(135deg,var(--accent),var(--accent2));box-shadow:0 8px 20px rgba(124,92,252,.4);}
+  .verder-btn:active{transform:scale(.98);}
+
+  /* digitale weergave */
+  .digi{font-family:'Courier New',monospace;font-weight:800;background:#0a0e16;color:#46ffa6;
+    border:1px solid var(--line2);border-radius:10px;padding:6px 14px;font-size:29px;display:inline-block;letter-spacing:2px;
+    box-shadow:inset 0 0 12px rgba(70,255,166,.3);}
+
+  /* set-mode controls */
+  .actie{display:flex;gap:10px;margin-top:14px;}
+  .actie button{flex:1;padding:15px;border-radius:14px;font-family:inherit;font-weight:900;font-size:17px;color:#fff;cursor:pointer;border:none;transition:transform .08s, filter .12s;}
+  .actie button:active{transform:scale(.97);}
+  .a-check{background:linear-gradient(135deg,#34db8a,#15a866);}
+  .a-help{background:var(--card2);border:1px solid var(--line2)!important;color:var(--text);flex:0 0 56px;font-size:22px;}
+
+  /* match grid */
+  .match-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-top:8px;}
+  .mcard{border-radius:14px;padding:8px;background:var(--card2);border:1px solid var(--line2);
+    display:flex;align-items:center;justify-content:center;min-height:84px;cursor:pointer;transition:transform .08s, border-color .12s;}
+  .mcard:active{transform:scale(.97);}
+  .mcard svg{width:74px;height:74px;}
+  .mcard.sel{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent);}
+  .mcard.matched{background:linear-gradient(180deg,#1d3a2c,#16302420);border-color:#2bd47e;opacity:.95;pointer-events:none;}
+  .mcard.fout{animation:shake .4s;border-color:#ff6f66;}
+  .mcard .digi{font-size:20px;padding:5px 9px;}
+  .mcard .mword{font-weight:900;font-size:16px;text-align:center;color:var(--text);line-height:1.15;}
+
+  /* fx */
+  #fx{position:fixed;inset:0;pointer-events:none;z-index:50;overflow:hidden;}
+  .confetti{position:absolute;font-size:24px;animation:fall linear forwards;}
+  .cblock{position:absolute;width:16px;height:16px;border-radius:4px;animation:fall linear forwards;}
+  @keyframes fall{to{transform:translateY(110vh) rotate(540deg);opacity:.85;}}
+  @keyframes pop{0%{transform:scale(1);}50%{transform:scale(1.18);}100%{transform:scale(1);}}
+  @keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-6px);}75%{transform:translateX(6px);}}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  @keyframes popbig{0%{transform:scale(.5);opacity:0;}60%{transform:scale(1.08);opacity:1;}100%{transform:scale(1);}}
+
+  /* victory popup */
+  .modal{position:fixed;inset:0;background:rgba(6,10,18,.7);display:flex;align-items:center;justify-content:center;z-index:60;padding:20px;backdrop-filter:blur(3px);}
+  .modal .inner{position:relative;overflow:hidden;background:linear-gradient(180deg,#1b2238,#141a2b);
+    border:1px solid var(--line2);border-radius:24px;padding:28px 24px;text-align:center;max-width:340px;width:100%;
+    box-shadow:0 20px 50px rgba(0,0,0,.6);animation:popbig .45s;}
+  .burst{position:absolute;inset:-60%;z-index:0;opacity:.16;
+    background:repeating-conic-gradient(from 0deg, var(--accent2) 0deg 7deg, transparent 7deg 14deg);animation:spin 18s linear infinite;}
+  .modal .inner > *{position:relative;z-index:1;}
+  .modal h2{font-weight:900;font-size:30px;margin:2px 0 4px;
+    background:linear-gradient(180deg,#ffe27a,#ffae33);-webkit-background-clip:text;background-clip:text;color:transparent;}
+  .modal .stars{font-size:46px;margin:4px 0;}
+  .modal p{color:var(--muted);font-size:15px;font-weight:700;margin:6px 0;}
+  .modal p b{color:var(--text);}
+  .modal .unlock{color:#4be3a0;font-weight:900;}
+  .modal button{margin-top:16px;width:100%;padding:15px;border-radius:14px;border:none;cursor:pointer;
+    background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-family:inherit;font-weight:900;font-size:18px;box-shadow:0 8px 20px rgba(124,92,252,.45);}
+  .modal button:active{transform:scale(.97);}
+  .modal button.ghost{background:transparent;border:1px solid var(--line2);box-shadow:none;color:var(--muted);margin-top:8px;}
+  .modal .bigscore{font-weight:900;font-size:52px;line-height:1;margin:2px 0 6px;
+    background:linear-gradient(180deg,#9d7bff,#6a8bff);-webkit-background-clip:text;background-clip:text;color:transparent;}
+  .nm-input{width:100%;margin-top:6px;padding:13px 14px;border-radius:12px;border:1px solid var(--line2);
+    background:var(--card2);color:var(--text);font-family:inherit;font-weight:800;font-size:17px;text-align:center;outline:none;}
+  .nm-input:focus{border-color:var(--accent);}
+  /* leaderboard */
+  .lb-inner{max-width:360px;}
+  .lb-title{font-size:24px!important;background:none!important;color:var(--text)!important;-webkit-text-fill-color:var(--text);}
+  .lb-list{margin:10px 0 4px;max-height:48vh;overflow-y:auto;text-align:left;}
+  .lb-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;background:var(--card2);margin-bottom:7px;}
+  .lb-row.hl{background:linear-gradient(135deg,#2a2550,#23305a);box-shadow:0 0 0 1px var(--accent);}
+  .lb-row .lb-rank{font-weight:900;font-size:18px;width:34px;text-align:center;flex:0 0 auto;}
+  .lb-row .lb-name{flex:1;font-weight:800;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .lb-row .lb-lvl{font-size:11px;font-weight:900;color:var(--accent2);background:rgba(124,92,252,.18);padding:2px 8px;border-radius:7px;flex:0 0 auto;}
+  .lb-row .lb-score{font-weight:900;font-size:18px;color:#ffd36b;flex:0 0 auto;min-width:46px;text-align:right;}
+  .lb-empty{color:var(--muted);font-weight:700;padding:24px 6px;}
+  .footer-note{text-align:center;color:var(--muted);font-size:12px;font-weight:700;margin-top:18px;}
+</style>
+</head>
+<body>
+<div id="fx"></div>
+<div class="wrap">
+
+  <!-- ============ HOME ============ -->
+  <div id="home">
+    <div class="appbar">
+      <div class="brand">
+        <svg viewBox="0 0 120 120" width="40" xmlns="http://www.w3.org/2000/svg" aria-label="Growie">
+          <path d="M60 32 C60 16 74 20 74 10" fill="none" stroke="#16293b" stroke-width="5" stroke-linecap="round"/>
+          <circle cx="75" cy="9" r="9" fill="#f6c722"/>
+          <rect x="8" y="58" width="14" height="20" rx="6" fill="#16293b"/>
+          <rect x="98" y="58" width="14" height="20" rx="6" fill="#16293b"/>
+          <rect x="18" y="32" width="84" height="74" rx="20" fill="#ec4d6e"/>
+          <rect x="32" y="46" width="56" height="46" rx="14" fill="#ffffff"/>
+          <path d="M43,70 C41,54 59,54 57,70 Q50,63.5 43,70 Z" fill="#16293b"/><circle cx="52" cy="58.5" r="2.4" fill="#fff"/>
+          <path d="M63,70 C61,54 79,54 77,70 Q70,63.5 63,70 Z" fill="#16293b"/><circle cx="72" cy="58.5" r="2.4" fill="#fff"/>
+          <path d="M49 78 Q60 87 71 78" fill="none" stroke="#16293b" stroke-width="4.5" stroke-linecap="round"/>
+        </svg>
+        <div class="nm">Klok<span>Spel</span></div>
+      </div>
+      <div class="chips">
+        <div class="chip"><span class="ic">⭐</span><span id="totStars">0</span></div>
+        <div class="chip"><span class="ic">🏆</span><span id="curLvlBadge">1</span></div>
+      </div>
+    </div>
+
+    <div class="hero">
+      <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M60 32 C60 16 74 20 74 10" fill="none" stroke="#16293b" stroke-width="5" stroke-linecap="round"/>
+        <circle cx="75" cy="9" r="9" fill="#f6c722"/>
+        <rect x="8" y="58" width="14" height="20" rx="6" fill="#16293b"/>
+        <rect x="98" y="58" width="14" height="20" rx="6" fill="#16293b"/>
+        <rect x="18" y="32" width="84" height="74" rx="20" fill="#ec4d6e"/>
+        <rect x="32" y="46" width="56" height="46" rx="14" fill="#ffffff"/>
+        <path d="M43,70 C41,54 59,54 57,70 Q50,63.5 43,70 Z" fill="#16293b"/><circle cx="52" cy="58.5" r="2.4" fill="#fff"/>
+        <path d="M63,70 C61,54 79,54 77,70 Q70,63.5 63,70 Z" fill="#16293b"/><circle cx="72" cy="58.5" r="2.4" fill="#fff"/>
+        <path d="M49 78 Q60 87 71 78" fill="none" stroke="#16293b" stroke-width="4.5" stroke-linecap="round"/>
+      </svg>
+      <div class="bubble">Hoi! Ik ben <b>Growie</b>. Kies een spel, je level en hoe je wilt oefenen — druk dan op <b>Start</b>!</div>
+    </div>
+
+    <div class="sec"><span class="step">1</span>Kies een spel</div>
+    <div class="modes">
+      <button class="mode m-lees" data-mode="lees" onclick="selectMode('lees')"><span class="m-ico">👀</span><span class="m-ttl">Aflezen</span><span class="m-sub">Lees de klok af</span></button>
+      <button class="mode m-zet" data-mode="zet" onclick="selectMode('zet')"><span class="m-ico">✋</span><span class="m-ttl">Zetten</span><span class="m-sub">Sleep de wijzers</span></button>
+      <button class="mode m-match" data-mode="match" onclick="selectMode('match')"><span class="m-ico">🔗</span><span class="m-ttl">Koppelen</span><span class="m-sub">Zoek de paren</span></button>
+      <button class="mode m-vrij" data-mode="vrij" onclick="selectMode('vrij')"><span class="m-ico">🧪</span><span class="m-ttl">Vrij</span><span class="m-sub">Ontdek zelf</span></button>
+    </div>
+
+    <button class="challenge-banner" data-mode="challenge" onclick="selectMode('challenge')">
+      <span class="cb-ico">⏱️</span>
+      <span class="cb-txt"><b>Challenge</b><small>45 seconden · zoveel mogelijk goed!</small></span>
+      <span class="cb-go">▶</span>
+    </button>
+
+    <div class="sec"><span class="step">2</span>Kies je level</div>
+    <div class="levels" id="levelGrid"></div>
+    <div class="lvlinfo" id="lvlInfo"></div>
+
+    <div class="sec"><span class="step">3</span>Hoe wil je oefenen?</div>
+    <div class="setcard">
+      <div class="setrow">
+        <div class="setlbl">Antwoorden<small>In cijfers of in woorden</small></div>
+        <div class="seg" id="segFormat">
+          <button class="seg-btn" data-f="digi" onclick="setFormat('digi')">12:30</button>
+          <button class="seg-btn" data-f="woord" onclick="setFormat('woord')">half &eacute;&eacute;n</button>
+        </div>
+      </div>
+      <div class="setrow">
+        <div class="setlbl">Hulp: minuten op de klok<small>Toon de minuut-getallen (5,10,15…)</small></div>
+        <button class="switch" id="swMin" onclick="toggleMin()"><span class="knob"></span></button>
+      </div>
+    </div>
+
+    <button class="startbtn disabled" id="startBtn" onclick="tryStart()">▶ Kies eerst een spel</button>
+    <button class="lb-btn" onclick="openLeaderboard()"><span>🏆</span> Leaderboard</button>
+
+    <p class="credit">🎨 <b>Growie</b> is bedacht en getekend door <b>Nora Gloudemans</b></p>
+    <p class="footer-note">Voortgang wordt op dit apparaat bewaard. 💜</p>
+  </div>
+
+  <!-- ============ SPEELSCHERM ============ -->
+  <div id="play" class="hidden">
+    <div class="play-card">
+      <div class="play-head">
+        <button class="iconbtn" onclick="goHome()">←</button>
+        <div class="play-title" id="modeTitle">Spelen</div>
+        <div class="roundchip" id="roundBadge">1/8</div>
+      </div>
+      <div class="hud hidden" id="hud">
+        <span class="hud-it hud-time" id="hudTime">⏱ 45</span>
+        <span class="hud-it" id="hudScore">⭐ 0</span>
+        <span class="hud-it" id="hudStreak">🔥 0</span>
+      </div>
+      <div class="prog"><i id="progBar"></i></div>
+      <div class="vraag" id="vraag"></div>
+
+      <div id="stage"></div>
+
+      <div class="buddy" id="buddy"><div class="bud-ant"></div><div class="bud-head"><span id="budFace">🙂</span></div></div>
+      <div class="feedback" id="feedback"></div>
+      <div class="hint" id="hint"></div>
+      <div class="explain hidden" id="explain"></div>
+
+      <div id="controls"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* =========================================================
+   GEGEVENS & VOORTGANG
+========================================================= */
+const LEVELS = [
+  {n:1, naam:"Hele uren", stappen:[0], korte:"hele",
+   voorb:"3:00 · 7:00 · 12:00",
+   uitleg:"Alleen hele uren. De lange (rode) wijzer staat altijd op de 12. Je hoeft alleen de korte (blauwe) wijzer te lezen.",
+   kunnen:"Tellen tot 12 en de korte wijzer aflezen."},
+  {n:2, naam:"Halve uren", stappen:[0,30], korte:"halve",
+   voorb:"3:00 · 3:30 (half 4) · 8:30",
+   uitleg:"Hele én halve uren. Bij een half uur wijst de lange wijzer naar de 6 en staat de korte wijzer tussen twee cijfers.",
+   kunnen:"Herkennen dat 'half' = lange wijzer op de 6."},
+  {n:3, naam:"Kwartieren", stappen:[0,15,30,45], korte:"kwart",
+   voorb:"3:15 (kwart over 3) · 3:45 (kwart voor 4)",
+   uitleg:"Kwart over, half en kwart voor. De lange wijzer staat op de 3, 6 of 9.",
+   kunnen:"Kwart over en kwart voor uit elkaar houden."},
+  {n:4, naam:"Vijf minuten", stappen:[0,5,10,15,20,25,30,35,40,45,50,55], korte:"5 min",
+   voorb:"3:05 · 3:20 · 3:55",
+   uitleg:"Tijden in stappen van 5 minuten. Elk groot streepje (cijfer) is 5 minuten verder.",
+   kunnen:"Met sprongen van 5 tellen rond de klok."},
+  {n:5, naam:"Alle minuten", stappen:Array.from({length:60},(_,i)=>i), korte:"alles",
+   voorb:"3:07 · 3:23 · 3:48",
+   uitleg:"Élke minuut kan voorkomen, ook tussen de streepjes in. Dit is de moeilijkste!",
+   kunnen:"De minuten precies aflezen, ook tussen de cijfers."},
+];
+
+let state = load();
+function load(){
+  try{
+    const s = JSON.parse(localStorage.getItem('klok_v2'));
+    if(s && typeof s.totStars==='number') return s;
+  }catch(e){}
+  return {totStars:0, level:1, done:{}, format:'digi', showMin:true, scores:[], lastName:''};
+}
+function save(){ try{localStorage.setItem('klok_v2',JSON.stringify(state));}catch(e){} }
+
+/* =========================================================
+   TIJD HELPERS
+========================================================= */
+function randomInt(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
+function randomTime(lvl){
+  const L = LEVELS[lvl-1];
+  return {h:randomInt(1,12), m:L.stappen[randomInt(0,L.stappen.length-1)]};
+}
+function digitalStr(h,m){ return String(h)+":"+String(m).padStart(2,'0'); }
+function woordTijd(h,m){
+  const volgU = h===12?1:h+1;
+  const namen = ["twaalf","één","twee","drie","vier","vijf","zes","zeven","acht","negen","tien","elf","twaalf"];
+  const naam = x => namen[x%12===0?12:x%12];
+  if(m===0) return naam(h)+" uur";
+  if(m===15) return "kwart over "+naam(h);
+  if(m===30) return "half "+naam(volgU);
+  if(m===45) return "kwart voor "+naam(volgU);
+  if(m<15)  return m+" over "+naam(h);
+  if(m<30)  return (30-m)+" voor half "+naam(volgU);
+  if(m<45)  return (m-30)+" over half "+naam(volgU);
+  return (60-m)+" voor "+naam(volgU);
+}
+/* antwoord in gekozen vorm */
+function fmt(h,m){ return state.format==='woord' ? woordTijd(h,m) : digitalStr(h,m); }
+
+/* =========================================================
+   KLOK TEKENEN (SVG)
+========================================================= */
+const NS="http://www.w3.org/2000/svg";
+function el(tag,attrs){const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);return e;}
+function buildClock(opts){
+  const size = opts.size||280, k=size/280, c=size/2, R=c-6*k;
+  const small = size<140;
+  const svg = el('svg',{viewBox:`0 0 ${size} ${size}`, class:'clock'});
+  svg.appendChild(el('circle',{cx:c,cy:c,r:R,fill:'#1a2236','stroke':'#39456a','stroke-width':5*k}));
+  svg.appendChild(el('circle',{cx:c,cy:c,r:R-4*k,fill:'none',stroke:'#28324e','stroke-width':2*k}));
+  for(let i=0;i<60;i++){
+    const a=(i/60)*2*Math.PI - Math.PI/2;
+    const big=i%5===0;
+    if(small && !big) continue;
+    const r1=R-(big?16:9)*k, r2=R-4*k;
+    svg.appendChild(el('line',{x1:c+Math.cos(a)*r1,y1:c+Math.sin(a)*r1,x2:c+Math.cos(a)*r2,y2:c+Math.sin(a)*r2,
+      stroke: big?'#cdd5e8':'#5a657f','stroke-width':(big?3.5:1.6)*k,'stroke-linecap':'round'}));
+  }
+  for(let i=1;i<=12;i++){
+    if(small && i%3!==0) continue;
+    const a=(i/12)*2*Math.PI - Math.PI/2;
+    const t=el('text',{x:c+Math.cos(a)*(R-37*k),y:c+Math.sin(a)*(R-37*k)+1*k,'text-anchor':'middle','dominant-baseline':'central',
+      'font-size':27*k,'font-weight':800,fill:'#e9eef9','font-family':'Nunito, sans-serif'});
+    t.textContent=i; svg.appendChild(t);
+  }
+  if(opts.showMinutes && !small){
+    for(let i=0;i<60;i+=5){
+      const a=(i/60)*2*Math.PI - Math.PI/2;
+      const t=el('text',{x:c+Math.cos(a)*(R-60*k),y:c+Math.sin(a)*(R-60*k)+1*k,'text-anchor':'middle','dominant-baseline':'central',
+        'font-size':12.5*k,'font-weight':800,fill:'#ff8a83','font-family':'Nunito, sans-serif'});
+      t.textContent=i; svg.appendChild(t);
+    }
+  }
+  const hAng=((opts.h%12)+opts.m/60)/12*2*Math.PI - Math.PI/2;
+  const mAng=(opts.m/60)*2*Math.PI - Math.PI/2;
+  const hLen=R*0.50, mLen=R*0.78;
+  const hourHand=el('line',{x1:c,y1:c,x2:c+Math.cos(hAng)*hLen,y2:c+Math.sin(hAng)*hLen,stroke:'#4aa3ff','stroke-width':11*k,'stroke-linecap':'round'});
+  const minHand=el('line',{x1:c,y1:c,x2:c+Math.cos(mAng)*mLen,y2:c+Math.sin(mAng)*mLen,stroke:'#ff6b62','stroke-width':7*k,'stroke-linecap':'round'});
+  hourHand.dataset.hand='hour'; minHand.dataset.hand='min';
+  svg.appendChild(hourHand); svg.appendChild(minHand);
+  svg.appendChild(el('circle',{cx:c,cy:c,r:9*k,fill:'#e9eef9'}));
+  svg.appendChild(el('circle',{cx:c,cy:c,r:4*k,fill:'#1a2236'}));
+  svg._c=c; svg._R=R;
+  return svg;
+}
+
+/* =========================================================
+   HOME
+========================================================= */
+const $=id=>document.getElementById(id);
+function renderHome(){
+  $('home').classList.remove('hidden');
+  $('play').classList.add('hidden');
+  $('totStars').textContent=state.totStars;
+  $('curLvlBadge').textContent=state.level;
+  document.querySelectorAll('#segFormat .seg-btn').forEach(b=>b.classList.toggle('on',b.dataset.f===state.format));
+  $('swMin').classList.toggle('on',!!state.showMin);
+  const g=$('levelGrid'); g.innerHTML='';
+  LEVELS.forEach(L=>{
+    const d=document.createElement('div'); d.className='lvl';
+    if(L.n===state.level) d.classList.add('cur');
+    const stars=state.done[L.n]||0;
+    if(stars>0) d.classList.add('done');
+    d.innerHTML=`${L.n}<small>${L.korte}</small>`+(stars>0?`<span class="star">⭐</span>`:'');
+    d.onclick=()=>{ state.level=L.n; save(); renderHome(); };
+    g.appendChild(d);
+  });
+  const L=LEVELS[state.level-1];
+  $('lvlInfo').innerHTML=
+    '<div class="li-head"><span class="li-num">Level '+L.n+'</span> '+L.naam+'</div>'+
+    '<div class="li-ex">Voorbeelden: '+L.voorb+'</div>'+
+    '<div class="li-desc">'+L.uitleg+'</div>'+
+    '<div class="li-can"><b>Wat je moet kunnen:</b> '+L.kunnen+'</div>';
+}
+function goHome(){ stopAll(); renderHome(); }
+function setFormat(f){ state.format=f; save();
+  document.querySelectorAll('#segFormat .seg-btn').forEach(b=>b.classList.toggle('on',b.dataset.f===f)); }
+function toggleMin(){ state.showMin=!state.showMin; save(); $('swMin').classList.toggle('on',state.showMin); }
+
+/* =========================================================
+   SPEL-LOGICA
+========================================================= */
+let game=null;
+let selMode=null;
+const MODE_TITELS={lees:'Aflezen',zet:'Klok zetten',match:'Koppelen',vrij:'Vrij spelen',challenge:'Challenge ⏱️'};
+const START_LABEL={lees:'▶ Start: Aflezen',zet:'▶ Start: Klok zetten',match:'▶ Start: Koppelen',vrij:'▶ Start: Vrij spelen',challenge:'▶ Start: Challenge ⏱️'};
+function selectMode(mode){
+  selMode=mode;
+  document.querySelectorAll('[data-mode]').forEach(elm=>elm.classList.toggle('sel', elm.dataset.mode===mode));
+  const sb=$('startBtn'); sb.classList.remove('disabled'); sb.textContent=START_LABEL[mode]||'▶ Start';
+}
+function tryStart(){ if(selMode) launchMode(selMode); }
+function launchMode(mode){
+  $('home').classList.add('hidden');
+  $('play').classList.remove('hidden');
+  $('modeTitle').textContent=MODE_TITELS[mode]||'Spelen';
+  $('hud').classList.add('hidden');
+  $('roundBadge').classList.remove('hidden');
+  $('progBar').parentElement.classList.remove('low');
+  if(mode==='challenge'){ startChallenge(); return; }
+  game={mode, round:0, total:(mode==='match'?4:8), correct:0, lvl:state.level, locked:false};
+  nextRound();
+}
+function stopAll(){
+  if(game&&game.timer) clearInterval(game.timer);
+  game=null;
+  const hud=$('hud'); if(hud) hud.classList.add('hidden');
+  const rb=$('roundBadge'); if(rb) rb.classList.remove('hidden');
+  const pb=$('progBar'); if(pb&&pb.parentElement) pb.parentElement.classList.remove('low');
+}
+
+/* =========================================================
+   CHALLENGE (op tijd) + LEADERBOARD
+========================================================= */
+const CH_TIME=45;
+function startChallenge(){
+  $('hud').classList.remove('hidden');
+  $('roundBadge').classList.add('hidden');
+  game={mode:'challenge', lvl:state.level, score:0, streak:0, locked:false, ended:false, endAt:Date.now()+CH_TIME*1000};
+  updateHud();
+  game.timer=setInterval(challengeTick,100);
+  nextChallengeQ();
+}
+function challengeTick(){
+  if(!game||game.ended) return;
+  const left=Math.max(0,(game.endAt-Date.now())/1000);
+  $('progBar').style.width=(left/CH_TIME*100)+'%';
+  $('hudTime').textContent='⏱ '+Math.ceil(left);
+  $('progBar').parentElement.classList.toggle('low', left<=10);
+  if(left<=0) endChallenge();
+}
+function updateHud(){ $('hudScore').textContent='⭐ '+game.score; $('hudStreak').textContent='🔥 '+game.streak; }
+function nextChallengeQ(){
+  if(!game||game.ended) return;
+  game.locked=false;
+  $('feedback').textContent=''; $('feedback').className='feedback';
+  $('hint').textContent='';
+  hideExplain();
+  $('vraag').textContent='Hoe laat is het?';
+  const t=randomTime(game.lvl); game.cur=t;
+  const stage=$('stage'); stage.innerHTML='';
+  stage.appendChild(wrapClock(buildClock({h:t.h,m:t.m,showMinutes:state.showMin})));
+  const correct=fmt(t.h,t.m);
+  const set=new Set([correct]); let guard=0;
+  while(set.size<4 && guard++<200){ const d=randomTime(game.lvl); set.add(fmt(d.h,d.m)); }
+  const arr=shuffle([...set]);
+  const ctr=$('controls'); ctr.innerHTML='';
+  const grid=document.createElement('div'); grid.className='opties'+(state.format==='woord'?' words':'');
+  arr.forEach(opt=>{
+    const b=document.createElement('button'); b.className='opt'; b.textContent=opt;
+    b.onclick=()=>chAnswer(opt,correct,b,grid);
+    grid.appendChild(b);
+  });
+  ctr.appendChild(grid);
+}
+function chAnswer(opt,correct,b,grid){
+  if(!game||game.locked||game.ended) return;
+  game.locked=true;
+  if(opt===correct){
+    b.classList.add('goed');
+    game.streak++;
+    game.score += 10 + Math.min(game.streak-1,5)*2;
+    setBuddy('😄'); miniStar(); updateHud();
+    setTimeout(nextChallengeQ,300);
+  }else{
+    b.classList.add('fout'); game.streak=0; updateHud(); setBuddy('🤔');
+    [...grid.children].forEach(c=>{if(c.textContent===correct)c.classList.add('goed');});
+    setTimeout(nextChallengeQ,650);
+  }
+}
+function endChallenge(){
+  if(!game||game.ended) return;
+  game.ended=true;
+  clearInterval(game.timer);
+  $('progBar').style.width='0%';
+  $('hudTime').textContent='⏱ 0';
+  document.querySelectorAll('.opt').forEach(o=>o.classList.add('disabled'));
+  confetti(40);
+  showChallengeResult(game.score, game.lvl);
+}
+function escapeHtml(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function showChallengeResult(score,lvl){
+  const m=document.createElement('div'); m.className='modal';
+  const nm=escapeHtml(state.lastName||'');
+  m.innerHTML='<div class="inner"><div class="burst"></div>'+
+    '<h2>Tijd voorbij!</h2><p>Jouw score</p><div class="bigscore">'+score+'</div>'+
+    '<input id="nmeInput" class="nm-input" maxlength="12" placeholder="Je naam" value="'+nm+'">'+
+    '<button id="saveScore">Bewaar in leaderboard 🏆</button>'+
+    '<button id="skipScore" class="ghost">Overslaan</button></div>';
+  document.body.appendChild(m);
+  const inp=$('nmeInput'); setTimeout(()=>inp.focus(),50);
+  $('saveScore').onclick=()=>{
+    let naam=(inp.value||'').trim().slice(0,12)||'Speler';
+    state.lastName=naam; addScore(naam,score,lvl); m.remove(); openLeaderboard();
+  };
+  $('skipScore').onclick=()=>{ m.remove(); goHome(); };
+}
+function addScore(naam,score,lvl){
+  if(!state.scores) state.scores=[];
+  const entry={naam,score,lvl,t:Date.now()};
+  state.scores.push(entry);
+  state.scores.sort((a,b)=>b.score-a.score);
+  state.scores=state.scores.slice(0,20);
+  state._last=entry.t;
+  save();
+}
+function openLeaderboard(){
+  const scores=state.scores||[];
+  const m=document.createElement('div'); m.className='modal';
+  let rows='';
+  if(!scores.length){ rows='<div class="lb-empty">Nog geen scores.<br>Speel de Challenge ⏱️ en kom hier te staan!</div>'; }
+  else scores.forEach((s,i)=>{
+    const medal=i===0?'🥇':i===1?'🥈':i===2?'🥉':('#'+(i+1));
+    const hl=(s.t===state._last)?' hl':'';
+    rows+='<div class="lb-row'+hl+'"><span class="lb-rank">'+medal+'</span>'+
+      '<span class="lb-name">'+escapeHtml(s.naam)+'</span>'+
+      '<span class="lb-lvl">L'+s.lvl+'</span>'+
+      '<span class="lb-score">'+s.score+'</span></div>';
+  });
+  m.innerHTML='<div class="inner lb-inner"><h2 class="lb-title">🏆 Leaderboard</h2>'+
+    '<div class="lb-list">'+rows+'</div><button id="lbClose">Sluiten</button></div>';
+  document.body.appendChild(m);
+  $('lbClose').onclick=()=>{ m.remove(); goHome(); };
+}
+function nextRound(){
+  if(!game) return;
+  game.locked=false;
+  $('feedback').textContent=''; $('feedback').className='feedback';
+  $('hint').textContent='';
+  hideExplain();
+  game.round++;
+  if(game.round>game.total){ return finishGame(); }
+  setBuddy('🙂');
+  $('roundBadge').textContent = game.mode==='vrij' ? 'vrij' : `${game.round}/${game.total}`;
+  $('progBar').style.width=((game.round-1)/game.total*100)+'%';
+  if(game.mode==='lees') roundLees();
+  else if(game.mode==='zet') roundZet();
+  else if(game.mode==='match') roundMatch();
+  else if(game.mode==='vrij') roundVrij();
+}
+
+/* ---------- AFLEZEN ---------- */
+function roundLees(){
+  const t=randomTime(game.lvl); game.cur=t;
+  $('vraag').textContent='Hoe laat is het?';
+  const stage=$('stage'); stage.innerHTML='';
+  stage.appendChild(wrapClock(buildClock({h:t.h,m:t.m,showMinutes:state.showMin})));
+  const correct=fmt(t.h,t.m);
+  const set=new Set([correct]);
+  let guard=0;
+  while(set.size<4 && guard++<200){ const d=randomTime(game.lvl); set.add(fmt(d.h,d.m)); }
+  const arr=shuffle([...set]);
+  const ctr=$('controls'); ctr.innerHTML='';
+  const grid=document.createElement('div'); grid.className='opties'+(state.format==='woord'?' words':'');
+  arr.forEach(opt=>{
+    const b=document.createElement('button'); b.className='opt'; b.textContent=opt;
+    b.onclick=()=>{
+      if(game.locked) return;
+      game.locked=true;
+      const ok=(opt===correct);
+      if(ok){ b.classList.add('goed'); game.correct++; setBuddy('😄'); miniStar(); confetti(8);
+        $('feedback').textContent=pick(['Goed zo! 🎉','Top! 🌟','Helemaal goed! 👏','Knap gedaan! 💪']); $('feedback').className='feedback goed'; }
+      else{ b.classList.add('fout'); setBuddy('🤔');
+        [...grid.children].forEach(c=>{if(c.textContent===correct)c.classList.add('goed');});
+        $('feedback').textContent='Het juiste antwoord is '+correct; $('feedback').className='feedback fout'; }
+      grid.querySelectorAll('.opt').forEach(o=>o.classList.add('disabled'));
+      showExplainNext(game.cur);
+    };
+    grid.appendChild(b);
+  });
+  ctr.appendChild(grid);
+}
+
+/* ---------- KLOK ZETTEN ---------- */
+function roundZet(){
+  const t=randomTime(game.lvl); game.cur=t; game.user={h:randomInt(1,12),m:0};
+  if(game.user.h===t.h) game.user.h=(t.h%12)+1;
+  $('vraag').innerHTML='Zet de klok op <span class="tijdtekst">'+fmt(t.h,t.m)+'</span>';
+  drawSettable();
+  const ctr=$('controls'); ctr.innerHTML='';
+  const row=document.createElement('div'); row.className='actie';
+  const help=document.createElement('button'); help.className='a-help'; help.textContent='💡';
+  help.onclick=()=>{ $('hint').textContent='Blauw = uur, rood = minuten. Sleep de punt van een wijzer.'; };
+  const check=document.createElement('button'); check.className='a-check'; check.textContent='✓ Controleer';
+  check.onclick=()=>{
+    if(game.locked) return;
+    if(game.user.h===t.h && game.user.m===t.m){
+      game.locked=true; game.correct++; setBuddy('😄'); miniStar(); confetti(8);
+      $('feedback').textContent=pick(['Goed gezet! 🎉','Top! 🌟','Helemaal goed! 👏']); $('feedback').className='feedback goed';
+      showExplainNext(t);
+    } else {
+      setBuddy('🤔'); $('feedback').textContent='Nog niet helemaal'; $('feedback').className='feedback fout';
+      $('hint').textContent='Het moet '+fmt(t.h,t.m)+' worden. Kijk goed naar de wijzers en probeer opnieuw.';
+    }
+  };
+  row.appendChild(help); row.appendChild(check);
+  ctr.appendChild(row);
+}
+function setHands(svg,h,m){
+  const c=svg._c,R=svg._R;
+  const hAng=((h%12)+m/60)/12*2*Math.PI-Math.PI/2;
+  const mAng=(m/60)*2*Math.PI-Math.PI/2;
+  const hLen=R*0.50,mLen=R*0.78;
+  const hh=svg.querySelector('[data-hand="hour"]'), mm=svg.querySelector('[data-hand="min"]');
+  hh.setAttribute('x2',c+Math.cos(hAng)*hLen); hh.setAttribute('y2',c+Math.sin(hAng)*hLen);
+  mm.setAttribute('x2',c+Math.cos(mAng)*mLen); mm.setAttribute('y2',c+Math.sin(mAng)*mLen);
+}
+function drawSettable(){
+  const stage=$('stage'); stage.innerHTML='';
+  const svg=buildClock({h:game.user.h,m:game.user.m,showMinutes:state.showMin});
+  enableDrag(svg);
+  stage.appendChild(wrapClock(svg));
+  if(game && game.onChange) game.onChange();
+}
+function enableDrag(svg){
+  const c=svg._c; let active=null;
+  function pt(ev){ const r=svg.getBoundingClientRect(); return {x:(ev.clientX-r.left)/r.width*c*2, y:(ev.clientY-r.top)/r.height*c*2}; }
+  function pick(p){
+    const ang=Math.atan2(p.y-c,p.x-c);
+    const a=v=>Math.atan2(Math.sin(v),Math.cos(v));
+    const hAng=a(((game.user.h%12)+game.user.m/60)/12*2*Math.PI-Math.PI/2);
+    const mAng=a((game.user.m/60)*2*Math.PI-Math.PI/2);
+    const dist=(x,y)=>{let d=Math.abs(x-y)%(2*Math.PI);return Math.min(d,2*Math.PI-d);};
+    return dist(ang,hAng)<dist(ang,mAng)?'hour':'min';
+  }
+  function apply(p){
+    let deg=(Math.atan2(p.y-c,p.x-c)*180/Math.PI+90+360)%360;
+    if(active==='hour'){ let h=Math.round(deg/30); if(h===0)h=12; game.user.h=h; }
+    else{ const L=LEVELS[game.lvl-1]; let m=deg/360*60, best=L.stappen[0],bd=999;
+      L.stappen.forEach(s=>{let d=Math.min(Math.abs(s-m),60-Math.abs(s-m)); if(d<bd){bd=d;best=s;}}); game.user.m=best; }
+    setHands(svg,game.user.h,game.user.m);
+    if(game && game.onChange) game.onChange();
+  }
+  svg.addEventListener('pointerdown',e=>{e.preventDefault(); active=pick(pt(e)); try{svg.setPointerCapture(e.pointerId);}catch(_){}; apply(pt(e));});
+  svg.addEventListener('pointermove',e=>{ if(active){e.preventDefault(); apply(pt(e));} });
+  svg.addEventListener('pointerup',()=>{active=null;});
+  svg.addEventListener('pointercancel',()=>{active=null;});
+}
+
+/* ---------- KOPPELEN ---------- */
+function roundMatch(){
+  $('vraag').textContent='Welke horen bij elkaar?';
+  const stage=$('stage'); stage.innerHTML=''; $('controls').innerHTML='';
+  const pairs=[]; const used=new Set();
+  while(pairs.length<4){ const t=randomTime(game.lvl); const key=t.h+'-'+t.m; if(used.has(key))continue; used.add(key); pairs.push(t); }
+  game.matchSel=null; game.matchDone=0;
+  const left=shuffle(pairs.map((t,i)=>({t,i,type:'klok'})));
+  const right=shuffle(pairs.map((t,i)=>({t,i,type:'tijd'})));
+  const grid=document.createElement('div'); grid.className='match-grid';
+  for(let r=0;r<4;r++){ grid.appendChild(makeMatchCard(left[r])); grid.appendChild(makeMatchCard(right[r])); }
+  stage.appendChild(grid);
+  $('hint').textContent='Tik op een klok en daarna op de juiste tijd.';
+}
+function makeMatchCard(item){
+  const d=document.createElement('div'); d.className='mcard'; d.dataset.idx=item.i; d.dataset.type=item.type;
+  if(item.type==='klok'){ d.appendChild(buildClock({h:item.t.h,m:item.t.m,showMinutes:false,size:74})); }
+  else if(state.format==='woord'){ const s=document.createElement('span'); s.className='mword'; s.textContent=woordTijd(item.t.h,item.t.m); d.appendChild(s); }
+  else { const s=document.createElement('span'); s.className='digi'; s.textContent=digitalStr(item.t.h,item.t.m); d.appendChild(s); }
+  d.onclick=()=>matchClick(d);
+  return d;
+}
+function matchClick(card){
+  if(card.classList.contains('matched'))return;
+  if(!game.matchSel){
+    if(card.dataset.type!=='klok'){ $('hint').textContent='Begin met een klok 🕐'; return; }
+    game.matchSel=card; card.classList.add('sel'); return;
+  }
+  if(card===game.matchSel){ card.classList.remove('sel'); game.matchSel=null; return; }
+  if(card.dataset.type!=='tijd'){ game.matchSel.classList.remove('sel'); game.matchSel=card; card.classList.add('sel'); return; }
+  if(card.dataset.idx===game.matchSel.dataset.idx){
+    card.classList.add('matched'); game.matchSel.classList.add('matched'); game.matchSel.classList.remove('sel'); game.matchSel=null; game.matchDone++;
+    miniStar(); setBuddy('😄'); $('hint').textContent='Goed zo! 🎉';
+    if(game.matchDone===4){ game.correct++; setTimeout(()=>{ $('feedback').textContent='Alles gekoppeld! 🌟'; $('feedback').className='feedback goed'; confetti(); setTimeout(nextRound,1100);},400); }
+  }else{
+    card.classList.add('fout'); const sel=game.matchSel;
+    setTimeout(()=>{card.classList.remove('fout'); sel.classList.remove('sel');},420);
+    game.matchSel=null; $('hint').textContent='Net niet, probeer een andere. 💪';
+  }
+}
+
+/* ---------- VRIJ SPELEN ---------- */
+function roundVrij(){
+  $('roundBadge').textContent='vrij';
+  $('vraag').textContent='Sleep de wijzers en kijk wat er gebeurt!';
+  game.user={h:3,m:0}; game.lvl=5;
+  drawSettable();
+  const ctr=$('controls'); ctr.innerHTML='';
+  const box=document.createElement('div'); box.className='center';
+  box.innerHTML='<div class="digi" id="vrijDigi">3:00</div><div class="hint" id="vrijWoord" style="margin-top:8px;font-size:18px;color:var(--accent2);font-weight:800;"></div>';
+  ctr.appendChild(box);
+  game.onChange=()=>{ $('vrijDigi').textContent=digitalStr(game.user.h,game.user.m); $('vrijWoord').textContent=woordTijd(game.user.h,game.user.m); };
+  game.onChange();
+  $('progBar').style.width='100%';
+}
+
+/* =========================================================
+   WINNEN / VERLIEZEN
+========================================================= */
+function win(){
+  game.locked=true; game.correct++;
+  $('feedback').textContent=pick(['Goed zo! 🎉','Top! 🌟','Helemaal goed! 👏','Knap gedaan! 💪','Super! ✨']);
+  $('feedback').className='feedback goed';
+  setBuddy('😄'); miniStar(); confetti(10);
+  document.querySelectorAll('.opt').forEach(o=>o.classList.add('disabled'));
+  showExplain(game.cur, true);
+}
+function lose(){
+  $('feedback').textContent=pick(['Bijna! 🤔','Net niet, kijk maar 👀','Oeps! Zo zit het 👇']);
+  $('feedback').className='feedback fout';
+  setBuddy('🤔');
+  if(game.mode==='lees'){ game.locked=true; document.querySelectorAll('.opt').forEach(o=>o.classList.add('disabled')); showExplain(game.cur, true); }
+  else if(game.mode==='zet'){ showExplain(game.cur, false); }
+}
+function pick(a){return a[randomInt(0,a.length-1)];}
+
+/* uitleg: waarom is deze tijd correct? */
+function legUit(h,m){
+  const volg=h===12?1:h+1;
+  const namen=["twaalf","één","twee","drie","vier","vijf","zes","zeven","acht","negen","tien","elf","twaalf"];
+  const naam=x=>namen[x%12===0?12:x%12];
+  let uurZin, minZin, extra='';
+  if(m===0) uurZin='De korte (blauwe) wijzer wijst precies naar de '+h+'.';
+  else uurZin='De korte (blauwe) wijzer staat tussen de '+h+' en de '+volg+', dus het hele uur is '+h+'.';
+  if(m===0) minZin='De lange (rode) wijzer staat op de 12 — dat zijn 0 minuten.';
+  else if(m%5===0){ const p=m/5; minZin='De lange (rode) wijzer staat op de '+p+'. Elk cijfer is 5 minuten, dus '+p+' × 5 = '+m+' minuten.'; }
+  else { const p=Math.floor(m/5); minZin='De lange (rode) wijzer staat net voorbij de '+p+': dat zijn '+m+' minuten.'; }
+  if(m===15) extra='“Kwart over” = 15 minuten voorbij het hele uur (een kwart van de klok rond).';
+  else if(m===30) extra='“Half '+naam(volg)+'” = je bent op de hélft op weg naar '+naam(volg)+' uur (30 minuten).';
+  else if(m===45) extra='“Kwart voor '+naam(volg)+'” = nog 15 minuten, dan is het '+naam(volg)+' uur.';
+  else if(m>0 && m<30) extra='“'+m+' over '+naam(h)+'” = '+m+' minuten ná het hele uur.';
+  else if(m>30) extra='Na de helft tel je naar het vólgende uur toe: nog '+(60-m)+' minuten tot '+naam(volg)+' uur.';
+  return '<div class="ex-line">🕐 '+uurZin+'</div><div class="ex-line">⏱️ '+minZin+'</div>'+(extra?'<div class="ex-line ex-key">💡 '+extra+'</div>':'');
+}
+function hideExplain(){ const ex=$('explain'); if(ex){ ex.classList.add('hidden'); ex.innerHTML=''; } }
+function showExplain(t, withVerder){
+  if(!t) return;
+  const box=$('explain');
+  box.innerHTML='<div class="ex-time">'+digitalStr(t.h,t.m)+'  =  '+woordTijd(t.h,t.m)+'</div>'+legUit(t.h,t.m);
+  box.classList.remove('hidden');
+  if(withVerder){
+    const btn=document.createElement('button'); btn.className='verder-btn'; btn.textContent='Verder ▶';
+    btn.onclick=()=>nextRound();
+    $('controls').appendChild(btn);
+  }
+}
+
+function finishGame(){
+  $('progBar').style.width='100%';
+  const pct=game.correct/game.total;
+  let stars = pct>=0.9?3 : pct>=0.6?2 : 1;
+  state.totStars += stars;
+  if((state.done[game.lvl]||0) < stars) state.done[game.lvl]=stars;
+  if(stars>=2 && game.lvl<5 && state.level===game.lvl) state.level=game.lvl+1;
+  save(); confetti(46);
+  showModal(stars, game.correct, game.total);
+}
+
+/* =========================================================
+   UI HELPERS
+========================================================= */
+function wrapClock(svg){
+  const box=document.createElement('div'); box.className='clock-box';
+  const inner=document.createElement('div'); inner.appendChild(svg);
+  const legend=document.createElement('div'); legend.className='legend';
+  legend.innerHTML='<span><i class="dot" style="background:#3a9bff"></i>uur</span><span><i class="dot" style="background:#ff5a52"></i>minuten</span>';
+  inner.appendChild(legend); box.appendChild(inner); return box;
+}
+function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){const j=randomInt(0,i);[a[i],a[j]]=[a[j],a[i]];}return a;}
+
+/* uitleg: hoe lees je deze tijd af? */
+function uitlegTekst(h,m){
+  const volg = h===12?1:h+1;
+  const digi=digitalStr(h,m), woord=woordTijd(h,m);
+  let s;
+  if(m===0){
+    s='De lange (rode) wijzer staat op de 12, dus we zijn precies op een heel uur. De korte (blauwe) wijzer wijst naar de '+h+'.';
+  } else if(m===15){
+    s='De lange (rode) wijzer staat op de 3. Een kwart rond de klok is 15 minuten, dus <b>kwart over</b>. De korte (blauwe) wijzer is net voorbij de '+h+'.';
+  } else if(m===30){
+    s='De lange (rode) wijzer staat op de 6 — dat is een <b>half</b> uur (30 minuten). De korte (blauwe) wijzer staat halverwege de '+h+' en de '+volg+', en bij "half" tellen we naar het vólgende uur.';
+  } else if(m===45){
+    s='De lange (rode) wijzer staat op de 9, dat is 45 minuten — <b>kwart voor</b>. De korte (blauwe) wijzer is bijna bij de '+volg+'.';
+  } else {
+    s='De lange (rode) wijzer wijst naar <b>'+m+' minuten</b>. Tel vanaf de 12 met sprongen van 5 (elk cijfer = 5 minuten). De korte (blauwe) wijzer is net voorbij de '+h+'.';
+  }
+  return s+' Samen: <b>'+woord+'</b> = <b>'+digi+'</b>.';
+}
+function showExplainNext(t){
+  const ctr=$('controls');
+  const box=document.createElement('div'); box.className='explain';
+  box.innerHTML='<span class="ex-h">💡 Waarom?</span>'+uitlegTekst(t.h,t.m);
+  ctr.appendChild(box);
+  const nb=document.createElement('button'); nb.className='nextbtn'; nb.textContent='Volgende ▶';
+  nb.onclick=()=>nextRound();
+  ctr.appendChild(nb);
+  nb.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function setBuddy(face){
+  const b=$('buddy'), f=$('budFace'); if(!f) return;
+  if(face) f.textContent=face;
+  if(b){ b.classList.remove('bounce'); void b.offsetWidth; b.classList.add('bounce'); }
+}
+function miniStar(){ confetti(8); }
+function confetti(n){
+  n=n||20; const fx=$('fx');
+  const emojis=['⭐','🌟','✨','🎉','💜'];
+  const kleuren=['#7c5cfc','#3a9bff','#2bd47e','#ffc04d','#ff6fb5','#ff7a1a','#46ffa6'];
+  for(let i=0;i<n;i++){
+    let s;
+    if(Math.random()<0.55){ s=document.createElement('div'); s.className='cblock';
+      s.style.background=kleuren[randomInt(0,kleuren.length-1)]; const sz=randomInt(12,24); s.style.width=sz+'px'; s.style.height=sz+'px'; }
+    else { s=document.createElement('div'); s.className='confetti'; s.textContent=emojis[randomInt(0,emojis.length-1)]; s.style.fontSize=randomInt(18,32)+'px'; }
+    s.style.left=randomInt(0,100)+'vw'; s.style.top='-40px'; s.style.animationDuration=(1+Math.random()*1.6)+'s';
+    fx.appendChild(s); setTimeout(()=>s.remove(),2800);
+  }
+}
+function showModal(stars,correct,total){
+  const m=document.createElement('div'); m.className='modal';
+  const starStr='⭐'.repeat(stars)+'☆'.repeat(3-stars);
+  let kop = stars===3?'Geweldig!' : stars===2?'Goed gedaan!' : 'Goed geprobeerd!';
+  let extra='';
+  if(stars>=2 && game.lvl<5) extra='<p class="unlock">🔓 Level '+(game.lvl+1)+' vrijgespeeld!</p>';
+  m.innerHTML='<div class="inner"><div class="burst"></div>'+
+    '<h2>'+kop+'</h2><div class="stars">'+starStr+'</div>'+
+    '<p>Je had <b>'+correct+' van de '+total+'</b> goed.</p>'+extra+
+    '<button id="modalOk">Verder ▶</button></div>';
+  document.body.appendChild(m);
+  $('modalOk').onclick=()=>{ m.remove(); goHome(); };
+}
+
+/* start */
+renderHome();
+</script>
+</body>
+</html>
