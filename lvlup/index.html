@@ -214,6 +214,12 @@
   .chip{background:var(--panel);border:1px solid var(--border);border-radius:20px;padding:6px 13px;font-weight:700;
     font-size:13px;cursor:pointer;color:var(--text)}
   .chip:hover{border-color:var(--accent)}
+  /* keuze-hulp chips onder een coach-bericht */
+  .optchips{display:flex;flex-wrap:wrap;gap:8px;margin:-2px 0 2px 50px}
+  .optchips .chip{background:var(--panel2)}
+  .optchips .chip.eg{border-style:dashed;color:var(--muted)}
+  .optchips .chip.eg:hover{border-color:var(--accent);color:var(--text)}
+  @media(max-width:480px){.optchips{margin-left:0}}
 
   /* Setup / Intake */
   .setup{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:28px}
@@ -744,6 +750,11 @@ MIJN WERK (BELANGRIJK): laat de speler in elke challenge iets CONCREETS maken (e
 <het complete werkstuk dat de speler kan kopiëren>[[/WERK]]
 Gebruik dit blok alleen voor een echt af te leveren werkstuk, niet voor tussenstapjes. Je gewone uitleg en feedback zet je in je bericht eromheen; het [[WERK]]-blok bevat alléén het werkstuk zelf.
 
+KEUZE-HULP (gulden middenweg): mensen vinden open vragen soms lastig. Bied daarom, wanneer het helpt, een paar concrete opties aan — maar houd het altijd open (de speler mag ook gewoon typen). Gebruik hiervoor markers ná je vraag:
+- Bij een keuzevraag met een paar duidelijke antwoorden (bv. een toon, ja/nee, of "kies er één"): [[KEUZES]]optie 1 | optie 2 | optie 3[[/KEUZES]] — dit zijn complete antwoorden; tikken verstuurt ze direct.
+- Bij een open of creatieve vraag waar een leeg veld lastig is: [[VOORBEELDEN]]voorbeeld 1 | voorbeeld 2 | voorbeeld 3[[/VOORBEELDEN]] — dit zijn voorbeeld-antwoorden die de speler in het invoerveld krijgt om aan te passen.
+Gebruik 2 à 4 korte opties, en zet deze blokken alléén wanneer ze de speler echt helpen kiezen — niet bij elke vraag.
+
 Schrijf in het Nederlands en houd berichten compact en interactief.`;
 
 /* ============ DOM ============ */
@@ -1029,6 +1040,7 @@ function startGame(){
 /* ============ RENDER ============ */
 function avatar(role){ return role==="me" ? "🧑‍💻" : COACH[S.coach].emoji; }
 function addMsg(text,role,restoring){
+  if(role!=="me" && !restoring){ text=applyOptions(text); }
   const m=document.createElement("div"); m.className="msg "+(role==="me"?"me":"");
   const av=document.createElement("div"); av.className="av"; av.textContent=avatar(role);
   const b=document.createElement("div"); b.className="bubble"; b.innerHTML=formatText(text);
@@ -1042,6 +1054,7 @@ function addMsg(text,role,restoring){
   chat.scrollTop=chat.scrollHeight;
   if(!restoring){ S.transcript.push({text:text,role:role}); saveState(); }
   if(role!=="me" && voiceOn && !restoring){ speak(text); }
+  if(role!=="me" && !restoring){ renderChips(); }
   return b;
 }
 function esc(s){return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
@@ -1138,6 +1151,37 @@ function renderWorks(flash){
   const sv=$("wpSave"); if(sv) sv.onclick=function(){ const w=S.works[S.works.length-1]; if(!w) return; S.trophies.push({title:w.title,content:$("wpText").value}); saveState(); renderWorks(false); sv.textContent="✓ Bewaard!"; setTimeout(function(){sv.textContent="🏆 Bewaar in trofeeënkast";},1500); };
 })();
 
+/* keuze-hulp: parse [[KEUZES]] (direct versturen) en [[VOORBEELDEN]] (vult invoerveld) */
+let _pendChips=[];
+function applyOptions(text){
+  _pendChips=[];
+  function grab(re,type){
+    const ms=[...text.matchAll(re)];
+    ms.forEach(function(m){ (m[1]||"").split("|").map(function(s){return s.trim();}).filter(Boolean).forEach(function(lbl){ _pendChips.push({type:type,label:lbl}); }); });
+    if(ms.length) text=text.replace(re,"");
+  }
+  grab(/\[\[KEUZES\]\]([\s\S]*?)\[\[\/KEUZES\]\]/g,"send");
+  grab(/\[\[VOORBEELDEN\]\]([\s\S]*?)\[\[\/VOORBEELDEN\]\]/g,"fill");
+  return text.replace(/\n{3,}/g,"\n\n").trim();
+}
+function clearChips(){ document.querySelectorAll(".optchips").forEach(function(e){e.remove();}); }
+function renderChips(){
+  clearChips();
+  if(!_pendChips.length) return;
+  const row=document.createElement("div"); row.className="optchips";
+  _pendChips.forEach(function(o){
+    const c=document.createElement("button"); c.className="chip"+(o.type==="fill"?" eg":""); c.type="button";
+    c.textContent=(o.type==="fill"?"✏️ ":"")+o.label;
+    c.onclick=function(){
+      if(o.type==="send"){ clearChips(); send(o.label); }
+      else { const inp=$("inMsg"); if(inp){ inp.value=o.label; inp.focus(); } clearChips(); }
+    };
+    row.appendChild(c);
+  });
+  chat.appendChild(row); chat.scrollTop=chat.scrollHeight;
+  _pendChips=[];
+}
+
 /* detecteer einde-marker [[FINISH]], strip 'm en toon overwinningsscherm */
 function checkFinish(text){
   if(/\[\[FINISH\]\]/.test(text)){
@@ -1167,6 +1211,7 @@ $("inMsg").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.pre
 document.querySelectorAll(".chip[data-cmd]").forEach(c=>c.onclick=()=>send(c.dataset.cmd));
 
 async function send(text,hidden){
+  clearChips();
   if(!hidden) addMsg(text,"me");
   let payload=text;
   if(S.freeAsk && !hidden){
@@ -1253,7 +1298,7 @@ function demoCycle(){
     "♟️ **Strategische trend:** Agentic AI automatiseert workflows. Slim ingezet bespaart het je team structureel uren per week.",
     "💡 **Nieuwe bouwsteen:** AI-agents koppelen losse stappen aaneen tot één werkende machine."
   );
-  return trend+"\n\n🎯 **DUBBELE QUEST:**\n**Quest A (De Bouwtekening):** Schrijf een prompt die een AI jouw wekelijkse statusupdate laat samenvatten in 3 bullets.\n**Quest B (De AI-Bril):** Welke specifieke taak uit je agenda pak je deze week met AI aan om tijd te winnen?\n\n_Typ je antwoord en ik beoordeel het!_ 🚀";
+  return trend+"\n\n🎯 **DUBBELE QUEST:**\n**Quest A (De Bouwtekening):** Schrijf een prompt die een AI jouw wekelijkse statusupdate laat samenvatten in 3 bullets.\n**Quest B (De AI-Bril):** Welke specifieke taak uit je agenda pak je deze week met AI aan om tijd te winnen?\n\n_Typ je antwoord, of kies hieronder een voorbeeld om aan te passen._ 🚀\n\n[[VOORBEELDEN]]Mijn wekelijkse statusupdate samenvatten | Een lange e-mailthread korter maken | Notulen van ons teamoverleg opstellen[[/VOORBEELDEN]]";
 }
 function demoReply(text){
   const up=text.toUpperCase();
