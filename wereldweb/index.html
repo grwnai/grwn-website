@@ -470,7 +470,7 @@ function drawPoints(){
 
   const labs = nodes.filter(d=>d.vis && (d.type==='var'||hl.has(d.k)||d.k===selCountry||(selVar&&d.type==='choke')));
   const ls=gLbl.selectAll('text').data(labs,d=>d.k);
-  ls.enter().append('text').attr('font-size',13).attr('font-weight',700)
+  ls.enter().append('text').attr('font-size',13).attr('font-weight',700).attr('pointer-events','none')
     .attr('fill','#dfe7ff').attr('paint-order','stroke').attr('stroke','#070b16').attr('stroke-width',3.5)
     .merge(ls).attr('font-size',13).attr('x',d=>d.x+10).attr('y',d=>d.y+4).text(d=> d.type==='var' ? (d.naam.length>20?d.naam.slice(0,19)+'…':d.naam) : lab(d.k));
   ls.exit().remove();
@@ -478,6 +478,7 @@ function drawPoints(){
 
 /* rotatie + sleep */
 svg.call(d3.drag().clickDistance(8)
+  .filter(function(event){ return !event.button && (!event.target || (event.target.tagName||'').toLowerCase()!=='circle'); })
   .on('start',()=>{dragging=true;autoRot=false;clearTimeout(resumeT);})
   .on('drag',(e)=>{ const k=.3; rotation=[rotation[0]+e.dx*k, Math.max(-90,Math.min(90,rotation[1]-e.dy*k)), rotation[2]]; render(); })
   .on('end',()=>{dragging=false;clearTimeout(resumeT);resumeT=setTimeout(()=>{autoRot=true;},2500);}));
