@@ -29,7 +29,11 @@
   .seg button.on{background:var(--accent);color:#06231e;}
   .seg.lvl button.on{background:var(--accent2);color:#0a1030;}
   .layout{display:grid;grid-template-columns:1fr 380px;gap:0;min-height:calc(100vh - 56px);}
-  @media(max-width:880px){.layout{grid-template-columns:1fr;}}
+  @media(max-width:880px){.layout{grid-template-columns:1fr;}
+    .stage{min-height:42vh;}
+    #globe{touch-action:pan-y;}
+    .hint{font-size:11px;padding:4px 10px;}
+  }
   .stage{position:relative;min-height:52vh;display:flex;align-items:center;justify-content:center;overflow:hidden;}
   #globe{display:block;width:100%;height:100%;cursor:grab;touch-action:none;}
   #globe:active{cursor:grabbing;}
@@ -56,6 +60,10 @@
   .scencard .sc-top{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:800;}
   .scencard p{font-size:12.5px;color:var(--muted);line-height:1.5;margin:6px 0 8px;}
   .scencard .sc-go{font-size:12px;font-weight:700;color:var(--accent);}
+  .vsec{margin-top:13px;}
+  .vsec:first-of-type{margin-top:2px;}
+  .vsec .ptitle{margin:0 0 5px;}
+  .vsec p{font-size:14px;line-height:1.6;color:#d6def5;}
   .impact{margin-top:10px;}
   .impact .tag{display:inline-block;font-size:11px;font-weight:800;padding:3px 9px;border-radius:999px;margin:0 5px 6px 0;}
   .tag.hit{background:rgba(255,93,108,.16);color:#ff8a95;border:1px solid rgba(255,93,108,.4);}
@@ -94,11 +102,6 @@
   <div class="top">
     <div class="brand"><span class="dot"></span>Wereldweb <small>· energie</small></div>
     <div class="spacer"></div>
-    <div class="seg lvl" id="lvlSeg">
-      <button data-lvl="kind">Kind</button>
-      <button data-lvl="tiener" class="on">Tiener</button>
-      <button data-lvl="volw">Volwassen</button>
-    </div>
     <div class="seg" id="modeSeg">
       <button data-mode="verken" class="on">🌍 Verken</button>
       <button data-mode="ai">🎯 Scenario's</button>
@@ -214,6 +217,9 @@ const DISRUPTIONS = [
 const VARS = [
   { id:'rusgas', naam:'Russisch gas naar Europa', em:'🔥', ll:C.Rusland, hits:['Duitsland','Italie','Polen','Turkije'], arcs:FLOWS.filter(f=>f.v==='Rusland'&&f.s==='gas'),
     kort:'Europa kocht jarenlang veel aardgas via pijpleidingen uit Rusland — een kwetsbare afhankelijkheid die sinds 2022 razendsnel veranderde.',
+    wat:'Rusland leverde jarenlang een groot deel van het aardgas dat Europa gebruikt om te verwarmen, te koken en fabrieken te laten draaien — via grote pijpleidingen door Oost-Europa. Sinds 2022 is dat sterk afgebouwd, maar de gevoeligheid voor de gasprijs bleef.',
+    waarom:'Gas bepaalt in Europa voor een groot deel de energie- én de stroomprijs (veel centrales draaien op gas). Valt er Russisch gas weg, dan stijgt de prijs van het gas dat er nog wél is — en dat voelt iedereen op de energierekening en in de prijs van producten die veel energie kosten om te maken.',
+    effect:'Hapert de toevoer, dan schiet de gasprijs omhoog: een hogere energierekening, duurdere producten (van brood tot staal) en in het uiterste geval gas op rantsoen voor de industrie. Een koude winter en lege gasopslagen maken het erger; een zachte winter en volle opslagen dempen het.',
     afh:['Hoe koud de winter is (vraag naar verwarming)','Hoe vol de gasopslagen zitten','Capaciteit om LNG per schip te importeren','Alternatieve leveranciers: Noorwegen, Qatar, VS'],
     scenarios:[
       {naam:'Rusland draait het gas volledig dicht', uitleg:'Rusland stopt alle pijpleidinggas, zoals deels gebeurde in 2022. Gas is voor Rusland een drukmiddel: het kan de kraan dichtdraaien bij sancties of een conflict.', seed:'Rusland stopt per direct alle pijpleidinggas naar Europa, midden in de winter.'},
@@ -222,6 +228,9 @@ const VARS = [
     ]},
   { id:'hormuz', naam:'Straat van Hormuz', em:'⚓', ll:CHOKE.Hormuz, hits:['SaoediArabie','VAE','Irak','Koeweit','Qatar','China','India','Japan','ZuidKorea'], arcs:FLOWS.filter(f=>['SaoediArabie','VAE','Irak','Koeweit'].includes(f.v)),
     kort:'Een smalle zeestraat bij de Perzische Golf waar ongeveer een vijfde van alle olie ter wereld doorheen vaart — plus veel LNG.',
+    wat:'Een smalle zeestraat bij de Perzische Golf, op het nauwste punt ongeveer 30 km breed. Ongeveer een vijfde van alle olie ter wereld en veel vloeibaar gas (LNG) vaart hier doorheen, vanuit de Golfstaten naar de rest van de wereld.',
+    waarom:'Er is bijna geen alternatief: de meeste olie uit Saoedi-Arabië, de VAE, Irak, Koeweit en Qatar moet via Hormuz. Eén verstoring raakt daardoor meteen de wereldwijde olieprijs — en olie bepaalt mede wat je aan de pomp betaalt.',
+    effect:'Bij dreiging of sluiting stijgt de olieprijs vaak in dagen fors, omdat de markt schrikt. Tankers varen langzamer of mijden het gebied en verzekeringen worden duurder; aan de pomp en in transportkosten merk je dat het snelst. Vaak is het meer dreiging dan langdurige sluiting — ook Iran zelf heeft belang bij een open straat.',
     afh:['Spanningen met Iran en in de Golfregio','Aanwezigheid van marines die de route bewaken','Beperkte alternatieve pijpleidingen om Hormuz heen','Strategische olievoorraden van landen'],
     scenarios:[
       {naam:'Iran blokkeert of bedreigt de doorvaart', uitleg:'Iran ligt pal aan de Straat van Hormuz en dreigt die bij oplopende spanningen af te sluiten (bijvoorbeeld na een aanval of nieuwe sancties). Tankers durven dan niet meer te varen.', seed:'Iran dreigt de Straat van Hormuz te sluiten of legt zeemijnen; tankers durven niet meer te varen.'},
@@ -230,6 +239,9 @@ const VARS = [
     ]},
   { id:'opec', naam:'OPEC+ olieproductie', em:'🛢️', ll:C.SaoediArabie, hits:['SaoediArabie','VAE','Irak','Koeweit','Rusland'], arcs:FLOWS.filter(f=>f.s==='olie'),
     kort:'OPEC+ (met o.a. Saoedi-Arabië en Rusland) bepaalt samen hoeveel olie er op de markt komt — en stuurt zo de wereldwijde olieprijs.',
+    wat:'OPEC+ is een groep olielanden — waaronder Saoedi-Arabië, de VAE en Irak, en als plus-partner ook Rusland — die samen afspreken hoeveel olie ze oppompen. Samen leveren ze een groot deel van de wereldolie.',
+    waarom:'Door meer of minder te pompen sturen ze het aanbod, en dus de olieprijs. Geen oorlog of ramp nodig: een vergadering en een besluit zijn al genoeg om de prijs te bewegen. Olie werkt door in benzine, diesel en transport, en daarmee in bijna alle prijzen.',
+    effect:'Snijden ze in de productie, dan stijgt de olieprijs en betaal je meer aan de pomp. Pompen ze juist veel, dan daalt de prijs (fijn voor de consument, lastig voor producenten). Het effect is meestal geleidelijk en deels voorspelbaar — de markt kijkt mee naar elke OPEC+-vergadering.',
     afh:['Productieafspraken binnen OPEC+','Wereldwijde vraag naar olie','Reserve-capaciteit (spare capacity)','Verhouding Saoedi-Arabië, Rusland en de VS'],
     scenarios:[
       {naam:'OPEC+ snijdt fors in de productie', uitleg:'OPEC+ (Saoedi-Arabië, Rusland e.a.) spreekt af minder olie te pompen om de prijs op te drijven, zoals al meermaals gebeurde. Minder aanbod betekent een duurdere prijs.', seed:'OPEC+ besluit de olieproductie flink te verlagen om de prijs op te drijven.'},
@@ -238,6 +250,9 @@ const VARS = [
     ]},
   { id:'suez', naam:'Suez & Bab-el-Mandeb', em:'🚢', ll:CHOKE.Suez, hits:['Italie','Duitsland','India','China'], arcs:[{v:'Qatar',n:'Italie',s:'gas'},{v:'Qatar',n:'Duitsland',s:'gas'}],
     kort:'De korte zeeroute tussen Europa en Azië — cruciaal voor olie, LNG én vrijwel alle handel tussen die werelddelen.',
+    wat:'De korte zeeroute tussen Europa en Azië, via het Suezkanaal in Egypte en de zee-engte Bab-el-Mandeb. Hierlangs gaat een groot deel van de handel tussen beide werelddelen: olie en LNG, maar ook kleding, elektronica en onderdelen.',
+    waarom:'Het is vooral een tijd- en kostenroute, geen kraan die je dichtdraait. Het alternatief — omvaren om heel Afrika — kost één à twee weken extra per schip. Dat maakt vervoer duurder en leveringen onbetrouwbaarder, precies waar een handels- en havenland als Nederland gevoelig voor is.',
+    effect:'Bij blokkade of aanvallen varen rederijen om Afrika: langere levertijden, hogere vrachtkosten en duurdere verzekeringen. Geen totale tekorten, maar wel prijsdruk en vertraging — van brandstof tot spullen uit Azië. Hoe langer het duurt, hoe meer het in de winkelprijzen kruipt.',
     afh:['Veiligheid in de Rode Zee (o.a. Houthi-aanvallen)','Verzekeringskosten voor schepen','Capaciteit om om Afrika heen te varen','Spanningen in het Midden-Oosten'],
     scenarios:[
       {naam:'Aanvallen sluiten de Rode Zee de facto', uitleg:'Aanvallen op schepen (zoals de Houthi-aanvallen vanaf 2023) maken de route te gevaarlijk. Rederijen varen dan om heel Afrika: weken langer en flink duurder.', seed:'Aanhoudende aanvallen maken de Rode Zee onveilig; schepen mijden Suez en varen om heel Afrika.'},
@@ -245,6 +260,9 @@ const VARS = [
     ]},
   { id:'qatarlng', naam:'Qatar LNG', em:'💨', ll:C.Qatar, hits:['Qatar','Japan','ZuidKorea','India','Duitsland'], arcs:FLOWS.filter(f=>f.v==='Qatar'),
     kort:'Qatar is een van de grootste exporteurs van vloeibaar gas (LNG). Veel daarvan vaart via de Straat van Hormuz naar Azië en Europa.',
+    wat:'Qatar is een van de grootste exporteurs van vloeibaar aardgas (LNG): gas dat zo sterk is afgekoeld dat het per schip vervoerd kan worden in plaats van per pijpleiding. Veel van dat LNG gaat naar Azië en Europa.',
+    waarom:'Sinds Europa minder Russisch pijpleidinggas gebruikt, is LNG per schip belangrijker geworden — en Qatar is daarin een sleutelspeler. Lastig detail: vrijwel al het Qatarese LNG vaart via de Straat van Hormuz, dus het hangt samen met de spanningen daar.',
+    effect:'Valt Qatarees LNG (deels) weg, dan moeten Azië en Europa vechten om het overige LNG op de wereldmarkt — en stijgt de prijs. Bij een koude winter koopt Azië soms al het vrije LNG op, waardoor Europa meer moet betalen. Het werkt door in de gasprijs en dus in de energierekening.',
     afh:['Doorvaart via de Straat van Hormuz','Langetermijncontracten met Azië','Wereldwijde concurrentie om LNG','Stabiliteit in de Golf'],
     scenarios:[
       {naam:'Qatar legt de export stil', uitleg:'Bij een conflict in de Golf of een blokkade van Hormuz kan Qatar geen LNG meer verschepen (al het Qatarese LNG gaat via Hormuz). Azië en Europa missen dan in één klap een grote leverancier.', seed:'Door een conflict in de Golf legt Qatar tijdelijk de LNG-export stil.'},
@@ -252,6 +270,9 @@ const VARS = [
     ]},
   { id:'food', naam:'Kunstmest & gas → voedsel', em:'🌾', ll:[31,49], hits:['Rusland','India','Turkije','Italie'], arcs:[],
     kort:'Energie en voedsel hangen samen: gas is nodig om kunstmest te maken, en Rusland/Oekraïne zijn grote graan- en kunstmest-exporteurs.',
+    wat:'De verborgen link tussen energie en je boodschappen. Kunstmest maken kost veel aardgas, en Rusland en Oekraïne zijn samen grote exporteurs van zowel graan als kunstmest. Energie, kunstmest en voedsel hangen zo aan elkaar vast.',
+    waarom:'Een hoge gasprijs maakt kunstmest duur; dure of schaarse kunstmest betekent lagere oogsten en hogere voedselprijzen — wereldwijd. Voor Nederland gaat het vooral om de prijs in de supermarkt; voor het Midden-Oosten en Afrika kan het om voedselzekerheid gaan.',
+    effect:'Stijgt de gasprijs of valt graan- of kunstmestexport weg, dan worden eten en veevoer duurder — met maanden vertraging (van oogst tot schap). In Nederland merk je het als hogere prijzen; elders kan het tot tekorten en onrust leiden. Goede oogsten en alternatieve leveranciers dempen het.',
     afh:['De gasprijs (kunstmest is gasintensief)','Graan- en kunstmestexport uit Rusland/Oekraïne','Oogsten en het weer','Exportrestricties van landen'],
     scenarios:[
       {naam:'Gasprijs piekt, kunstmest onbetaalbaar', uitleg:'Kunstmest maken kost veel gas; bij hoge gasprijzen (zoals in 2022) sluiten kunstmestfabrieken en gebruiken boeren minder. Lagere oogsten, hogere voedselprijzen.', seed:'De gasprijs piekt; kunstmest wordt zo duur dat boeren minder gebruiken en oogsten dalen.'},
@@ -521,9 +542,13 @@ function renderAI(){
   if(selVar){
     const v=selVar;
     html+='<button class="btn ghost" onclick="backToVars()">← alle variabelen</button>';
-    html+='<div class="pcard" style="margin-top:10px"><h3>'+v.em+' '+escW(v.naam)+'</h3><p>'+escW(v.kort)+'</p>';
-    html+='<div class="ptitle" style="margin-top:12px">Waar hangt dit van af?</div><ul class="afh">'+v.afh.map(a=>'<li>'+escW(a)+'</li>').join('')+'</ul></div>';
-    html+='<div class="ptitle">Mogelijke scenario\'s — klik voor de gevolgen</div>'+
+    html+='<div class="pcard" style="margin-top:10px"><h3>'+v.em+' '+escW(v.naam)+'</h3>'
+      +'<div class="vsec"><span class="ptitle">📍 Wat is het?</span><p>'+escW(v.wat||v.kort)+'</p></div>'
+      +(v.waarom?'<div class="vsec"><span class="ptitle">⚡ Waarom is dit zo belangrijk?</span><p>'+escW(v.waarom)+'</p></div>':'')
+      +'<div class="vsec"><span class="ptitle">🔗 Waar hangt dit van af?</span><ul class="afh">'+v.afh.map(a=>'<li>'+escW(a)+'</li>').join('')+'</ul></div>'
+      +(v.effect?'<div class="vsec"><span class="ptitle">📉 Wat gebeurt er als het misgaat?</span><p>'+escW(v.effect)+'</p></div>':'')
+      +'</div>';
+    html+='<div class="ptitle">Mogelijke scenario\'s — klik om te zien wat er dan precies gebeurt</div>'+
       v.scenarios.map(function(sc,i){return '<button class="scencard" onclick="chooseScenario('+i+')"><div class="sc-top"><span class="em">🎬</span><b>'+escW(sc.naam)+'</b></div>'+(sc.uitleg?'<p>'+escW(sc.uitleg)+'</p>':'')+'<span class="sc-go">Bekijk de gevolgen →</span></button>';}).join('');
     panel.innerHTML=html; return;
   }
@@ -600,11 +625,6 @@ window.answer=function(i){ scChosen=i; renderPanel(); };
 window.nextStep=function(){ scStep++; scChosen=null; renderPanel(); render(); };
 window.exitScenario=function(){ scenario=null; scStep=0; scChosen=null; renderPanel(); render(); };
 
-document.getElementById('lvlSeg').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b)return;
-  LEVEL=b.dataset.lvl; document.querySelectorAll('#lvlSeg button').forEach(x=>x.classList.toggle('on',x===b));
-  if(MODE==='ai' && selVar && lastScenarioIdx!=null && (aiScene||aiLoading||aiWaiting)){ chooseScenario(lastScenarioIdx); }
-  else renderPanel();
-});
 document.getElementById('modeSeg').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b)return;
   MODE=b.dataset.mode; document.querySelectorAll('#modeSeg button').forEach(x=>x.classList.toggle('on',x===b));
   activeDisrupt=null; selCountry=null; scenario=null; scStep=0; scChosen=null; aiScene=null; aiHistory=[]; aiLoading=false; aiError=''; aiWaiting=false; selVar=null;
