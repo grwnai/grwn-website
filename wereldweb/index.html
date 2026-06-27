@@ -391,7 +391,7 @@ const svg=d3.select('#globe');
 let W=0,H=0,scale=0;
 const projection=d3.geoOrthographic().clipAngle(90).precision(.4);
 const path=d3.geoPath(projection);
-let land=null, rotation=[ -20,-25,0 ], dragging=false, autoRot=true;
+let land=null, rotation=[ -20,-25,0 ], dragging=false, autoRot=true, resumeT=null;
 
 const gSphere=svg.append('path').attr('class','sphere');
 const gGrat=svg.append('path').attr('fill','none');
@@ -478,9 +478,9 @@ function drawPoints(){
 
 /* rotatie + sleep */
 svg.call(d3.drag()
-  .on('start',()=>{dragging=true;autoRot=false;})
+  .on('start',()=>{dragging=true;autoRot=false;clearTimeout(resumeT);})
   .on('drag',(e)=>{ const k=.3; rotation=[rotation[0]+e.dx*k, Math.max(-90,Math.min(90,rotation[1]-e.dy*k)), rotation[2]]; render(); })
-  .on('end',()=>{dragging=false;}));
+  .on('end',()=>{dragging=false;clearTimeout(resumeT);resumeT=setTimeout(()=>{autoRot=true;},2500);}));
 d3.timer(()=>{ if(autoRot&&!dragging){ rotation=[rotation[0]+0.12,rotation[1],rotation[2]]; render(); } });
 
 /* land laden (optioneel — globe werkt ook zonder) */
@@ -494,10 +494,11 @@ fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json')
 const panel=document.getElementById('panel');
 function focusLL(ll){ // draai globe naar coördinaat [lon,lat]
   if(!ll)return; autoRot=false;
+  clearTimeout(resumeT);
   const target=[-ll[0],-ll[1],0]; const start=rotation.slice(); let t0=null;
   d3.timer(function(el){ if(t0===null)t0=el; const k2=Math.min(1,(el-t0)/700);
     rotation=[start[0]+(target[0]-start[0])*k2, start[1]+(target[1]-start[1])*k2, 0]; render();
-    return k2>=1; });
+    if(k2>=1){ resumeT=setTimeout(()=>{autoRot=true;},1400); return true; } return false; });
 }
 function focusOn(k){ focusLL(C[k]||CHOKE[k]); }
 function renderPanel(){
