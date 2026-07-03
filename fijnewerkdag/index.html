@@ -44,6 +44,7 @@
   .ctx{color:var(--muted);font-size:15px;margin-bottom:12px}
   textarea{width:100%;border:1px solid var(--line);border-radius:12px;padding:12px 13px;font:inherit;font-size:15px;color:var(--ink);resize:vertical;min-height:120px;background:#fff}
   textarea:focus{outline:none;border-color:var(--cerulean)}
+  textarea::placeholder{color:#9aa6b6}
   .tips{margin-top:16px;background:#FBFDFE;border:1px solid var(--line);border-left:3px solid var(--cerulean);border-radius:12px;padding:12px 14px;font-size:13.5px;color:var(--ink)}
   .tips b{display:block;font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin-bottom:6px}
   .tips ul{margin:0 0 0 18px} .tips li{margin-bottom:4px}
@@ -71,8 +72,9 @@
   .addrow{display:flex;gap:8px;margin-top:6px}
   .addrow input{flex:1;border:1px solid var(--line);border-radius:11px;padding:10px 12px;font:inherit;font-size:14.5px}
   .aiwrap{margin-top:18px;border:1px solid var(--line);border-radius:14px;overflow:hidden}
-  .aitog{width:100%;display:flex;align-items:center;gap:8px;background:var(--magenta-soft);border:0;font:inherit;font-weight:700;font-size:13.5px;color:var(--magenta-d);padding:11px 14px;cursor:pointer;text-align:left}
+  .aihelphead{background:var(--magenta-soft);color:var(--magenta-d);font-weight:700;font-size:13px;padding:11px 14px}
   .aibody{padding:12px 14px;display:none} .aiwrap.open .aibody{display:block}
+  .aiquick{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
   .aimsg{font-size:14px;line-height:1.55;margin-bottom:10px}
   .aimsg.me{color:var(--ink);font-weight:600}
   .aimsg.ai{background:var(--mint);border-radius:10px;padding:9px 11px}
@@ -128,53 +130,62 @@
 <script>
 const KEY='fw2_v2';
 const MODES={
-  zelf:{em:'🧭',naam:'Zelfreflectie',desc:'Je doorloopt het zelf, in je eigen tempo — met hulp van de JD-R-AI per stap.'},
+  zelf:{em:'🧭',naam:'Zelfreflectie',desc:'Je doorloopt het zelf, in je eigen tempo — de AI denkt per stap met je mee.'},
   interviewer:{em:'🗣️',naam:'Ik begeleid (interviewer)',desc:'Jij voert het gesprek. Je ziet per stap de kernvraag en de vragen die je kunt stellen.'},
-  respondent:{em:'💬',naam:'Ik word begeleid',desc:'Je beantwoordt per stap de kernvraag, ziet het proces en kunt de JD-R-AI iets vragen.'}
+  respondent:{em:'💬',naam:'Ik word begeleid',desc:'Je beantwoordt per stap de kernvraag, ziet het proces en de AI denkt met je mee.'}
 };
 var state={mode:null,naam:'',taken:[],afweging:null,answers:{},step:'werk',ai:{}};
 function save(){try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}}
 function load(){try{const s=localStorage.getItem(KEY);if(s)state=Object.assign(state,JSON.parse(s))}catch(e){}}
 function esc(s){return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
 
-/* Per stap: één kernvraag (vraag/id) + begeleiding (guide). tipsI = extra begeleidingstips voor de interviewer. */
+/* Per stap: één simpele kernvraag (vraag) met een concreet voorbeeld (ph). De scriptvragen staan als begeleiding (guide). */
 const S={
-  werk:{titel:'Werksituatie',id:'werk',vraag:'Hoe ziet jouw werkdag eruit — en wat speelt er?',
-    ctx:'We beginnen bij je dagelijkse werk. Beschrijf het in je eigen woorden; daarna halen we samen de terugkerende taken eruit.',
+  werk:{titel:'Werksituatie',id:'werk',vraag:'Vertel eens: hoe ziet een gewone werkdag van jou eruit?',
+    ph:'Bijv. Ik start met mijn mail, daarna overleg, dan dossiers… Wat doe je zoal, en wat valt je op?',
+    ctx:'We beginnen bij je dagelijkse werk. Beschrijf het gewoon in je eigen woorden — daarna halen we samen de terugkerende taken eruit.',
     guide:['Welke taken of situaties komen vaak terug?','Hoe ervaar je jouw werk op dit moment, en waardoor komt dat?'],
     tipsI:['Gebruik open vragen (hoe, wat, welke).','Vat samen wat je hoort en check of je het goed begrijpt.','Focus op inzicht en oplossingen, niet op oordeel.']},
-  effect:{titel:'Lange termijn',id:'effect',vraag:'Wat betekent dit op de langere termijn voor jouw werkplezier?',
-    ctx:'Sta stil bij de langere termijn — daar ontstaat motivatie.',
+  effect:{titel:'Lange termijn',id:'effect',vraag:'Als je zo doorgaat, hoe voel je je dan over een tijdje?',
+    ph:'Bijv. Ik ben bang dat ik opbrand / Ik zou meer rust en trots willen voelen.',
+    ctx:'Sta even stil bij de langere termijn — daar zit vaak je motivatie om iets te veranderen.',
     guide:['Wat gebeurt er met jouw balans als je dit zo blijft doen?','Als je meer energie en minder stress hebt, wat kun je dan bereiken?','Hoe zou het voelen als je vaker trots bent op wat je doet?','Wat zou het jou opleveren als je meer uitdagende taken hebt?']},
-  uitdaag:{titel:'Uitdagend',id:'ud_nodig',vraag:'Wie of wat heb je nodig om meer uitdagende taken toe te voegen?',
-    ctx:'Je versterkt wat energie geeft. Verken wat je nodig hebt om meer van dit soort taken te doen.',guide:[]},
-  hulpzelf:{titel:'Hulp: jezelf',id:'hulp_zelf',vraag:'Welke hulp vanuit jezelf kun je inzetten om het hinderlijke deel lichter te maken?',
-    ctx:'Denk aan persoonlijke hulpbronnen: je talenten, je veerkracht, je mindset.',
+  uitdaag:{titel:'Uitdagend',id:'ud_nodig',vraag:'Wat zou je helpen om méér te doen van het werk dat je energie geeft?',
+    ph:'Bijv. meer tijd, samenwerken met een bepaalde collega, een training, ruimte van mijn leidinggevende…',
+    ctx:'Je versterkt wat energie geeft. Verken wat je nodig hebt om meer van dit soort werk te doen.',guide:[]},
+  hulpzelf:{titel:'Hulp: jezelf',id:'hulp_zelf',vraag:'Wat kun jij zélf doen of inzetten om dit lastige deel lichter te maken?',
+    ph:'Bijv. een talent van me gebruiken, mijn grens aangeven, mijn energie beter verdelen…',
+    ctx:'Denk aan hulp die in jóu zit: je talenten, je veerkracht, je mindset.',
     guide:['Kun je jouw stem laten horen wanneer het nodig is?','Bezit je talenten en/of sterke punten die je nu in kunt zetten?','Hoe ga je om met onverwachte uitdagingen?','Is jouw energie in balans, ben je hier bewust mee bezig?','Welke mindset kan je nu helpen?']},
-  hulporg:{titel:'Hulp: organisatie',id:'hulp_org',vraag:'Welke hulp vanuit de organisatie kun je inzetten?',
-    ctx:'Denk aan hulpbronnen in je werkomgeving: mensen, opleiding, systemen, duidelijkheid.',
+  hulporg:{titel:'Hulp: organisatie',id:'hulp_org',vraag:'Welke hulp of steun vanuit je werk zou je hierbij helpen?',
+    ph:'Bijv. meer autonomie, duidelijkere afspraken, betere systemen, hulp van een collega of leidinggevende…',
+    ctx:'Denk aan hulp om je heen: mensen, opleiding, systemen, duidelijkheid.',
     guide:['Heb je voldoende autonomie om keuzes te maken in je werk?','Is er sprake van rolduidelijkheid?','Geeft je leidinggevende feedback en coaching?','Zijn de systemen ondersteunend aan jouw taak?','Heb je voldoende kennis en kunde op dit gebied?']},
-  afweging:{titel:'Afweging',vraag:'Kun je met deze hulpbronnen het werk weer uitdagend en in balans maken?',choice:true,
-    ctx:'Weeg af of de hulpbronnen — vanuit jezelf én de organisatie — genoeg zijn.'},
-  andere:{titel:'Andere stappen',id:'andere',vraag:'Welke andere stappen kun je zetten om de last te verlichten?',
-    ctx:'De hulpbronnen zijn mogelijk niet genoeg. Kijk naar andere manieren — ook deze worden hulpbronnen.',
+  afweging:{titel:'Afweging',vraag:'Denk je dat dit genoeg is om het werk weer prettig te maken?',choice:true,
+    ctx:'Weeg af of de hulp — vanuit jezelf én je werk — genoeg is.'},
+  andere:{titel:'Andere stappen',id:'andere',vraag:'Wat zou je nog méér kunnen doen om de druk te verlichten?',
+    ph:'Bijv. een taak schrappen of vereenvoudigen, anders prioriteren, iets uit handen geven…',
+    ctx:'De hulp is misschien nog niet genoeg. Kijk naar andere manieren — ook dit worden hulpbronnen.',
     guide:['Zijn er taken die je kunt vereenvoudigen of schrappen?','Is de prioritering juist?','Hoe kun je nu jouw tijdsdruk verminderen?']},
-  concreet:{titel:'Concrete stappen',id:'concreet',vraag:'Welke concrete stappen ga je nu zetten?',
-    ctx:'Beide sporen komen hier samen. Maak het concreet — het hoeven geen grote stappen te zijn.',
+  concreet:{titel:'Concrete stappen',id:'concreet',vraag:'Wat ga je concreet doen — en wanneer?',
+    ph:'Bijv. Deze week bespreek ik X met mijn leidinggevende. Uiterlijk vrijdag.',
+    ctx:'Beide sporen komen hier samen. Maak het klein en concreet — kleine stappen tellen.',
     guide:['Wat kun je deze week doen om meer grip te krijgen op je werkdruk?','Met wie ga je in gesprek om meer steun of samenwerking te organiseren?','Welke ontwikkelmogelijkheid wil je concreet oppakken, en wanneer?','Wat is je deadline voor deze eerste stap?','Welke vervolgstap volgt daarna om de balans verder te verbeteren?']},
-  goedbezig:{titel:'Goed bezig',id:'goedbezig',vraag:'Wat gaat er goed — welke waarderende feedback herken je of is gegeven?',
+  goedbezig:{titel:'Goed bezig',id:'goedbezig',vraag:'Wat gaat er al goed? Waar mag je trots op zijn?',
+    ph:'Bijv. Ik weet nu helder wat me energie geeft / Ik durf hulp te vragen.',
     ctx:'Sluit positief af: benoem wat goed gaat.',
     guide:['Goed dat je helder kunt benoemen wat jou energie geeft.','Fijn dat je zelf al ideeën hebt om meer uitdagende taken te creëren.','Goed dat je aangeeft welke ondersteuning je mist — dat helpt om samen te verbeteren.','Je hebt duidelijk inzicht in wat je nodig hebt; hoe ga je dit realiseren?']},
-  afsluiting:{titel:'Afsluiting',id:'af_opbrengst',vraag:'Wat heeft dit gesprek jou opgeleverd met betrekking tot jouw werksituatie?',
-    ctx:'Rond af en vat de opbrengst samen.',guide:[]}
+  afsluiting:{titel:'Afsluiting',id:'af_opbrengst',vraag:'Wat neem je uit dit gesprek mee?',
+    ph:'Bijv. één concrete stap, een nieuw inzicht, of gewoon meer rust in mijn hoofd.',
+    ctx:'Rond af en vat kort samen wat het je heeft opgeleverd.',guide:[]}
 };
 const RAILLABEL={werk:'Werksituatie',taken:'Taken',effect:'Lange termijn',hulpzelf:'Hulp: jezelf',hulporg:'Hulp: organisatie',afweging:'Afweging',andere:'Andere stappen',uitdaag:'Uitdagend',concreet:'Concrete stappen',goedbezig:'Goed bezig',afsluiting:'Afsluiting',rapport:'Rapportage'};
 
 function labels(){const s=new Set(state.taken.map(t=>t.label).filter(Boolean));return{hinder:s.has('hinderlijk'),uitdaag:s.has('uitdagend')}}
 function flow(){
   const f=['werk','taken','effect']; const L=labels();
-  if(L.hinder){f.push('hulpzelf','hulporg','afweging'); if(state.afweging==='nee')f.push('andere');}
   if(L.uitdaag){f.push('uitdaag');}
+  if(L.hinder){f.push('hulpzelf','hulporg','afweging'); if(state.afweging==='nee')f.push('andere');}
   f.push('concreet','goedbezig','afsluiting','rapport');
   return f;
 }
@@ -220,12 +231,13 @@ function tipsHtml(d){
   return '<div class="tips" style="border-left-color:var(--gold)"><b>Begeleidingstips</b><ul>'+d.tipsI.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul></div>';
 }
 function fieldHtml(d){
-  return '<textarea id="'+d.id+'" placeholder="Jouw antwoord…" oninput="state.answers[\''+d.id+'\']=this.value;save()">'+esc(state.answers[d.id]||'')+'</textarea>';
+  return '<textarea id="'+d.id+'" placeholder="'+esc(d.ph||'Jouw antwoord…')+'" oninput="state.answers[\''+d.id+'\']=this.value;save()">'+esc(state.answers[d.id]||'')+'</textarea>';
 }
 function aiHtml(d){
   if(state.mode==='interviewer')return '';
-  return '<div class="aiwrap" id="aiwrap"><button class="aitog" onclick="toggleAI()">✨ Vraag de JD-R-AI om hulp bij deze stap</button>'+
-    '<div class="aibody"><div id="aichat"></div><div class="airow"><input id="aiinp" placeholder="Bijv. Wat wordt hier precies bedoeld?"><button class="btn sm mag" onclick="askAI()">Vraag</button></div></div></div>';
+  return '<div class="aiwrap open" id="aiwrap"><div class="aihelphead">✨ AI-hulp bij deze stap — vastlopen of twijfel? Ik denk met je mee.</div>'+
+    '<div class="aibody"><div class="aiquick"><button class="btn sm mag" onclick="aiFeedback()">🤝 Denk met me mee</button><button class="btn sm ghost" onclick="aiExample()">💡 Geef een voorbeeld</button></div>'+
+    '<div id="aichat"></div><div class="airow"><input id="aiinp" placeholder="Of stel zelf een vraag…" onkeydown="if(event.key===\'Enter\')askAI()"><button class="btn sm ghost" onclick="askAI()">Vraag</button></div></div></div>';
 }
 function navBtns(){
   const f=flow();const i=f.indexOf(state.step);
@@ -259,13 +271,14 @@ function renderTaken(){
     '<div class="lab"><button class="u '+(t.label==='uitdagend'?'on':'')+'" onclick="labelTask('+idx+',\'uitdagend\')" title="Geeft energie">Uitdagend</button>'+
     '<button class="h '+(t.label==='hinderlijk'?'on':'')+'" onclick="labelTask('+idx+',\'hinderlijk\')" title="Kost energie">Hinderlijk</button></div>'+
     '<button class="x" onclick="delTask('+idx+')" aria-label="Verwijder">✕</button></div>').join('');
-  const anyLabeled=state.taken.some(t=>t.label);
+  const L=labels();const anyLabeled=state.taken.some(t=>t.label);
+  const spoor=(L.uitdaag&&L.hinder)?'Je krijgt straks <b>beide sporen</b>: energiegevers én energievreters.':(L.uitdaag?'Je krijgt het <b>uitdagende spoor</b>.':(L.hinder?'Je krijgt het <b>hinderlijke spoor</b>.':''));
   return '<div class="card"><span class="eyebrow">Taken</span><h1>Welke taken springen eruit?</h1>'+
-    '<p class="ctx">Verzamel je terugkerende taken en situaties. Laat de AI een voorzet doen, vul aan wat mist, en label elke taak: geeft die energie (<b>uitdagend</b>) of kost die energie (<b>hinderlijk</b>)?</p>'+
+    '<p class="ctx">Verzamel je terugkerende taken. Laat de AI een voorzet doen, vul aan wat mist, en label elke taak: geeft die energie (<b>uitdagend</b>) of kost die energie (<b>hinderlijk</b>)? Dit bepaalt welk spoor je hierna doorloopt.</p>'+
     '<div class="btnrow" style="margin:8px 0 14px"><button class="btn mag sm" id="extractBtn" onclick="extractTaken()">✨ Laat AI taken voorstellen</button></div>'+
     '<div id="taskList">'+(rows||'<p class="ctx">Nog geen taken. Voeg ze hierboven met AI toe of hieronder handmatig.</p>')+'</div>'+
     '<div class="addrow"><input id="newTask" placeholder="Zelf een taak toevoegen…" onkeydown="if(event.key===\'Enter\')addTask()"><button class="btn ghost sm" onclick="addTask()">Toevoegen</button></div>'+
-    (anyLabeled?'':'<p class="ctx" style="margin-top:12px">Label minstens één taak om verder te gaan.</p>')+
+    (spoor?'<p class="ctx" style="margin-top:12px">'+spoor+'</p>':'<p class="ctx" style="margin-top:12px">Label minstens één taak om verder te gaan.</p>')+
     '<div class="btnrow"><button class="btn ghost" onclick="prevStep()">← Vorige</button>'+
     (anyLabeled?'<button class="btn" onclick="nextStep()">Volgende →</button>':'')+'</div></div>';
 }
@@ -283,17 +296,16 @@ async function extractTaken(){
   }catch(e){b.disabled=false;b.textContent='Ophalen lukte niet — voeg handmatig toe';}
 }
 
-function toggleAI(){document.getElementById('aiwrap').classList.toggle('open')}
 function aiRender(){
   const box=document.getElementById('aichat');if(!box)return;
   const list=state.ai[state.step]||[];
   box.innerHTML=list.map(m=>'<div class="aimsg '+(m.role==='user'?'me':'ai')+'">'+esc(m.content).replace(/\n/g,'<br>')+'</div>').join('');
+  box.scrollTop=box.scrollHeight;
 }
-async function askAI(){
-  const inp=document.getElementById('aiinp');const v=(inp.value||'').trim();if(!v)return;
+async function aiSend(text){
   if(!state.ai[state.step])state.ai[state.step]=[];
-  state.ai[state.step].push({role:'user',content:v});inp.value='';save();aiRender();
-  state.ai[state.step].push({role:'assistant',content:'…'});aiRender();
+  state.ai[state.step].push({role:'user',content:text});
+  state.ai[state.step].push({role:'assistant',content:'…'});save();aiRender();
   const d=S[state.step]||{};const ctx=(d.vraag||'')+' — '+(d.ctx||'');
   try{
     const r=await fetch('/api/jdr-coach',{method:'POST',headers:{'Content-Type':'application/json'},
@@ -304,6 +316,11 @@ async function askAI(){
   }catch(e){state.ai[state.step].pop();state.ai[state.step].push({role:'assistant',content:'Geen verbinding met de AI (werkt niet lokaal).'})}
   save();aiRender();
 }
+function askAI(){const inp=document.getElementById('aiinp');const v=(inp.value||'').trim();if(!v)return;inp.value='';aiSend(v)}
+function aiFeedback(){const a=(state.answers[(S[state.step]||{}).id]||'').trim();
+  if(!a){aiSend('Ik weet nog niet goed wat ik hier moet antwoorden. Leg de vraag simpel uit en geef één concreet voorbeeld waar ik aan kan denken.');return}
+  aiSend('Dit is mijn antwoord tot nu toe: "'+a+'". Denk met me mee: geef korte, warme feedback, één concrete suggestie of voorbeeld, en één vervolgvraag om dieper te gaan.');}
+function aiExample(){aiSend('Geef een kort, concreet voorbeeld-antwoord op deze vraag, en leg in één zin uit waar ik aan kan denken. Het hoeft niet op mij te slaan — puur ter inspiratie.');}
 function bindStep(){ if(document.getElementById('aichat'))aiRender(); }
 
 function buildText(){
