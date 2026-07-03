@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>De weg naar een fijne werkdag</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  /* =======================================================
+     HUISSTIJL — pas hier de merk-/gemeentekleur aan (--accent)
+     en vervang het logo in de <header> (zie id="brandLogo").
+     ======================================================= */
+  :root{
+    color-scheme:light;
+    /* GRWN.ai huisstijl (voorlopig — vervang hex door officiële merkwaarden) */
+    --accent:#2274A5;        /* GRWN cerulean */
+    --accent-ink:#1A5D85;
+    --accent-soft:#E4F0F6;   /* mint */
+    --accent-line:#CFE0EC;
+    --accent2:#E83F6F;       /* GRWN magenta (signatuur) */
+    --accent2-ink:#C72C58;
+    --accent2-soft:#FCE6EE;
+    --gold:#F5B400;
+    --seagreen:#32936F;
+
+    --ink:#173049;
+    --muted:#5C6873;
+    --bg:#F6F9FB;
+    --panel:#ffffff;
+    --line:#EAEEF1;
+    --line-strong:#D7DBDE;
+    --ok:#32936F;
+    --radius:8px;
+    --font:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{font-family:var(--font);background:var(--bg);color:var(--ink);line-height:1.6;-webkit-font-smoothing:antialiased;font-size:16px}
+
+  /* ---------- Header ---------- */
+  .siteheader{background:var(--panel);border-bottom:1px solid var(--line)}
+  .siteheader .inner{max-width:840px;margin:0 auto;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+  .brand{display:flex;align-items:center;gap:13px;min-width:0}
+  #brandLogo{width:40px;height:40px;flex:0 0 auto;border-radius:8px;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center}
+  #brandLogo .brandmark{width:26px;height:24px;color:#fff}
+  .intro .band .wordmark{height:26px;width:auto;display:block;margin-bottom:14px;color:#fff}
+  .foot-wm{height:20px;width:auto;color:var(--ink);opacity:.75}
+  #brandLogo svg{width:24px;height:24px}
+  .brand .titles{min-width:0}
+  .brand h1{font-size:17px;margin:0;font-weight:700;letter-spacing:-.01em;line-height:1.2}
+  .brand .sub{font-size:12.5px;color:var(--muted)}
+  .modepill{font-size:12.5px;color:var(--accent-ink);border:1px solid var(--accent-line);background:var(--accent-soft);padding:5px 11px;border-radius:4px;font-weight:600;white-space:nowrap}
+  .accentrule{height:3px;background:var(--accent2)}
+
+  .wrap{max-width:840px;margin:0 auto;padding:26px 20px 90px}
+
+  /* ---------- Progress ---------- */
+  .progress{margin:2px 0 22px}
+  .progress .meta{display:flex;justify-content:space-between;font-size:12.5px;color:var(--muted);margin-bottom:7px;font-weight:600;letter-spacing:.02em;text-transform:uppercase}
+  .progress .bar{height:6px;background:var(--line);border-radius:2px;overflow:hidden}
+  .progress .bar>div{height:100%;width:0;background:var(--accent);transition:width .3s ease}
+
+  /* ---------- Stepper (meelopende flow) ---------- */
+  .stepper{display:flex;gap:0;overflow-x:auto;padding:4px 2px 10px;margin-bottom:4px;scrollbar-width:thin}
+  .stepper .st{display:flex;flex-direction:column;align-items:center;min-width:74px;flex:0 0 auto;position:relative}
+  .stepper .st .num{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;background:#fff;border:2px solid var(--line-strong);color:var(--muted);z-index:2}
+  .stepper .st .num svg{width:14px;height:14px}
+  .stepper .st .lbl{font-size:10.5px;color:var(--muted);margin-top:5px;text-align:center;line-height:1.15;max-width:74px}
+  .stepper .st::before{content:"";position:absolute;top:13px;left:-50%;width:100%;height:2px;background:var(--line);z-index:1}
+  .stepper .st:first-child::before{display:none}
+  .stepper .st.done .num{background:var(--accent);border-color:var(--accent);color:#fff}
+  .stepper .st.done::before{background:var(--accent)}
+  .stepper .st.cur .num{border-color:var(--accent2);color:var(--accent2);box-shadow:0 0 0 3px var(--accent2-soft)}
+  .stepper .st.cur .lbl{color:var(--accent2-ink);font-weight:700}
+  .stepper .st.cur::before{background:linear-gradient(90deg,var(--accent) 60%,var(--line) 60%)}
+
+  /* ---------- Flow-overzicht (startpagina) ---------- */
+  .flowmap{border:1px solid var(--line);border-radius:8px;background:#fafbfc;padding:20px;margin:0 0 4px}
+  .flowmap h4{margin:0 0 4px;font-size:14px;font-weight:700}
+  .flowmap .fsub{font-size:12.5px;color:var(--muted);margin:0 0 16px}
+  .fnode{display:flex;align-items:center;gap:11px;background:#fff;border:1px solid var(--line-strong);border-radius:7px;padding:9px 12px}
+  .fnode .fi{width:30px;height:30px;flex:0 0 auto;border-radius:6px;background:var(--accent-soft);border:1px solid var(--accent-line);color:var(--accent);display:flex;align-items:center;justify-content:center}
+  .fnode .fi svg{width:18px;height:18px}
+  .fnode .ft{font-size:13px;font-weight:600;line-height:1.2}
+  .fseq{display:flex;flex-direction:column;align-items:stretch;gap:0}
+  .fconn{width:2px;height:16px;background:var(--accent-line);margin:0 auto}
+  .fbranch{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:0}
+  @media(max-width:560px){.fbranch{grid-template-columns:1fr}}
+  .ftrack{border:1px dashed var(--accent-line);border-radius:8px;padding:12px;background:#fff}
+  .ftrack .th{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin:0 0 10px;padding:3px 9px;border-radius:4px;display:inline-block}
+  .ftrack.up .th{background:#E3F3EB;color:#26765A}
+  .ftrack.hi .th{background:#FBEFCE;color:#8A6A06}
+  .ftrack .fnode{margin-bottom:8px}.ftrack .fnode:last-child{margin-bottom:0}
+  .fmerge{text-align:center;font-size:11.5px;color:var(--muted);margin:2px 0}
+
+  /* ---------- Card ---------- */
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:30px 32px;animation:fade .25s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .card-head{display:flex;gap:16px;align-items:flex-start;margin-bottom:20px}
+  .badge{width:46px;height:46px;flex:0 0 auto;border-radius:8px;background:var(--accent-soft);border:1px solid var(--accent-line);display:flex;align-items:center;justify-content:center;color:var(--accent)}
+  .badge svg{width:26px;height:26px}
+  .eyebrow{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin-bottom:2px}
+  .card h2{margin:0;font-size:24px;font-weight:700;letter-spacing:-.01em;line-height:1.2}
+  .context{border-left:3px solid var(--accent-line);background:#fafbfc;padding:12px 16px;border-radius:0 6px 6px 0;margin:0 0 22px;font-size:15px;color:#3c444b}
+
+  /* ---------- Fields ---------- */
+  .q{margin-bottom:18px}
+  .q label{display:block;font-weight:600;margin-bottom:7px;font-size:15px}
+  .q .hint{display:block;font-weight:400;color:var(--muted);font-size:13px;margin-top:2px}
+  textarea,input[type=text]{width:100%;border:1px solid var(--line-strong);border-radius:6px;padding:11px 13px;font-family:inherit;font-size:15px;color:var(--ink);background:#fff;resize:vertical;min-height:60px;transition:border .15s,box-shadow .15s}
+  input[type=text]{min-height:auto}
+  textarea:focus,input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+
+  /* ---------- Choices ---------- */
+  .choices{display:grid;gap:12px;grid-template-columns:1fr 1fr;margin-bottom:4px}
+  @media(max-width:560px){.choices{grid-template-columns:1fr}}
+  .choice{text-align:left;border:1px solid var(--line-strong);background:#fff;border-radius:6px;padding:15px 17px 15px 46px;cursor:pointer;position:relative;font-family:inherit;transition:.15s}
+  .choice:hover{border-color:var(--accent);background:var(--accent-soft)}
+  .choice::before{content:"";position:absolute;left:16px;top:18px;width:18px;height:18px;border-radius:50%;border:2px solid var(--line-strong);background:#fff}
+  .choice.sel{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft)}
+  .choice.sel::before{border-color:var(--accent);background:radial-gradient(circle,var(--accent) 0 5px,#fff 6px)}
+  .choice .ct{font-weight:700;font-size:16px;margin-bottom:3px}
+  .choice .cd{font-size:13.5px;color:var(--muted)}
+
+  /* ---------- Tips ---------- */
+  details.tips{border:1px solid var(--line);border-radius:6px;margin:0 0 20px;overflow:hidden;background:#fafbfc}
+  details.tips summary{cursor:pointer;list-style:none;padding:11px 15px;font-weight:600;font-size:13.5px;color:var(--accent-ink);display:flex;align-items:center;gap:8px;user-select:none}
+  details.tips summary::-webkit-details-marker{display:none}
+  details.tips summary .chev{transition:transform .2s;font-size:10px;color:var(--accent)}
+  details.tips[open] summary .chev{transform:rotate(90deg)}
+  details.tips .tb{padding:0 16px 14px 34px}
+  details.tips ul{margin:4px 0;padding-left:18px}
+  details.tips li{margin:5px 0;font-size:13.5px;color:#3c444b}
+  details.tips .sub{font-weight:700;font-size:12.5px;margin:9px 0 2px;color:var(--ink)}
+
+  /* ---------- Buttons / nav ---------- */
+  .nav{display:flex;justify-content:space-between;gap:12px;margin-top:26px;padding-top:20px;border-top:1px solid var(--line)}
+  button.btn{border:1px solid transparent;border-radius:6px;padding:11px 20px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;transition:.15s}
+  .btn.primary{background:var(--accent);color:#fff}.btn.primary:hover{background:var(--accent-ink)}
+  .btn.ghost{background:#fff;color:var(--ink);border-color:var(--line-strong)}.btn.ghost:hover{background:#f2f4f6}
+  .btn.accent{background:var(--accent2);color:#fff}.btn.accent:hover{background:var(--accent2-ink)}
+  .btn:disabled{opacity:.45;cursor:not-allowed}
+
+  /* ---------- Start ---------- */
+  .intro{border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+  .intro .band{background:var(--ink);color:#fff;padding:26px 32px}
+  .intro .band h2{margin:0 0 7px;font-size:25px;font-weight:700;color:#fff;letter-spacing:-.01em}
+  .intro .band p{margin:0;max-width:600px;opacity:.94;font-size:15px}
+  .intro .body{padding:26px 32px}
+  .intro h3{font-size:15px;margin:0 0 12px;font-weight:700}
+  .modegrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:0 0 22px}
+  @media(max-width:560px){.modegrid{grid-template-columns:1fr}}
+  .principles{border:1px solid var(--line);border-radius:6px;padding:14px 18px;background:#fafbfc;margin-top:8px}
+  .principles b{font-size:14px}.principles ul{margin:8px 0 0;padding-left:18px}.principles li{margin:4px 0;font-size:14px;color:#3c444b}
+
+  /* ---------- Report ---------- */
+  .report{border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+  .report .rhead{border-top:4px solid var(--accent2);background:#fff;padding:24px 32px;border-bottom:1px solid var(--line)}
+  .report .rhead .doc{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin-bottom:6px}
+  .report .rhead h2{margin:0 0 8px;font-size:23px;font-weight:700}
+  .report .rhead .meta{font-size:13.5px;color:var(--muted)}
+  .report .rbody{padding:24px 32px;background:#fff}
+  .rsumline{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 20px}
+  .chip{font-size:12.5px;font-weight:600;padding:5px 11px;border-radius:4px;background:var(--accent-soft);color:var(--accent-ink);border:1px solid var(--accent-line)}
+  .rsection{border-top:1px solid var(--line);padding:16px 0 4px}
+  .rsection:first-of-type{border-top:none}
+  .rsection h3{margin:0 0 3px;font-size:16px;font-weight:700}
+  .rsection .rctx{font-size:12.5px;color:var(--muted);margin:0 0 10px}
+  .rqa{margin:9px 0}.rqa .qq{font-weight:600;font-size:14px}
+  .rqa .aa{font-size:14.5px;white-space:pre-wrap;margin-top:3px;padding:9px 12px;background:#f7f8f9;border-radius:5px;border:1px solid var(--line)}
+  .rqa .empty{color:#9aa1a8;font-style:italic;background:transparent;border:none;padding:1px 0}
+  .actionbox{border:1px solid var(--accent-line);border-left:3px solid var(--accent);border-radius:0 6px 6px 0;padding:15px 18px;margin:4px 0 20px;background:var(--accent-soft)}
+  .actionbox h3{margin:0 0 8px;font-size:15px;font-weight:700;color:var(--accent-ink)}
+  .actionbox ul{margin:0;padding-left:20px}.actionbox li{margin:5px 0;font-size:14.5px}
+  .exportbar{display:flex;flex-wrap:wrap;gap:10px;margin:4px 0 20px}
+
+  /* ---------- AI ---------- */
+  .aibox{border:1px solid var(--line);border-radius:6px;padding:18px 20px;margin:0 0 22px;background:#fff}
+  .aibox .aihead{display:flex;align-items:center;gap:9px;font-weight:700;color:var(--accent-ink);margin:0 0 10px;font-size:15px}
+  .aibox .aihead svg{width:18px;height:18px;color:var(--accent)}
+  .aibox .aiload{color:var(--muted);font-size:14px;display:flex;align-items:center;gap:10px}
+  .aibox .spin{width:16px;height:16px;border:3px solid var(--accent-soft);border-top-color:var(--accent);border-radius:50%;animation:sp 1s linear infinite}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  .aibox .ainote{color:var(--muted);font-size:14px}
+  .aimd h4{margin:15px 0 4px;font-size:14.5px;font-weight:700;color:var(--accent-ink)}
+  .aimd p{margin:6px 0;font-size:14.5px}
+  .aimd ul{margin:6px 0;padding-left:20px}.aimd li{margin:4px 0;font-size:14.5px}
+  .aidisc{font-size:11.5px;color:#9aa1a8;margin-top:12px;border-top:1px solid var(--line);padding-top:10px}
+
+  .footnote{font-size:12px;color:var(--muted);margin-top:26px;text-align:center}
+
+  #printArea{display:none}
+  @media print{
+    body *{visibility:hidden}
+    #printArea,#printArea *{visibility:visible}
+    #printArea{display:block;position:absolute;left:0;top:0;width:100%;padding:24px}
+  }
+</style>
+</head>
+<body>
+<!-- GRWN-logo uit de officiële brandguide (woordmerk #wm, beeldmerk #mark) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <symbol id="wm" viewBox="335 1820 1810 525">
+    <g transform="matrix(4.9452,0,0,4.9452,354.464,2312.19)">
+      <g transform="matrix(1,0,0,1,-5,0)">
+        <path d="M33.132,0.84C27.561,0.84 22.676,-0.462 18.477,-3.065C14.277,-5.669 11.002,-9.371 8.65,-14.172C6.299,-18.973 5.123,-24.663 5.123,-31.242C5.123,-37.877 6.299,-43.595 8.65,-48.396C11.002,-53.197 14.249,-56.899 18.393,-59.503C22.536,-62.106 27.281,-63.408 32.628,-63.408C35.931,-63.408 39.018,-62.918 41.887,-61.938C44.757,-60.959 47.325,-59.559 49.593,-57.739C51.86,-55.92 53.743,-53.757 55.241,-51.251C56.738,-48.746 57.767,-45.981 58.327,-42.958L50.097,-42.958C49.453,-44.974 48.599,-46.779 47.535,-48.375C46.471,-49.971 45.205,-51.342 43.735,-52.49C42.265,-53.638 40.606,-54.513 38.759,-55.115C36.911,-55.717 34.882,-56.018 32.67,-56.018C29.003,-56.018 25.671,-55.073 22.676,-53.183C19.68,-51.293 17.301,-48.508 15.537,-44.827C13.773,-41.145 12.892,-36.617 12.892,-31.242C12.892,-25.923 13.78,-21.43 15.558,-17.763C17.336,-14.095 19.75,-11.31 22.802,-9.406C25.853,-7.503 29.297,-6.551 33.132,-6.551C36.659,-6.551 39.767,-7.3 42.454,-8.797C45.142,-10.295 47.234,-12.423 48.732,-15.18C50.23,-17.938 50.979,-21.192 50.979,-24.943L53.372,-24.481L34.77,-24.481L34.77,-31.452L58.789,-31.452L58.789,-24.607C58.789,-19.428 57.683,-14.935 55.472,-11.128C53.26,-7.321 50.23,-4.374 46.38,-2.289C42.531,-0.203 38.115,0.84 33.132,0.84Z" style="fill:currentColor;fill-rule:nonzero;stroke:currentColor;stroke-width:5px;"/>
+      </g>
+      <path d="M69.143,0L69.143,-62.568L90.559,-62.568C95.43,-62.568 99.44,-61.736 102.589,-60.07C105.739,-58.404 108.076,-56.116 109.602,-53.204C111.128,-50.293 111.891,-46.975 111.891,-43.252C111.891,-39.529 111.128,-36.239 109.602,-33.384C108.076,-30.528 105.746,-28.296 102.61,-26.686C99.475,-25.076 95.472,-24.271 90.601,-24.271L73.594,-24.271L73.594,-31.368L90.223,-31.368C93.526,-31.368 96.179,-31.851 98.18,-32.817C100.182,-33.783 101.645,-35.154 102.568,-36.932C103.492,-38.71 103.954,-40.816 103.954,-43.252C103.954,-45.743 103.492,-47.906 102.568,-49.74C101.645,-51.573 100.175,-53.001 98.159,-54.023C96.144,-55.045 93.47,-55.556 90.139,-55.556L77.121,-55.556L77.121,0L69.143,0ZM105.088,0L89.971,-28.177L98.957,-28.177L114.326,0L105.088,0Z" style="fill:currentColor;fill-rule:nonzero;stroke:currentColor;stroke-width:5px;"/>
+    </g>
+    <g transform="matrix(4.9452,0,0,4.9452,251.34,1551.75)">
+      <path d="M141.307,115.988L166.148,153.841C167.43,155.794 169.602,156.979 171.938,157C174.275,157.02 176.467,155.874 177.784,153.943L187,140.426L196.216,153.943C197.624,156.007 200.024,157.165 202.516,156.981C205.007,156.797 207.212,155.299 208.3,153.051L250.885,65.105L238.284,59.003L200.971,136.064L192.784,124.057C191.48,122.144 189.315,121 187,121C184.685,121 182.52,122.144 181.216,124.057L172.111,137.411L153.012,108.307L141.307,115.988Z" style="fill:#E83F6F;fill-rule:nonzero;"/>
+    </g>
+    <g transform="matrix(4.9452,0,0,4.9452,1442.4,2312.19)">
+      <path d="M7.559,0L7.559,-62.568L16.965,-62.568L42.412,-22.55C43.084,-21.514 43.896,-20.184 44.848,-18.561C45.799,-16.937 46.828,-15.103 47.934,-13.06C49.04,-11.016 50.125,-8.832 51.188,-6.509L50.055,-6.509C49.803,-8.916 49.621,-11.219 49.509,-13.417C49.397,-15.614 49.327,-17.637 49.299,-19.484C49.271,-21.332 49.257,-22.9 49.257,-24.188L49.257,-62.568L57.235,-62.568L57.235,0L47.745,0L25.069,-35.609C24.034,-37.261 22.991,-38.962 21.941,-40.711C20.891,-42.461 19.694,-44.533 18.351,-46.926C17.007,-49.32 15.341,-52.28 13.354,-55.808L14.823,-55.808C14.963,-52.7 15.089,-49.831 15.201,-47.199C15.313,-44.568 15.404,-42.272 15.474,-40.313C15.544,-38.353 15.579,-36.813 15.579,-35.693L15.579,0L7.559,0Z" style="fill:currentColor;fill-rule:nonzero;"/>
+    </g>
+    <g transform="matrix(4.9452,0,0,4.9452,1442.4,2312.19)">
+      <path d="M17.886,-42.685C18.569,-41.497 19.206,-40.41 19.797,-39.425C20.856,-37.661 21.907,-35.946 22.951,-34.281C22.954,-34.276 22.957,-34.271 22.961,-34.267L45.636,1.343C46.095,2.064 46.891,2.5 47.745,2.5L57.235,2.5C58.616,2.5 59.735,1.381 59.735,0L59.735,-62.568C59.735,-63.949 58.616,-65.068 57.235,-65.068L49.257,-65.068C47.876,-65.068 46.757,-63.949 46.757,-62.568L46.757,-24.188C46.757,-23.066 46.767,-21.733 46.789,-20.189C45.91,-21.683 45.152,-22.919 44.516,-23.9L19.074,-63.91C18.616,-64.631 17.82,-65.068 16.965,-65.068L7.559,-65.068C6.178,-65.068 5.059,-63.949 5.059,-62.568L5.059,0C5.059,1.381 6.178,2.5 7.559,2.5L15.579,2.5C16.96,2.5 18.079,1.381 18.079,-0L18.079,-35.693C18.079,-36.835 18.044,-38.404 17.973,-40.402L17.886,-42.685ZM47.324,-8.806C46.799,-9.861 46.27,-10.882 45.735,-11.87C44.645,-13.886 43.63,-15.695 42.691,-17.296C41.762,-18.881 40.97,-20.179 40.315,-21.189C40.311,-21.196 40.307,-21.202 40.303,-21.208L15.592,-60.068L10.059,-60.068L10.059,-2.5L13.079,-2.5L13.079,-35.693C13.079,-36.792 13.044,-38.301 12.976,-40.223C12.906,-42.178 12.815,-44.468 12.703,-47.093C12.634,-48.726 12.559,-50.451 12.478,-52.267L11.176,-54.58C10.739,-55.354 10.747,-56.302 11.195,-57.069C11.643,-57.836 12.465,-58.308 13.354,-58.308L14.823,-58.308C16.16,-58.308 17.261,-57.256 17.321,-55.92L17.42,-53.681C18.6,-51.586 19.636,-49.743 20.531,-48.15C21.861,-45.781 23.045,-43.73 24.085,-41.998C25.124,-40.265 26.157,-38.58 27.183,-36.944L49.117,-2.5L54.735,-2.5L54.735,-60.068L51.757,-60.068C51.757,-60.068 51.757,-24.187 51.757,-24.188C51.757,-22.91 51.771,-21.355 51.799,-19.522C51.826,-17.702 51.895,-15.709 52.006,-13.544C52.062,-12.444 52.136,-11.318 52.228,-10.164C52.642,-9.313 53.053,-8.441 53.462,-7.549C53.816,-6.776 53.752,-5.874 53.292,-5.158C52.832,-4.442 52.04,-4.009 51.188,-4.009L50.055,-4.009C48.775,-4.009 47.701,-4.976 47.568,-6.249C47.478,-7.114 47.396,-7.967 47.324,-8.806Z" style="fill:currentColor;fill-rule:nonzero;"/>
+    </g>
+    <g transform="matrix(1.02778,0,0,1.02778,1771.89,2313.92)">
+      <path d="M58.594,-16.846C58.594,-11.377 56.616,-6.714 52.661,-2.856C48.706,1.001 43.994,2.93 38.525,2.93C33.057,2.93 28.345,1.001 24.39,-2.856C20.435,-6.714 18.457,-11.377 18.457,-16.846C18.457,-22.314 20.435,-27.026 24.39,-30.981C28.345,-34.937 33.057,-36.914 38.525,-36.914C43.994,-36.914 48.706,-34.937 52.661,-30.981C56.616,-27.026 58.594,-22.314 58.594,-16.846Z" style="fill:#E83F6F;fill-rule:nonzero;"/>
+      <path d="M182.813,-19.336L181.787,-19.336C179.639,-17.578 177.075,-15.356 174.097,-12.671C171.118,-9.985 167.627,-7.422 163.623,-4.98C159.814,-2.539 155.664,-0.415 151.172,1.392C146.68,3.198 141.797,4.102 136.523,4.102C122.363,4.102 111.255,-0.977 103.198,-11.133C95.142,-21.289 91.113,-35.156 91.113,-52.734C91.113,-64.844 93.359,-76.611 97.852,-88.037C102.344,-99.463 108.545,-109.717 116.455,-118.799C123.975,-127.49 132.91,-134.497 143.262,-139.819C153.613,-145.142 164.258,-147.803 175.195,-147.803C182.129,-147.803 188.745,-146.875 195.044,-145.02C201.343,-143.164 206.299,-141.064 209.912,-138.721L236.719,-145.605L238.477,-143.408L216.211,-48.926C215.43,-45.898 214.624,-42.212 213.794,-37.866C212.964,-33.521 212.549,-30.322 212.549,-28.271C212.549,-22.705 213.721,-18.945 216.064,-16.992C218.408,-15.039 222.363,-14.063 227.93,-14.063C229.785,-14.063 232.422,-14.355 235.84,-14.941C239.258,-15.527 241.895,-16.162 243.75,-16.846L241.553,-7.471C232.764,-3.955 226.221,-1.416 221.924,0.146C217.627,1.709 212.402,2.49 206.25,2.49C199.219,2.49 193.652,0.439 189.551,-3.662C185.449,-7.764 183.203,-12.988 182.813,-19.336ZM203.76,-111.914C203.76,-115.137 203.418,-118.213 202.734,-121.143C202.051,-124.072 200.635,-126.807 198.486,-129.346C196.533,-131.787 193.848,-133.74 190.43,-135.205C187.012,-136.67 182.715,-137.402 177.539,-137.402C170.41,-137.402 163.477,-135.059 156.738,-130.371C150,-125.684 143.945,-119.385 138.574,-111.475C133.496,-104.053 129.346,-95.068 126.123,-84.521C122.9,-73.975 121.289,-63.281 121.289,-52.441C121.289,-46.484 121.631,-41.211 122.314,-36.621C122.998,-32.031 124.316,-27.832 126.27,-24.023C128.125,-20.313 130.811,-17.432 134.326,-15.381C137.842,-13.33 142.285,-12.305 147.656,-12.305C153.125,-12.305 158.862,-13.843 164.868,-16.919C170.874,-19.995 177.637,-25.391 185.156,-33.105L203.76,-111.914Z" style="fill:#E83F6F;fill-rule:nonzero;"/>
+      <path d="M333.398,-15.967L331.201,-6.592C322.217,-2.979 315.039,-0.464 309.668,0.952C304.297,2.368 299.707,3.076 295.898,3.076C288.086,3.076 282.227,1.05 278.32,-3.003C274.414,-7.056 272.461,-12.061 272.461,-18.018C272.461,-20.264 272.656,-22.607 273.047,-25.049C273.438,-27.49 274.072,-30.566 274.951,-34.277L290.479,-96.533C291.26,-99.951 292.017,-103.613 292.749,-107.52C293.481,-111.426 293.848,-114.746 293.848,-117.48C293.848,-122.949 292.944,-126.587 291.138,-128.394C289.331,-130.2 285.645,-131.104 280.078,-131.104C277.93,-131.104 275.073,-130.762 271.509,-130.078C267.944,-129.395 265.234,-128.809 263.379,-128.32L265.576,-137.695C273.193,-141.113 280.029,-143.652 286.084,-145.313C292.139,-146.973 296.924,-147.803 300.439,-147.803C308.447,-147.803 314.258,-145.898 317.871,-142.09C321.484,-138.281 323.291,-133.154 323.291,-126.709C323.291,-124.951 323.096,-122.559 322.705,-119.531C322.314,-116.504 321.729,-113.477 320.947,-110.449L305.273,-48.193C304.297,-44.385 303.442,-40.649 302.71,-36.987C301.978,-33.325 301.611,-30.322 301.611,-27.979C301.611,-22.412 302.856,-18.604 305.347,-16.553C307.837,-14.502 311.865,-13.477 317.432,-13.477C319.287,-13.477 321.948,-13.721 325.415,-14.209C328.882,-14.697 331.543,-15.283 333.398,-15.967ZM343.799,-203.174C343.799,-197.607 341.992,-192.749 338.379,-188.599C334.766,-184.448 330.273,-182.373 324.902,-182.373C319.922,-182.373 315.625,-184.351 312.012,-188.306C308.398,-192.261 306.592,-196.777 306.592,-201.855C306.592,-207.227 308.398,-211.914 312.012,-215.918C315.625,-219.922 319.922,-221.924 324.902,-221.924C330.469,-221.924 335.01,-220.044 338.525,-216.284C342.041,-212.524 343.799,-208.154 343.799,-203.174Z" style="fill:#E83F6F;fill-rule:nonzero;"/>
+    </g>
+</symbol>
+  <symbol id="mark" viewBox="117.31 35.00 157.58 146.00">
+<path d="M141.307,115.988L166.148,153.841C167.43,155.794 169.602,156.979 171.938,157C174.275,157.02 176.467,155.874 177.784,153.943L187,140.426C187,140.426 196.216,153.943 196.216,153.943C197.624,156.007 200.024,157.165 202.516,156.981C205.007,156.797 207.212,155.299 208.3,153.051L250.885,65.105L238.284,59.003L200.971,136.064C200.971,136.064 192.784,124.057 192.784,124.057C191.48,122.144 189.315,121 187,121C184.685,121 182.52,122.144 181.216,124.057L172.111,137.411L153.012,108.307L141.307,115.988Z" style="fill:currentColor;"/>
+</symbol>
+</defs></svg>
+
+  <header class="siteheader">
+    <div class="inner">
+      <div class="brand">
+        <!-- LOGO: vervang de inhoud van #brandLogo door <img src="grwn-logo.svg" style="width:100%;height:100%"> -->
+        <div id="brandLogo" aria-hidden="true" title="GRWN.ai">
+          <svg class="brandmark" viewBox="117.31 35 157.58 146"><use href="#mark"/></svg>
+        </div>
+        <div class="titles">
+          <h1>De weg naar een fijne werkdag</h1>
+          <div class="sub">Een instrument van <strong>GRWN.ai</strong> · JD-R model</div>
+        </div>
+      </div>
+      <div id="modePill" class="modepill" style="display:none"></div>
+    </div>
+  </header>
+  <div class="accentrule"></div>
+
+  <div class="wrap">
+    <div class="progress" id="progressWrap" style="display:none">
+      <div class="meta"><span id="progressStep"></span><span id="progressPct"></span></div>
+      <div class="stepper" id="stepper"></div>
+      <div class="bar"><div id="progressBar"></div></div>
+    </div>
+    <div id="app"></div>
+    <div style="text-align:center;margin-top:30px"><svg class="foot-wm" viewBox="335 1820 1810 525" role="img" aria-label="GRWN"><use href="#wm"/></svg></div>
+    <p class="footnote">Een instrument van GRWN.ai · op basis van het Job Demands–Resources (JD-R) model. Ingevulde gegevens blijven op dit apparaat.</p>
+  </div>
+  <div id="printArea"></div>
+
+<script>
+/* ===================== STATE ===================== */
+const KEY='fijnewerkdag_pro_v3';
+let state={mode:null,naam:'',datum:'',taaktype:null,hulpvoldoende:null,answers:{},idx:0};
+
+/* ===================== ICONS (sober line icons) ===================== */
+const IC={
+  dialog:'<path d="M20 4H4a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h3v3l4-3h9a1 1 0 0 0 1-1V5a1 1 0 0 0-1-1Z"/><path d="M7 9h10M7 12.5h6"/>',
+  balance:'<path d="M4 8h13M13 4l4 4-4 4M20 16H7M11 12l-4 4 4 4"/>',
+  target:'<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3.4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>',
+  trend:'<path d="M4 18 10 12l3 3 7-7"/><path d="M20 6h-4M20 6v4"/>',
+  alert:'<path d="M12 4 3 19h18L12 4Z"/><path d="M12 10v4M12 17h.01"/>',
+  building:'<path d="M5 21V5a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v16M15 21V10h3a1 1 0 0 1 1 1v10M3 21h18"/><path d="M8 8h2M8 12h2M8 16h2"/>',
+  user:'<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
+  checklist:'<path d="M7 4h10a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Z"/><path d="M9.5 3.5h5V6h-5z"/><path d="M9 12l1.4 1.4L13 11M9 16.5h5"/>',
+  sliders:'<path d="M4 7h16M4 12h16M4 17h16"/><circle cx="9" cy="7" r="2" fill="#fff"/><circle cx="15" cy="12" r="2" fill="#fff"/><circle cx="8" cy="17" r="2" fill="#fff"/>',
+  tasks:'<path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6l1.2 1.2L7.5 5M4 12l1.2 1.2L7.5 11M4 18l1.2 1.2L7.5 17"/>',
+  bulb:'<path d="M9.5 18h5M10.5 21h3"/><path d="M12 3a6 6 0 0 0-3.8 10.7c.6.5.8 1 .8 1.8v.5h6v-.5c0-.8.2-1.3.8-1.8A6 6 0 0 0 12 3Z"/>',
+  feedback:'<path d="M20 4H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h4v3l4-3h8a1 1 0 0 0 1-1V5a1 1 0 0 0-1-1Z"/><path d="M8.5 10l2 2 4-4"/>',
+  flag:'<path d="M6 21V4M6 4h11l-2 3.2L17 11H6"/>',
+  spark:'<path d="M12 3l1.8 4.9L18.7 9l-4.9 1.8L12 15l-1.8-4.2L5.3 9l4.9-1.1L12 3ZM19 14l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7.7-2Z"/>'
+};
+function icon(name,cls){return '<svg class="'+(cls||'')+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">'+(IC[name]||'')+'</svg>';}
+const ICON={werksituatie:'dialog',taaktype:'balance',uitdagend_nodig:'target',effect_termijn:'trend',
+  knelpunt:'alert',hulp_organisatie:'building',hulp_zelf:'user',hulpbronnen_check:'checklist',
+  andere_stappen:'sliders',concrete_stappen:'tasks',leereffect:'bulb',feedback:'feedback',afsluiting:'flag'};
+const SHORT={werksituatie:'Werk­situatie',taaktype:'Type taak',uitdagend_nodig:'Uitdagend',effect_termijn:'Effect',
+  knelpunt:'Knelpunt',hulp_organisatie:'Organisatie',hulp_zelf:'Jezelf',hulpbronnen_check:'Afweging',
+  andere_stappen:'Andere stappen',concrete_stappen:'Concrete stappen',leereffect:'Leereffect',feedback:'Feedback',afsluiting:'Afsluiting'};
+
+function renderStepper(force){
+  const p=path();
+  const cur = force ? p.length : state.idx; // report = after last
+  let h='';
+  p.forEach((id,i)=>{
+    const cls = i<cur?'done':(i===cur?'cur':'');
+    h+=`<div class="st ${cls}"><div class="num">${i+1}</div><div class="lbl">${SHORT[id]}</div></div>`;
+  });
+  const rc = force?'cur':'';
+  h+=`<div class="st ${rc}"><div class="num">${icon('flag')}</div><div class="lbl">Rapportage</div></div>`;
+  // swap flag svg sizing inside num
+  return h;
+}
+
+function flowOverview(){
+  const node=(id,label)=>`<div class="fnode"><span class="fi">${icon(ICON[id]||'dialog')}</span><span class="ft">${label||SHORT[id]}</span></div>`;
+  const conn='<div class="fconn"></div>';
+  return `<div class="flowmap">
+    <h4>Zo ziet de route eruit</h4>
+    <p class="fsub">Je doorloopt onderstaande stappen. Na stap 2 splitst de route zich, afhankelijk van het type taak, en komt daarna weer samen.</p>
+    <div class="fseq">
+      ${node('werksituatie','1 · Werksituatie')}${conn}
+      ${node('taaktype','2 · Type taak: uitdagend of hinderlijk')}${conn}
+      <div class="fbranch">
+        <div class="ftrack up"><span class="th">Route uitdagend</span>
+          ${node('uitdagend_nodig')}<div class="fconn"></div>${node('effect_termijn')}</div>
+        <div class="ftrack hi"><span class="th">Route hinderlijk</span>
+          ${node('knelpunt')}<div class="fconn"></div>${node('hulp_organisatie')}<div class="fconn"></div>${node('hulp_zelf')}<div class="fconn"></div>${node('hulpbronnen_check')}<div class="fconn"></div>${node('andere_stappen','Andere stappen (bij ‘nee’)')}</div>
+      </div>
+      <div class="fmerge">▼ de routes komen hier weer samen ▼</div>
+      ${node('concrete_stappen','3 · Concrete stappen')}${conn}
+      ${node('leereffect','4 · Leereffect')}${conn}
+      ${node('feedback','5 · Feedback')}${conn}
+      ${node('afsluiting','Afsluiting')}${conn}
+      <div class="fnode" style="border-color:var(--accent);background:var(--accent-soft)"><span class="fi" style="background:var(--accent);color:#fff;border-color:var(--accent)">${icon('flag')}</span><span class="ft">Rapportage &amp; AI-analyse</span></div>
+    </div>
+  </div>`;
+}
+
+/* ===================== SCREENS ===================== */
+const S={
+  werksituatie:{tag:'Stap 1 · Werksituatie',title:'Werksituatie',
+    ctx:'Beschrijf kort wat er speelt in het werk. Kies één taak die eruitspringt — positief of negatief. Met die taak gaan we verder.',
+    q:[{id:'ws_dag',label:'Hoe ziet jouw werkdag eruit?'},
+       {id:'ws_terug',label:'Welke taken of situaties komen vaak terug?'},
+       {id:'ws_ervaring',label:'Hoe ervaar je jouw werk op dit moment, en waardoor komt dit?'},
+       {id:'ws_taak',label:'Welke taak springt eruit?',hint:'Deze taak staat centraal in de rest van het gesprek.'}],
+    tips:[{items:['Gebruik open vragen (hoe, wat, welke).','Vat samen wat je hoort en check of je het goed begrijpt.','Focus op inzicht en oplossingen, niet op oordeel.']}]},
+
+  taaktype:{tag:'Stap 2 · Type taak',title:'Wat voor taak is het?',
+    ctx:'Bepaal samen of de gekozen taak vooral uitdagend of vooral hinderlijk is. Dit bepaalt de route die je hierna volgt.',
+    choice:'taaktype',
+    tips:[{sub:'Uitdagend',items:['Geeft een gevoel van trots, motiveert, daagt uit om te groeien en geeft een gezonde druk.']},
+          {sub:'Hinderlijk',items:['Kost energie, frustreert of belemmert, maakt het werk moeilijker of geeft stress zonder dat het iets oplevert.']}]},
+
+  uitdagend_nodig:{tag:'Route uitdagend · Werk dat je uitdaagt',title:'Werk dat je uitdaagt',
+    ctx:'Je versterkt wat energie geeft. Verken wat nodig is om meer van dit soort taken toe te voegen.',
+    q:[{id:'ud_nodig',label:'Wie of wat heb je nodig om meer uitdagende taken toe te voegen?'}],
+    tips:[{items:['Goed dat je helder kunt benoemen wat energie geeft.','Fijn dat je zelf al ideeën hebt om meer uitdagende taken te creëren.']}]},
+  effect_termijn:{tag:'Route uitdagend · Effect lange termijn',title:'Effect op de langere termijn',
+    ctx:'Sta stil bij de langere termijn: welke pijn of welk verlangen speelt er? Daar ontstaat motivatie.',
+    q:[{id:'et_balans',label:'Wat gebeurt er met jouw balans als je dit op deze manier blijft doen?'},
+       {id:'et_bereiken',label:'Als je meer energie en minder stress hebt, wat kun je dan bereiken?'},
+       {id:'et_trots',label:'Hoe zou het voelen als je vaker trots bent op wat je doet?'},
+       {id:'et_opleveren',label:'Wat zou het jou opleveren als je meer van die uitdagende taken hebt?'}]},
+
+  knelpunt:{tag:'Route hinderlijk · Knelpunt',title:'Welke hulp kun je het beste gebruiken?',
+    ctx:'Een hinderlijke taak kost energie en geeft stress. Verken welke hulp nu het beste past — daarna kijken we naar hulp vanuit de organisatie én vanuit jezelf.',
+    q:[{id:'kp_hulp',label:'Welke hulp kun jij nu het beste gebruiken?'}]},
+  hulp_organisatie:{tag:'Route hinderlijk · Hulpbronnen (organisatie)',title:'Hulp vanuit de organisatie',
+    ctx:'Verken welke hulp vanuit de organisatie de hinderlijke taak kan verminderen.',
+    q:[{id:'org_autonomie',label:'Heb je voldoende autonomie om keuzes te maken in je werk?'},
+       {id:'org_rol',label:'Is er sprake van rolduidelijkheid?'},
+       {id:'org_samen',label:'Hoe ervaar je de samenwerking met collega’s?'},
+       {id:'org_feedback',label:'Geeft je leidinggevende feedback en coaching?'},
+       {id:'org_systemen',label:'Zijn de systemen ondersteunend aan jouw taak?'},
+       {id:'org_kennis',label:'Heb je voldoende kennis en kunde op dit gebied?'}]},
+  hulp_zelf:{tag:'Route hinderlijk · Hulpbronnen (jezelf)',title:'Hulp vanuit jezelf',
+    ctx:'Verken welke hulp vanuit jezelf je kunt inzetten.',
+    q:[{id:'zelf_stem',label:'Kun je jouw stem laten horen wanneer het nodig is?'},
+       {id:'zelf_talent',label:'Bezit je talenten/sterke punten die je nu in kunt zetten?'},
+       {id:'zelf_onverwacht',label:'Hoe ga je om met onverwachte uitdagingen?'},
+       {id:'zelf_energie',label:'Is jouw energie in balans, ben je hier bewust mee bezig?'},
+       {id:'zelf_mindset',label:'Welke mindset kan je nu helpen?'}]},
+  hulpbronnen_check:{tag:'Route hinderlijk · Afweging',title:'Kun je voldoende hulpbronnen inzetten?',
+    ctx:'Kun je met deze hulpbronnen het werk weer uitdagend (in balans) maken?',
+    choice:'hulpvoldoende',
+    tips:[{items:['Ja → door naar concrete stappen.','Nee → eerst kijken naar andere stappen: vereenvoudigen, schrappen of herprioriteren.']}]},
+  andere_stappen:{tag:'Route hinderlijk · Andere stappen',title:'Wat als dit niet voldoende is?',
+    ctx:'De hulpbronnen zijn mogelijk niet genoeg om de hinderlijke taak te verminderen. Kijk samen naar andere stappen.',
+    q:[{id:'as_schrappen',label:'Zijn er taken die je nu kunt vereenvoudigen of schrappen?'},
+       {id:'as_prio',label:'Is de prioritering juist?'},
+       {id:'as_tijd',label:'Hoe kun je nu jouw tijdsdruk verminderen?'}]},
+
+  concrete_stappen:{tag:'Stap 3 · Concrete stappen',title:'Welke concrete stappen ga je nu zetten?',
+    ctx:'Stimuleer pro-actief gedrag door direct concrete stappen af te spreken. Dit hoeven geen grote stappen te zijn.',
+    q:[{id:'cs_grip',label:'Wat kun je deze week doen om meer grip te krijgen op je werkdruk?'},
+       {id:'cs_steun',label:'Met wie ga je in gesprek om meer steun of samenwerking te organiseren?'},
+       {id:'cs_ontwikkel',label:'Welke ontwikkelmogelijkheid wil je concreet oppakken, en wanneer?'},
+       {id:'cs_klein',label:'Wat is één kleine verandering die je morgen kunt doorvoeren om meer energie te ervaren?'},
+       {id:'cs_deadline',label:'Wat is je deadline voor deze eerste stap?'},
+       {id:'cs_vervolg',label:'Welke vervolgstap volgt daarna om de balans verder te verbeteren?'}]},
+  leereffect:{tag:'Stap 4 · Leereffect',title:'Leereffect',
+    ctx:'Ga direct na of deze aanpak effect heeft.',
+    q:[{id:'le_motivatie',label:'Denk je dat je met deze stappen meer motivatie en minder stress zult ervaren?'},
+       {id:'le_actie',label:'Wat is één concrete actie die je vandaag kunt nemen?'},
+       {id:'le_vaker',label:'Helpt deze manier van denken, en wat heb je nodig om dit vaker toe te passen?'}]},
+  feedback:{tag:'Stap 5 · Feedback',title:'Feedback',
+    ctx:'Belangrijk: geef tijdens dit gesprek — dus ter plekke — feedback aan de medewerker.',
+    q:[{id:'fb',label:'Welke feedback is gegeven of gekregen?',hint:'Optioneel — leg vast wat benoemd is.'}],
+    tips:[{sub:'Feedbackmogelijkheden',items:['Goed dat je zo helder kunt benoemen wat jou energie geeft.','Fijn dat je zelf al ideeën hebt om meer uitdagende taken te creëren.','Goed dat je aangeeft welke ondersteuning je mist — dat helpt om samen te verbeteren.','Je hebt duidelijk inzicht in wat je nodig hebt; hoe ga je dit realiseren?']}]},
+  afsluiting:{tag:'Afsluiting',title:'Wat heeft dit gesprek opgeleverd?',
+    ctx:'Sluit positief af en vat de opbrengst samen.',
+    q:[{id:'af_opbrengst',label:'Wat heeft dit gesprek jou opgeleverd met betrekking tot jouw werksituatie?'}]}
+};
+
+function path(){
+  const p=['werksituatie','taaktype'];
+  if(state.taaktype==='uitdagend')p.push('uitdagend_nodig','effect_termijn');
+  else if(state.taaktype==='hinderlijk'){p.push('knelpunt','hulp_organisatie','hulp_zelf','hulpbronnen_check');
+    if(state.hulpvoldoende==='nee')p.push('andere_stappen');}
+  if(state.taaktype)p.push('concrete_stappen','leereffect','feedback','afsluiting');
+  return p;
+}
+
+/* ===================== HELPERS ===================== */
+const appEl=document.getElementById('app');
+function save(){try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}}
+function load(){try{const s=localStorage.getItem(KEY);if(s)state=Object.assign(state,JSON.parse(s))}catch(e){}}
+function esc(s){return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+function cap(s){return s?s.charAt(0).toUpperCase()+s.slice(1):s}
+
+/* ===================== RENDER ===================== */
+function render(){
+  save();
+  if(!state.mode){renderStart();prog(false);return;}
+  const p=path();
+  if(state.idx<0)state.idx=0;
+  if(state.idx>=p.length){renderReport();prog(true,1);return;}
+  renderScreen(p[state.idx],p);
+}
+
+function renderStart(){
+  document.getElementById('modePill').style.display='none';
+  appEl.innerHTML=`
+  <div class="intro">
+    <div class="band">
+      <svg class="wordmark" viewBox="335 1820 1810 525" role="img" aria-label="GRWN"><use href="#wm"/></svg>
+      <h2>De weg naar een fijne werkdag</h2>
+      <p>Een stapsgewijs instrument op basis van het JD-R model. Het helpt verkennen wat energie geeft en wat energie kost, en sluit af met een rapportage.</p>
+    </div>
+    <div class="body">
+      <h3>Hoe wordt het instrument gebruikt?</h3>
+      <div class="modegrid">
+        <button class="choice" onclick="setMode('samen')"><div class="ct">Samen — in gesprek</div><div class="cd">Een begeleider voert het gesprek met een medewerker. Begeleidingstips staan standaard open.</div></button>
+        <button class="choice" onclick="setMode('zelf')"><div class="ct">Zelf — reflectie</div><div class="cd">De stappen worden zelfstandig doorlopen en de vragen voor jezelf beantwoord.</div></button>
+      </div>
+      <div class="q"><label>Naam <span class="hint">Optioneel — verschijnt in de rapportage.</span></label>
+        <input type="text" id="startNaam" value="${esc(state.naam)}" placeholder="Naam van de medewerker of jezelf"></div>
+      <div class="principles"><b>Uitgangspunten voor het gesprek</b>
+        <ul><li>Gebruik open vragen (hoe, wat, welke).</li><li>Vat samen wat je hoort en check of je het goed begrijpt.</li><li>Focus op inzicht en oplossingen, niet op oordeel.</li></ul></div>
+      <div style="height:20px"></div>
+      ${flowOverview()}
+      ${(Object.keys(state.answers).length||state.taaktype)?`<div class="nav"><span></span><button class="btn ghost" onclick="resetAll()">Eerdere sessie wissen</button></div>`:''}
+    </div>
+  </div>`;
+}
+function setMode(m){const n=document.getElementById('startNaam');if(n)state.naam=n.value;
+  state.mode=m;if(!state.datum)state.datum=new Date().toLocaleDateString('nl-NL',{day:'numeric',month:'long',year:'numeric'});
+  state.idx=0;render();}
+
+function renderScreen(id,p){
+  const s=S[id];
+  document.getElementById('modePill').style.display='inline-block';
+  document.getElementById('modePill').textContent=state.mode==='samen'?'Modus: Samen — in gesprek':'Modus: Zelf — reflectie';
+
+  let body='';
+  if(s.choice)body+=renderChoice(s.choice);
+  if(s.q)body+=s.q.map(q=>`<div class="q"><label>${q.label}${q.hint?`<span class="hint">${q.hint}</span>`:''}</label>
+    <textarea data-qid="${q.id}" oninput="onAns(this)" placeholder="Typ hier…">${esc(state.answers[q.id])}</textarea></div>`).join('');
+
+  let tips='';
+  if(s.tips){const open=state.mode==='samen'?' open':'';
+    const tb=s.tips.map(t=>`${t.sub?`<div class="sub">${t.sub}</div>`:''}<ul>${t.items.map(i=>`<li>${i}</li>`).join('')}</ul>`).join('');
+    tips=`<details class="tips"${open}><summary><span class="chev">▶</span> Begeleidingstips &amp; voorbeeldvragen</summary><div class="tb">${tb}</div></details>`;}
+
+  const first=state.idx===0,pending=s.choice&&!state[s.choice],last=state.idx===p.length-1;
+  appEl.innerHTML=`<article class="card">
+    <div class="card-head">
+      <span class="badge">${icon(ICON[id])}</span>
+      <div><div class="eyebrow">${esc(s.tag)}</div><h2>${s.title}</h2></div>
+    </div>
+    <p class="context">${s.ctx}</p>${tips}${body}
+    <div class="nav">
+      <button class="btn ghost" onclick="prev()">${first?'Terug naar start':'Vorige'}</button>
+      <button class="btn primary" onclick="next()" ${pending?'disabled':''}>${last?'Rapportage opmaken':'Volgende'}</button>
+    </div></article>`;
+  prog(true);window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function renderChoice(kind){
+  if(kind==='taaktype')return `<div class="choices">
+    <button class="choice ${state.taaktype==='uitdagend'?'sel':''}" onclick="setChoice('taaktype','uitdagend')"><div class="ct">Uitdagend</div><div class="cd">Geeft trots en gezonde druk, motiveert en daagt uit om te groeien.</div></button>
+    <button class="choice ${state.taaktype==='hinderlijk'?'sel':''}" onclick="setChoice('taaktype','hinderlijk')"><div class="ct">Hinderlijk</div><div class="cd">Kost energie, frustreert of belemmert en geeft stress zonder dat het iets oplevert.</div></button></div>`;
+  if(kind==='hulpvoldoende')return `<div class="choices">
+    <button class="choice ${state.hulpvoldoende==='ja'?'sel':''}" onclick="setChoice('hulpvoldoende','ja')"><div class="ct">Ja</div><div class="cd">Met deze hulpbronnen kan het werk weer uitdagend worden. Door naar concrete stappen.</div></button>
+    <button class="choice ${state.hulpvoldoende==='nee'?'sel':''}" onclick="setChoice('hulpvoldoende','nee')"><div class="ct">Nee</div><div class="cd">Nog niet voldoende. Kijk eerst samen naar andere stappen.</div></button></div>`;
+  return '';
+}
+function setChoice(k,v){state[k]=v;if(k==='taaktype')state.hulpvoldoende=null;save();render();}
+function onAns(el){state.answers[el.dataset.qid]=el.value;save();}
+function next(){state.idx++;render();}
+function prev(){if(state.idx===0){state.mode=null;render();return;}state.idx--;render();}
+
+function prog(show,force){
+  const w=document.getElementById('progressWrap');
+  if(!show){w.style.display='none';return;}
+  w.style.display='block';
+  const p=path(),total=p.length+1,cur=force?total:Math.min(state.idx+1,total),pct=force?100:Math.round(cur/total*100);
+  document.getElementById('progressBar').style.width=pct+'%';
+  document.getElementById('progressStep').textContent=force?'Rapportage':`Stap ${cur} van ${total}`;
+  document.getElementById('progressPct').textContent=pct+'%';
+  document.getElementById('stepper').innerHTML=renderStepper(force);
+  const act=document.querySelector('#stepper .st.cur');if(act&&act.scrollIntoView)act.scrollIntoView({inline:'center',block:'nearest'});
+}
+
+/* ===================== REPORT ===================== */
+function renderReport(){
+  document.getElementById('modePill').style.display='inline-block';
+  const p=path();
+  const chips=`<span class="chip">Type taak: ${cap(state.taaktype)||'—'}</span>`+
+    (state.taaktype==='hinderlijk'&&state.hulpvoldoende?`<span class="chip">Voldoende hulpbronnen: ${cap(state.hulpvoldoende)}</span>`:'');
+  const sections=p.map(id=>{const s=S[id];if(!s.q||!s.q.length)return'';
+    const qa=s.q.map(q=>{const a=state.answers[q.id];
+      return `<div class="rqa"><div class="qq">${q.label}</div>${a&&a.trim()?`<div class="aa">${esc(a)}</div>`:`<div class="aa empty">— niet ingevuld —</div>`}</div>`}).join('');
+    return `<div class="rsection"><h3>${s.title}</h3><p class="rctx">${s.ctx}</p>${qa}</div>`;}).join('');
+  const acts=[];
+  ['cs_grip','cs_klein','cs_ontwikkel','cs_deadline','cs_vervolg','le_actie','as_schrappen','as_tijd']
+    .forEach(k=>{if(state.answers[k]&&state.answers[k].trim())acts.push(esc(state.answers[k]))});
+  const actionbox=acts.length?`<div class="actionbox"><h3>Afgesproken acties</h3><ul>${acts.map(a=>`<li>${a}</li>`).join('')}</ul></div>`:'';
+
+  appEl.innerHTML=`<div class="report">
+    <div class="rhead"><div class="doc">Rapportage</div><h2>De weg naar een fijne werkdag</h2>
+      <div class="meta">${state.naam?('<strong>'+esc(state.naam)+'</strong> · '):''}${esc(state.datum)} · ${state.mode==='samen'?'Samen — in gesprek':'Zelf — reflectie'} · JD-R model</div></div>
+    <div class="rbody">
+      <div class="rsumline">${chips}</div>
+      <div class="exportbar">
+        <button class="btn accent" onclick="analyzeAI()">${icon('spark')} AI-analyse &amp; tips</button>
+        <button class="btn ghost" onclick="printReport()">Print / opslaan als PDF</button>
+        <button class="btn ghost" onclick="downloadTxt()">Download als tekst</button>
+        <button class="btn ghost" onclick="emailReport()">Versturen per e-mail</button>
+      </div>
+      <div id="aiBox" class="aibox" style="display:none"></div>
+      ${actionbox}
+      ${sections}
+      <div class="nav"><button class="btn ghost" onclick="prev()">Vorige</button>
+        <button class="btn ghost" onclick="resetAll()">Nieuw gesprek starten</button></div>
+    </div></div>`;
+  // make spark icon in button sized
+  document.querySelectorAll('.btn.accent svg').forEach(s=>{s.style.width='15px';s.style.height='15px';s.style.verticalAlign='-2px';s.style.marginRight='4px';});
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function buildText(){
+  const p=path();
+  let o='RAPPORTAGE — DE WEG NAAR EEN FIJNE WERKDAG\nReflectie op basis van het JD-R model\n';
+  o+=(state.naam?('Naam: '+state.naam+'\n'):'')+'Datum: '+state.datum+'\nModus: '+(state.mode==='samen'?'Samen — in gesprek':'Zelf — reflectie')+'\n';
+  o+='Type taak: '+(cap(state.taaktype)||'—')+(state.hulpvoldoende?('\nVoldoende hulpbronnen: '+cap(state.hulpvoldoende)):'')+'\n';
+  o+='\n==================================================\n';
+  p.forEach(id=>{const s=S[id];if(!s.q||!s.q.length)return;
+    o+='\n'+s.title.toUpperCase()+'\n';
+    s.q.forEach(q=>{const a=state.answers[q.id];o+='  • '+q.label+'\n    '+(a&&a.trim()?a.replace(/\n/g,'\n    '):'(niet ingevuld)')+'\n';});});
+  return o;
+}
+function downloadTxt(){const b=new Blob([buildText()],{type:'text/plain;charset=utf-8'});const a=document.createElement('a');
+  a.href=URL.createObjectURL(b);a.download='rapportage-fijne-werkdag'+(state.naam?'-'+state.naam.replace(/\s+/g,'_'):'')+'.txt';a.click();URL.revokeObjectURL(a.href);}
+function emailReport(){const url='mailto:?subject='+encodeURIComponent('Rapportage – Fijne werkdag'+(state.naam?(' '+state.naam):''))+'&body='+encodeURIComponent(buildText());
+  if(url.length>1900){alert('De rapportage is te lang voor directe e-mail. Gebruik "Download als tekst" of "Print / PDF".');return;}window.location.href=url;}
+function printReport(){
+  const p=path();
+  let html='<h1 style="color:'+getAccent()+'">Rapportage — De weg naar een fijne werkdag</h1>';
+  html+='<p style="color:#555;font-size:13px">'+(state.naam?('<b>'+esc(state.naam)+'</b> · '):'')+esc(state.datum)+' · '+(state.mode==='samen'?'Samen — in gesprek':'Zelf — reflectie')+' · JD-R model<br>Type taak: <b>'+(cap(state.taaktype)||'—')+'</b>'+(state.hulpvoldoende?(' · Voldoende hulpbronnen: <b>'+cap(state.hulpvoldoende)+'</b>'):'')+'</p><hr>';
+  p.forEach(id=>{const s=S[id];if(!s.q||!s.q.length)return;
+    html+='<h3 style="color:'+getAccent()+';margin:16px 0 4px">'+esc(s.title)+'</h3>';
+    s.q.forEach(q=>{const a=state.answers[q.id];
+      html+='<div style="margin:6px 0"><div style="font-weight:600;font-size:13.5px">'+esc(q.label)+'</div>'+
+        (a&&a.trim()?'<div style="white-space:pre-wrap;background:#f4f6f8;padding:7px 10px;border-radius:5px;font-size:13.5px;border:1px solid #e2e6ea">'+esc(a)+'</div>':'<div style="color:#999;font-style:italic">— niet ingevuld —</div>')+'</div>';});});
+  const ai=document.querySelector('#aiBox .aimd');
+  if(ai)html+='<hr><h2 style="color:'+getAccent()+'">AI-analyse & tips</h2>'+ai.outerHTML;
+  document.getElementById('printArea').innerHTML=html;window.print();
+}
+function getAccent(){return getComputedStyle(document.documentElement).getPropertyValue('--accent').trim()||'#1f4e79';}
+
+/* ===================== AI-ANALYSE ===================== */
+function renderMd(t){
+  if(!t)return '<p>Geen analyse ontvangen.</p>';
+  t=esc(t).replace(/\r/g,'');
+  const lines=t.split('\n');let html='',inUl=false;
+  const close=()=>{if(inUl){html+='</ul>';inUl=false;}};
+  const inline=s=>s.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/(?<!\*)\*(?!\*)(.+?)\*(?!\*)/g,'<em>$1</em>');
+  lines.forEach(raw=>{const l=raw.trim();
+    if(!l){close();return;}let m;
+    if(m=l.match(/^#{1,6}\s+(.*)/)){close();html+='<h4>'+inline(m[1])+'</h4>';}
+    else if(m=l.match(/^[-*•]\s+(.*)/)){if(!inUl){html+='<ul>';inUl=true;}html+='<li>'+inline(m[1])+'</li>';}
+    else if(m=l.match(/^\d+[.)]\s+(.*)/)){if(!inUl){html+='<ul>';inUl=true;}html+='<li>'+inline(m[1])+'</li>';}
+    else{close();html+='<p>'+inline(l)+'</p>';}});
+  close();return '<div class="aimd">'+html+'</div>';
+}
+async function analyzeAI(){
+  const box=document.getElementById('aiBox');box.style.display='block';
+  box.innerHTML='<div class="aihead">'+icon('spark')+' AI-analyse</div><div class="aiload"><span class="spin"></span> Bezig met analyseren van de rapportage…</div>';
+  const report=buildText();
+  if(!(window.cowork&&typeof window.cowork.askClaude==='function')){
+    box.innerHTML='<div class="aihead">'+icon('spark')+' AI-analyse</div><div class="ainote">De ingebouwde AI-analyse werkt wanneer dit instrument als artifact in de Claude-app wordt geopend. Als los bestand kun je de rapportage downloaden of via e-mail/klembord in een AI-chat plakken.</div>';return;}
+  const prompt=
+"Je bent een ervaren, professionele HR- en werkgeluk-coach die werkt volgens het Job Demands-Resources (JD-R) model. "+
+"Hieronder staat een ingevulde gespreksrapportage van het instrument 'De weg naar een fijne werkdag'. "+
+"Analyseer deze en geef je reactie in het Nederlands, constructief, zakelijk en bondig, met deze koppen (gebruik '#'): "+
+"\\n# Samenvatting (2-3 zinnen)"+
+"\\n# Sterke punten (wat gaat goed in de antwoorden/het gesprek)"+
+"\\n# Aandachtspunten (vaag gebleven, ontbrekend of tegenstrijdig — verwijs naar concrete antwoorden)"+
+"\\n# Concrete tips & vervolgvragen (3 tot 5 praktische, actiegerichte punten)"+
+"\\nWees specifiek en verwijs naar wat is ingevuld. Als veel velden leeg zijn, benoem vriendelijk dat aanvullen tot beter inzicht leidt.";
+  try{
+    const r=await window.cowork.askClaude(prompt,[report]);
+    let out=(typeof r==='string')?r:(r&&(r.text||r.content||r.message||r.output||r.result||JSON.stringify(r)));
+    box.innerHTML='<div class="aihead">'+icon('spark')+' AI-analyse &amp; tips</div>'+renderMd(out)+
+      '<div class="aidisc">AI-gegenereerd op basis van de ingevulde antwoorden — bedoeld als hulpmiddel, niet als oordeel. Beoordeel de tips op passendheid.</div>'+
+      '<div class="exportbar" style="margin:14px 0 0"><button class="btn ghost" onclick="analyzeAI()">Opnieuw analyseren</button></div>';
+    document.querySelectorAll('.aihead svg').forEach(s=>{s.style.width='18px';s.style.height='18px'});
+  }catch(e){
+    box.innerHTML='<div class="aihead">'+icon('spark')+' AI-analyse</div><div class="ainote">De analyse is niet gelukt: '+esc(String(e&&e.message||e))+'. Probeer het zo nog eens.</div>'+
+      '<div class="exportbar" style="margin:12px 0 0"><button class="btn ghost" onclick="analyzeAI()">Opnieuw proberen</button></div>';
+  }
+}
+
+function resetAll(){if(!confirm('Opnieuw beginnen? Alle antwoorden worden gewist.'))return;
+  state={mode:null,naam:'',datum:'',taaktype:null,hulpvoldoende:null,answers:{},idx:0};save();render();}
+
+/* init */
+load();render();
+</script>
+</body>
+</html>
