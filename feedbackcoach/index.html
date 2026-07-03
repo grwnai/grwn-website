@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Feedback-coach · GRWN</title>
+<title>Fietje · Feedback-coach · GRWN</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet">
@@ -118,7 +118,6 @@
       <a class="gn-logo" href="/"><img src="/grwn-logo.svg" alt="GRWN.ai" onerror="this.style.display='none';this.insertAdjacentHTML('afterend','<span class=&quot;fallback&quot;>GR<b>W</b>N</span>')"></a>
       <div class="gn-right">
         <button id="comfortBtn" title="Leescomfort & toegankelijkheid" aria-haspopup="dialog" aria-expanded="false">🅰 Leescomfort</button>
-        <button id="speak" title="Coach hardop voorlezen (aan/uit)">🔊 Voorlezen</button>
         <button id="reset">↺ Opnieuw</button>
         <a href="/">← naar GRWN</a>
       </div>
@@ -143,14 +142,14 @@
   </div>
 
   <div class="intro">
-    <span class="eyebrow">💬 Feedback-coach · SBI-methode</span>
-    <h1>Bereid feedback voor die landt.</h1>
+    <span class="eyebrow">💬 Fietje · je feedback-coach · SBI-methode</span>
+    <h1>Bereid met Fietje feedback voor die landt.</h1>
     <p class="sub">Eerlijk, concreet en veilig — mens én AI, samen omhoog. Neem gerust je tijd; er is geen haast.</p>
     <div class="steps" aria-label="De drie stappen die we samen doorlopen"><span>① Situatie</span><span>② Gedrag</span><span>③ Impact</span></div>
   </div>
 
   <div class="wrap">
-    <div class="chat" id="chat" role="log" aria-live="polite" aria-label="Gesprek met de coach"></div>
+    <div class="chat" id="chat" role="log" aria-live="polite" aria-label="Gesprek met Fietje"></div>
     <div class="composer">
       <div id="preview" class="preview"></div>
       <div class="box">
@@ -166,10 +165,9 @@
   <div class="foot">Een tool van <a href="/">GRWN</a> · with AI</div>
 
 <script>
-const GREETING = "Hoi! Ik ben je Feedback-coach. Samen maken we jouw feedback scherp, eerlijk en veilig — volgens de SBI-methode (Situatie · Gedrag · Impact).\n\nVoor wie wil je feedback voorbereiden? En wil je iets **positiefs versterken** of iets dat **beter kan**? (Allebei mag.)\n\nTip: je kunt je antwoord ook inspreken (🎙️) of een afbeelding toevoegen (📎).";
+const GREETING = "Hoi! Ik ben Fietje, je feedback-coach. Samen maken we jouw feedback scherp, eerlijk en veilig — volgens de SBI-methode (Situatie · Gedrag · Impact).\n\nVoor wie wil je feedback voorbereiden? En wil je iets **positiefs versterken** of iets dat **beter kan**? (Allebei mag.)\n\nTip: je kunt je antwoord ook inspreken (🎙️) of een afbeelding toevoegen (📎).";
 let messages = [{role:'assistant', content:GREETING}];
 let pending = [];        // aangehechte afbeeldingen voor het volgende bericht: {mime,data,url}
-let speakOn = false;
 const $=id=>document.getElementById(id);
 const chat=$('chat'), inp=$('inp'), send=$('send');
 
@@ -233,10 +231,6 @@ if(SR){
   $('mic').onclick=()=>{ if(listening){ rec.stop(); } else { try{ rec.start(); }catch(_){} } };
 } else { $('mic').style.display='none'; }
 
-/* ---------- voorlezen ---------- */
-function speak(t){ if(!speakOn||!window.speechSynthesis) return; const u=new SpeechSynthesisUtterance(String(t).replace(/\*\*/g,'').replace(/[#>_`]/g,'')); u.lang='nl-NL'; const v=(speechSynthesis.getVoices()||[]).find(v=>/nl/i.test(v.lang)); if(v)u.voice=v; speechSynthesis.cancel(); speechSynthesis.speak(u); }
-$('speak').onclick=()=>{ speakOn=!speakOn; $('speak').classList.toggle('on',speakOn); if(!speakOn&&window.speechSynthesis)speechSynthesis.cancel(); };
-
 /* ---------- leescomfort / toegankelijkheid ---------- */
 let A={}; try{ A=JSON.parse(localStorage.getItem('fbc_a11y')||'{}'); }catch(_){}
 if(A.calm===undefined && window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) A.calm=true;
@@ -267,7 +261,7 @@ async function ask(){
     const payload=messages.map(m=>({role:m.role,content:m.content,images:(m.images||[]).map(x=>({mime:x.mime,data:x.data}))}));
     const r=await fetch('/api/feedbackcoach',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({messages:payload})});
     const d=await r.json(); typing(false);
-    if(r.ok && d.text){ messages.push({role:'assistant',content:d.text}); speak(d.text); }
+    if(r.ok && d.text){ messages.push({role:'assistant',content:d.text}); }
     else { messages.push({role:'assistant',content:'⚠️ '+(d.error||'Er ging iets mis. Probeer het zo nog eens.')}); }
   }catch(e){ typing(false); messages.push({role:'assistant',content:'⚠️ Geen verbinding met de coach. De coach heeft de live server nodig (werkt niet lokaal).'}); }
   render(); send.disabled=false; inp.focus();
