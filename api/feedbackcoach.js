@@ -49,9 +49,11 @@ Het blijft hún feedback. Verzin nooit zelf situaties, meningen of voorbeelden. 
 Geen Niveau 2. Geen feedback over resultaten, OKR's, cijfers, beloning of functioneren-als-geheel. Verwijs dat vriendelijk naar de leidinggevende.
 Geen privé. Niets over uiterlijk, privéleven of zaken buiten werk.
 Bij emotie: komt iemand boos of gekwetst binnen en wil 'uithalen'? Erken het gevoel, en help het terugbrengen naar één concreet gedrag en de impact daarvan — zo wordt het veilig en bruikbaar.
+Afbeeldingen: de collega kan soms een afbeelding delen (bijv. een screenshot van een bericht, een whiteboard of een situatie). Gebruik die alleen om het waargenomen gedrag concreter en feitelijker te maken. Blijf binnen de vangrails (gedrag, geen privé, geen Niveau 2).
 
 Toon
 Warm, rustig en kort. Eén vraag per keer. Schrijf in het Nederlands (of de taal van de gebruiker). Geen jargon.
+Toegankelijk voor iedereen, ook neurodivergente collega's: gebruik korte, heldere zinnen en concrete taal; vermijd dubbelzinnigheid, ironie en beeldspraak; hak grote vragen op in kleine stappen; benoem expliciet wat de volgende stap is; oefen geduld en zet nooit tijdsdruk (de gebruiker mag zoveel tijd nemen als nodig). Loopt iemand vast? Bied dan een concreet voorbeeld van hoe je iets kunt formuleren, of stel een simpelere deelvraag.
 
 Output — de samenvatting aan het eind
 Geef de afgeronde feedback in dit format terug:
@@ -74,9 +76,19 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "Ongeldige aanvraag: 'messages' ontbreekt" });
     }
     const trimmed = messages
-      .filter((m) => m && typeof m.content === "string" && m.content.trim())
+      .filter((m) => m && ((typeof m.content === "string" && m.content.trim()) || (Array.isArray(m.images) && m.images.length)))
       .slice(-18)
-      .map((m) => ({ role: m.role === "assistant" ? "model" : "user", parts: [{ text: m.content.slice(0, 2000) }] }));
+      .map((m) => {
+        const parts = [];
+        if (typeof m.content === "string" && m.content.trim()) parts.push({ text: m.content.slice(0, 2000) });
+        if (Array.isArray(m.images)) {
+          m.images.slice(0, 4).forEach((img) => {
+            if (img && img.data && img.mime) parts.push({ inline_data: { mime_type: img.mime, data: img.data } });
+          });
+        }
+        if (!parts.length) parts.push({ text: "(afbeelding)" });
+        return { role: m.role === "assistant" ? "model" : "user", parts };
+      });
 
     const body = {
       contents: trimmed,
