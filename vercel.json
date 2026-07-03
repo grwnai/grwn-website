@@ -1,8 +1,24 @@
 {
   "rewrites": [
-    { "source": "/lvlup", "destination": "/lvlup/index.html" },
-    { "source": "/klokkijken", "destination": "/klokkijken/index.html" },
-    { "source": "/wereldweb", "destination": "/wereldweb/index.html" },
-    { "source": "/feedbackcoach", "destination": "/feedbackcoach/index.html" }
+    {
+      "source": "/lvlup",
+      "destination": "/lvlup/index.html"
+    },
+    {
+      "source": "/klokkijken",
+      "destination": "/klokkijken/index.html"
+    },
+    {
+      "source": "/wereldweb",
+      "destination": "/wereldweb/index.html"
+    },
+    {
+      "source": "/feedbackcoach",
+      "destination": "/feedbackcoach/index.html"
+    },
+    {
+      "source": "/fijnewerkdag",
+      "destination": "/fijnewerkdag/index.html"
+    }
   ]
 }
