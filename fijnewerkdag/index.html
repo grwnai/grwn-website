@@ -16,7 +16,6 @@
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
   body{font-family:Inter,system-ui,-apple-system,sans-serif;color:var(--ink);background:var(--bg);min-height:100dvh;line-height:1.6;-webkit-font-smoothing:antialiased}
   a{color:var(--cerulean-d)}
-  /* nav */
   .tk-nav{position:sticky;top:0;z-index:40;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:9px 18px;background:rgba(255,255,255,.92);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line);box-shadow:0 2px 10px rgba(23,48,73,.06)}
   .tk-nav .tk-logo img{height:24px;display:block}
   .tk-nav .tk-logo .fb{font-weight:800;font-size:19px;color:var(--ink)}
@@ -25,7 +24,6 @@
   .tk-right a,.tk-right button{font:inherit;font-size:13px;font-weight:600;color:var(--cerulean-d);background:none;border:0;cursor:pointer;text-decoration:none}
   .tk-right a:hover,.tk-right button:hover{color:var(--magenta-d)}
   :focus-visible{outline:3px solid var(--cerulean);outline-offset:2px;border-radius:6px}
-  /* layout */
   .shell{max-width:1080px;margin:0 auto;padding:18px}
   .cols{display:grid;grid-template-columns:250px 1fr;gap:22px;align-items:start}
   @media(max-width:820px){.cols{grid-template-columns:1fr}}
@@ -40,14 +38,11 @@
   .rail li.on .dot{background:var(--cerulean);box-shadow:0 0 0 3px var(--mint)}
   .rail .dot{width:11px;height:11px;border-radius:50%;background:#cdd7e0;flex:none}
   .rail .home{margin-top:10px;font-size:12.5px;color:var(--muted)}
-  /* content */
   .card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:22px 22px 20px;box-shadow:0 6px 22px rgba(23,48,73,.05)}
   .eyebrow{display:inline-block;font-size:12px;font-weight:700;letter-spacing:.04em;color:var(--cerulean-d);background:var(--mint);padding:5px 12px;border-radius:20px}
-  h1{font-size:24px;letter-spacing:-.01em;margin:12px 0 6px}
-  .ctx{color:var(--muted);font-size:15px;margin-bottom:6px}
-  label.q{display:block;font-weight:600;font-size:15px;margin:16px 0 6px}
-  .hint{font-weight:400;color:var(--muted);font-size:12.5px}
-  textarea{width:100%;border:1px solid var(--line);border-radius:12px;padding:12px 13px;font:inherit;font-size:15px;color:var(--ink);resize:vertical;min-height:70px;background:#fff}
+  h1{font-size:23px;letter-spacing:-.01em;margin:12px 0 6px}
+  .ctx{color:var(--muted);font-size:15px;margin-bottom:12px}
+  textarea{width:100%;border:1px solid var(--line);border-radius:12px;padding:12px 13px;font:inherit;font-size:15px;color:var(--ink);resize:vertical;min-height:120px;background:#fff}
   textarea:focus{outline:none;border-color:var(--cerulean)}
   .tips{margin-top:16px;background:#FBFDFE;border:1px solid var(--line);border-left:3px solid var(--cerulean);border-radius:12px;padding:12px 14px;font-size:13.5px;color:var(--ink)}
   .tips b{display:block;font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin-bottom:6px}
@@ -58,14 +53,13 @@
   .btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line);box-shadow:none}
   .btn.mag{background:var(--magenta);box-shadow:0 8px 22px rgba(232,63,111,.22)} .btn.mag:hover{background:var(--magenta-d)}
   .btn.sm{padding:8px 15px;font-size:13.5px}
-  /* mode select */
   .modes{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:18px}
   @media(max-width:720px){.modes{grid-template-columns:1fr}}
   .mode{text-align:left;background:#fff;border:1.5px solid var(--line);border-radius:16px;padding:18px;cursor:pointer;transition:.15s}
   .mode:hover{border-color:var(--cerulean);transform:translateY(-2px)}
   .mode .em{font-size:26px} .mode h4{font-size:16px;margin:8px 0 4px} .mode p{font-size:13px;color:var(--muted)}
-  .field{margin-top:16px} .field input{width:100%;border:1px solid var(--line);border-radius:11px;padding:11px 13px;font:inherit;font-size:15px}
-  /* taken */
+  .field{margin-top:16px} .field label{display:block;font-weight:600;font-size:14px;margin-bottom:6px}
+  .field input{width:100%;border:1px solid var(--line);border-radius:11px;padding:11px 13px;font:inherit;font-size:15px}
   .task{display:flex;gap:8px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:12px;padding:8px 10px;margin-bottom:8px}
   .task input.t{flex:1;border:0;font:inherit;font-size:14.5px;color:var(--ink);background:none;min-width:0}
   .task input.t:focus{outline:none}
@@ -76,7 +70,6 @@
   .task .x{border:0;background:none;color:var(--muted);cursor:pointer;font-size:16px;flex:none}
   .addrow{display:flex;gap:8px;margin-top:6px}
   .addrow input{flex:1;border:1px solid var(--line);border-radius:11px;padding:10px 12px;font:inherit;font-size:14.5px}
-  /* AI helper */
   .aiwrap{margin-top:18px;border:1px solid var(--line);border-radius:14px;overflow:hidden}
   .aitog{width:100%;display:flex;align-items:center;gap:8px;background:var(--magenta-soft);border:0;font:inherit;font-weight:700;font-size:13.5px;color:var(--magenta-d);padding:11px 14px;cursor:pointer;text-align:left}
   .aibody{padding:12px 14px;display:none} .aiwrap.open .aibody{display:block}
@@ -84,7 +77,6 @@
   .aimsg.me{color:var(--ink);font-weight:600}
   .aimsg.ai{background:var(--mint);border-radius:10px;padding:9px 11px}
   .airow{display:flex;gap:8px} .airow input{flex:1;border:1px solid var(--line);border-radius:10px;padding:9px 11px;font:inherit;font-size:14px}
-  /* report */
   .repblock{white-space:pre-wrap;background:#FBFDFE;border:1px solid var(--line);border-radius:12px;padding:14px;font-size:14px;line-height:1.6;margin-top:10px}
   .aimd h1,.aimd h2,.aimd h3{font-size:15px;margin:12px 0 4px;color:var(--cerulean-d)}
   .aimd p{font-size:14px;margin:0 0 8px} .aimd ul{margin:0 0 8px 18px}
@@ -92,7 +84,6 @@
   .spin{width:16px;height:16px;border:2px solid var(--line);border-top-color:var(--cerulean);border-radius:50%;display:inline-block;animation:spin .8s linear infinite;vertical-align:-3px;margin-right:6px}
   @keyframes spin{to{transform:rotate(360deg)}}
   .foot{text-align:center;font-size:11.5px;color:var(--muted);padding:16px}
-  /* comfort / a11y */
   .comfort{position:fixed;top:52px;right:14px;z-index:60;width:286px;background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:0 16px 40px rgba(23,48,73,.18);padding:16px 17px}
   .comfort[hidden]{display:none}
   .comfort h2{font-size:15px;margin:0 0 4px} .comfort .lead{font-size:12px;color:var(--muted);margin-bottom:8px}
@@ -135,70 +126,47 @@
   <div class="foot">Een instrument van <a href="/">GRWN</a> · JD-R model · with AI</div>
 
 <script>
-const KEY='fw2_v1';
+const KEY='fw2_v2';
 const MODES={
   zelf:{em:'🧭',naam:'Zelfreflectie',desc:'Je doorloopt het zelf, in je eigen tempo — met hulp van de JD-R-AI per stap.'},
-  interviewer:{em:'🗣️',naam:'Ik begeleid (interviewer)',desc:'Jij voert het gesprek. Je ziet de vragen en het proces, met begeleidingstips.'},
-  respondent:{em:'💬',naam:'Ik word begeleid',desc:'Je beantwoordt de vragen, ziet het proces en kunt per stap de JD-R-AI iets vragen.'}
+  interviewer:{em:'🗣️',naam:'Ik begeleid (interviewer)',desc:'Jij voert het gesprek. Je ziet per stap de kernvraag en de vragen die je kunt stellen.'},
+  respondent:{em:'💬',naam:'Ik word begeleid',desc:'Je beantwoordt per stap de kernvraag, ziet het proces en kunt de JD-R-AI iets vragen.'}
 };
 var state={mode:null,naam:'',taken:[],afweging:null,answers:{},step:'werk',ai:{}};
 function save(){try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}}
 function load(){try{const s=localStorage.getItem(KEY);if(s)state=Object.assign(state,JSON.parse(s))}catch(e){}}
 function esc(s){return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
 
+/* Per stap: één kernvraag (vraag/id) + begeleiding (guide). tipsI = extra begeleidingstips voor de interviewer. */
 const S={
-  werk:{titel:'Werksituatie',kop:'Je werkdag',
-    ctx:'We beginnen bij je dagelijkse werk. Beschrijf wat er speelt — daarna halen we samen de terugkerende taken eruit.',
-    q:[{id:'ws_dag',label:'Hoe ziet jouw werkdag eruit?'},
-       {id:'ws_terug',label:'Welke taken of situaties komen vaak terug?'},
-       {id:'ws_ervaring',label:'Hoe ervaar je jouw werk op dit moment, en waardoor komt dit?'}],
-    tipsI:['Gebruik open vragen (hoe, wat, welke).','Vat samen wat je hoort en check of je het goed begrijpt.','Focus op inzicht en oplossingen, niet op oordeel.'],
-    tipsZ:['Schrijf gerust vrijuit. Er zijn geen goede of foute antwoorden.']},
-  effect:{titel:'Lange termijn',kop:'Wat betekent dit op de langere termijn?',
-    ctx:'Sta stil bij de langere termijn: welk verlangen of welke zorg speelt er? Daar ontstaat motivatie.',
-    q:[{id:'et_balans',label:'Wat gebeurt er met jouw balans als je dit op deze manier blijft doen?'},
-       {id:'et_bereiken',label:'Als je meer energie en minder stress hebt, wat kun je dan bereiken?'},
-       {id:'et_trots',label:'Hoe zou het voelen als je vaker trots bent op wat je doet?'},
-       {id:'et_opleveren',label:'Wat zou het jou opleveren als je meer van die uitdagende taken hebt?'}],
-    tipsZ:['Denk verder dan deze week — hoe zit het over een half jaar of een jaar?']},
-  uitdaag:{titel:'Uitdagend',kop:'Meer werk dat je uitdaagt',
-    ctx:'Je versterkt wat energie geeft. Verken wat je nodig hebt om meer van dit soort taken toe te voegen.',
-    q:[{id:'ud_nodig',label:'Wie of wat heb je nodig om meer uitdagende taken toe te voegen?'}]},
-  hulpzelf:{titel:'Hulp: jezelf',kop:'Hulp vanuit jezelf',
-    ctx:'Een hinderlijke taak kost energie. Verken eerst welke hulp vanuit jezelf je kunt inzetten — je antwoorden vertalen we naar persoonlijke hulpbronnen.',
-    q:[{id:'zelf_stem',label:'Kun je jouw stem laten horen wanneer het nodig is?'},
-       {id:'zelf_talent',label:'Bezit je talenten en/of sterke punten die je nu in kunt zetten?'},
-       {id:'zelf_onverwacht',label:'Hoe ga je om met onverwachte uitdagingen?'},
-       {id:'zelf_energie',label:'Is jouw energie in balans, ben je hier bewust mee bezig?'},
-       {id:'zelf_mindset',label:'Welke mindset kan je nu helpen?'}]},
-  hulporg:{titel:'Hulp: organisatie',kop:'Hulp vanuit de organisatie',
-    ctx:'Verken welke hulp vanuit de organisatie de hinderlijke taak kan verminderen — je antwoorden vertalen we naar hulpbronnen vanuit de organisatie.',
-    q:[{id:'org_autonomie',label:'Heb je voldoende autonomie om keuzes te maken in je werk?'},
-       {id:'org_rol',label:'Is er sprake van rolduidelijkheid?'},
-       {id:'org_feedback',label:'Geeft je leidinggevende feedback en coaching?'},
-       {id:'org_systemen',label:'Zijn de systemen ondersteunend aan jouw taak?'},
-       {id:'org_kennis',label:'Heb je voldoende kennis en kunde op dit gebied?'}]},
-  afweging:{titel:'Afweging',kop:'Kun je voldoende hulpbronnen inzetten?',
-    ctx:'Kun je met deze hulpbronnen (vanuit jezelf én de organisatie) het werk weer uitdagend en in balans maken?',choice:true},
-  andere:{titel:'Andere stappen',kop:'Als de hulpbronnen niet genoeg zijn',
-    ctx:'De hulpbronnen zijn mogelijk niet genoeg. Kijk naar andere manieren om de last te verlichten — ook deze antwoorden worden hulpbronnen.',
-    q:[{id:'as_schrappen',label:'Zijn er taken die je nu kunt vereenvoudigen of schrappen?'},
-       {id:'as_prio',label:'Is de prioritering juist?'},
-       {id:'as_tijd',label:'Hoe kun je nu jouw tijdsdruk verminderen?'}]},
-  concreet:{titel:'Concrete stappen',kop:'Welke concrete stappen ga je zetten?',
+  werk:{titel:'Werksituatie',id:'werk',vraag:'Hoe ziet jouw werkdag eruit — en wat speelt er?',
+    ctx:'We beginnen bij je dagelijkse werk. Beschrijf het in je eigen woorden; daarna halen we samen de terugkerende taken eruit.',
+    guide:['Welke taken of situaties komen vaak terug?','Hoe ervaar je jouw werk op dit moment, en waardoor komt dat?'],
+    tipsI:['Gebruik open vragen (hoe, wat, welke).','Vat samen wat je hoort en check of je het goed begrijpt.','Focus op inzicht en oplossingen, niet op oordeel.']},
+  effect:{titel:'Lange termijn',id:'effect',vraag:'Wat betekent dit op de langere termijn voor jouw werkplezier?',
+    ctx:'Sta stil bij de langere termijn — daar ontstaat motivatie.',
+    guide:['Wat gebeurt er met jouw balans als je dit zo blijft doen?','Als je meer energie en minder stress hebt, wat kun je dan bereiken?','Hoe zou het voelen als je vaker trots bent op wat je doet?','Wat zou het jou opleveren als je meer uitdagende taken hebt?']},
+  uitdaag:{titel:'Uitdagend',id:'ud_nodig',vraag:'Wie of wat heb je nodig om meer uitdagende taken toe te voegen?',
+    ctx:'Je versterkt wat energie geeft. Verken wat je nodig hebt om meer van dit soort taken te doen.',guide:[]},
+  hulpzelf:{titel:'Hulp: jezelf',id:'hulp_zelf',vraag:'Welke hulp vanuit jezelf kun je inzetten om het hinderlijke deel lichter te maken?',
+    ctx:'Denk aan persoonlijke hulpbronnen: je talenten, je veerkracht, je mindset.',
+    guide:['Kun je jouw stem laten horen wanneer het nodig is?','Bezit je talenten en/of sterke punten die je nu in kunt zetten?','Hoe ga je om met onverwachte uitdagingen?','Is jouw energie in balans, ben je hier bewust mee bezig?','Welke mindset kan je nu helpen?']},
+  hulporg:{titel:'Hulp: organisatie',id:'hulp_org',vraag:'Welke hulp vanuit de organisatie kun je inzetten?',
+    ctx:'Denk aan hulpbronnen in je werkomgeving: mensen, opleiding, systemen, duidelijkheid.',
+    guide:['Heb je voldoende autonomie om keuzes te maken in je werk?','Is er sprake van rolduidelijkheid?','Geeft je leidinggevende feedback en coaching?','Zijn de systemen ondersteunend aan jouw taak?','Heb je voldoende kennis en kunde op dit gebied?']},
+  afweging:{titel:'Afweging',vraag:'Kun je met deze hulpbronnen het werk weer uitdagend en in balans maken?',choice:true,
+    ctx:'Weeg af of de hulpbronnen — vanuit jezelf én de organisatie — genoeg zijn.'},
+  andere:{titel:'Andere stappen',id:'andere',vraag:'Welke andere stappen kun je zetten om de last te verlichten?',
+    ctx:'De hulpbronnen zijn mogelijk niet genoeg. Kijk naar andere manieren — ook deze worden hulpbronnen.',
+    guide:['Zijn er taken die je kunt vereenvoudigen of schrappen?','Is de prioritering juist?','Hoe kun je nu jouw tijdsdruk verminderen?']},
+  concreet:{titel:'Concrete stappen',id:'concreet',vraag:'Welke concrete stappen ga je nu zetten?',
     ctx:'Beide sporen komen hier samen. Maak het concreet — het hoeven geen grote stappen te zijn.',
-    q:[{id:'cs_grip',label:'Wat kun je deze week doen om meer grip te krijgen op je werkdruk?'},
-       {id:'cs_steun',label:'Met wie ga je in gesprek om meer steun of samenwerking te organiseren?'},
-       {id:'cs_ontwikkel',label:'Welke ontwikkelmogelijkheid wil je concreet oppakken, en wanneer?'},
-       {id:'cs_deadline',label:'Wat is je deadline voor deze eerste stap?'},
-       {id:'cs_vervolg',label:'Welke vervolgstap volgt daarna om de balans verder te verbeteren?'}]},
-  goedbezig:{titel:'Goed bezig',kop:'Wat gaat er goed?',
-    ctx:'Sluit positief af: benoem wat goed gaat. Geef — of leg vast — waarderende feedback.',
-    q:[{id:'gb',label:'Welke waarderende feedback is gegeven of herken je bij jezelf?',hint:'Optioneel'}],
-    tipsI:['Goed dat je zo helder kunt benoemen wat jou energie geeft.','Fijn dat je zelf al ideeën hebt om meer uitdagende taken te creëren.','Goed dat je aangeeft welke ondersteuning je mist — dat helpt om samen te verbeteren.','Je hebt duidelijk inzicht in wat je nodig hebt; hoe ga je dit realiseren?']},
-  afsluiting:{titel:'Afsluiting',kop:'Wat heeft dit opgeleverd?',
-    ctx:'Rond af en vat de opbrengst samen.',
-    q:[{id:'af_opbrengst',label:'Wat heeft dit gesprek jou opgeleverd met betrekking tot jouw werksituatie?'}]}
+    guide:['Wat kun je deze week doen om meer grip te krijgen op je werkdruk?','Met wie ga je in gesprek om meer steun of samenwerking te organiseren?','Welke ontwikkelmogelijkheid wil je concreet oppakken, en wanneer?','Wat is je deadline voor deze eerste stap?','Welke vervolgstap volgt daarna om de balans verder te verbeteren?']},
+  goedbezig:{titel:'Goed bezig',id:'goedbezig',vraag:'Wat gaat er goed — welke waarderende feedback herken je of is gegeven?',
+    ctx:'Sluit positief af: benoem wat goed gaat.',
+    guide:['Goed dat je helder kunt benoemen wat jou energie geeft.','Fijn dat je zelf al ideeën hebt om meer uitdagende taken te creëren.','Goed dat je aangeeft welke ondersteuning je mist — dat helpt om samen te verbeteren.','Je hebt duidelijk inzicht in wat je nodig hebt; hoe ga je dit realiseren?']},
+  afsluiting:{titel:'Afsluiting',id:'af_opbrengst',vraag:'Wat heeft dit gesprek jou opgeleverd met betrekking tot jouw werksituatie?',
+    ctx:'Rond af en vat de opbrengst samen.',guide:[]}
 };
 const RAILLABEL={werk:'Werksituatie',taken:'Taken',effect:'Lange termijn',hulpzelf:'Hulp: jezelf',hulporg:'Hulp: organisatie',afweging:'Afweging',andere:'Andere stappen',uitdaag:'Uitdagend',concreet:'Concrete stappen',goedbezig:'Goed bezig',afsluiting:'Afsluiting',rapport:'Rapportage'};
 
@@ -215,13 +183,11 @@ function nextStep(){const f=flow();const i=f.indexOf(state.step);if(i<f.length-1
 function prevStep(){const f=flow();const i=f.indexOf(state.step);if(i>0)go(f[i-1]);else{state.mode=null;save();render()}}
 const app=document.getElementById('app');
 
-/* ---------- render ---------- */
 function render(){
   save();
   if(!state.mode){renderStart();return}
   if(!flow().includes(state.step))state.step='werk';
-  const cols='<div class="cols">'+renderRail()+'<div>'+renderStep()+'</div></div>';
-  app.innerHTML=cols;
+  app.innerHTML='<div class="cols">'+renderRail()+'<div>'+renderStep()+'</div></div>';
   bindStep();
 }
 function renderStart(){
@@ -230,7 +196,7 @@ function renderStart(){
     '<h1>De weg naar een fijne werkdag</h1>'+
     '<p class="ctx">Een gesprek over je werk dat energie geeft en energie kost — en wat je eraan kunt doen. Kies hoe je het wilt doen:</p>'+
     '<div class="modes">'+m+'</div>'+
-    '<div class="field"><label class="q" for="nm">Je naam (optioneel)</label><input id="nm" value="'+esc(state.naam)+'" placeholder="bijv. Sam" oninput="state.naam=this.value"></div>'+
+    '<div class="field"><label for="nm">Je naam (optioneel)</label><input id="nm" value="'+esc(state.naam)+'" placeholder="bijv. Sam" oninput="state.naam=this.value"></div>'+
     '</div>';
 }
 function pickMode(m){state.mode=m;state.step='werk';save();render()}
@@ -244,27 +210,28 @@ function renderRail(){
 }
 function backHome(){if(confirm('Terug naar het beginscherm? Je antwoorden blijven bewaard.')){state.mode=null;save();render()}return false}
 
-function tipsHtml(def){
-  const arr=(state.mode==='interviewer')?(def.tipsI||[]):(def.tipsZ||def.tipsI||[]);
-  if(!arr.length)return '';
-  const t=(state.mode==='interviewer')?'Begeleidingstips':'Ter inspiratie';
-  return '<div class="tips"><b>'+t+'</b><ul>'+arr.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul></div>';
+function guideHtml(d){
+  if(!d.guide||!d.guide.length)return '';
+  const t=(state.mode==='interviewer')?'Vragen die je kunt stellen':'Denk hierbij aan';
+  return '<div class="tips"><b>'+t+'</b><ul>'+d.guide.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul></div>';
 }
-function qHtml(def){
-  return def.q.map(q=>'<label class="q" for="'+q.id+'">'+esc(q.label)+(q.hint?' <span class="hint">· '+esc(q.hint)+'</span>':'')+'</label>'+
-    '<textarea id="'+q.id+'" oninput="state.answers[\''+q.id+'\']=this.value;save()">'+esc(state.answers[q.id]||'')+'</textarea>').join('');
+function tipsHtml(d){
+  if(state.mode!=='interviewer'||!d.tipsI||!d.tipsI.length)return '';
+  return '<div class="tips" style="border-left-color:var(--gold)"><b>Begeleidingstips</b><ul>'+d.tipsI.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul></div>';
 }
-function aiHtml(def){
+function fieldHtml(d){
+  return '<textarea id="'+d.id+'" placeholder="Jouw antwoord…" oninput="state.answers[\''+d.id+'\']=this.value;save()">'+esc(state.answers[d.id]||'')+'</textarea>';
+}
+function aiHtml(d){
   if(state.mode==='interviewer')return '';
   return '<div class="aiwrap" id="aiwrap"><button class="aitog" onclick="toggleAI()">✨ Vraag de JD-R-AI om hulp bij deze stap</button>'+
     '<div class="aibody"><div id="aichat"></div><div class="airow"><input id="aiinp" placeholder="Bijv. Wat wordt hier precies bedoeld?"><button class="btn sm mag" onclick="askAI()">Vraag</button></div></div></div>';
 }
 function navBtns(){
   const f=flow();const i=f.indexOf(state.step);
-  let html='<div class="btnrow">';
-  html+='<button class="btn ghost" onclick="prevStep()">← Vorige</button>';
+  let html='<div class="btnrow"><button class="btn ghost" onclick="prevStep()">← Vorige</button>';
   if(i<f.length-1)html+='<button class="btn" onclick="nextStep()">Volgende →</button>';
-  html+='</div>';return html;
+  return html+'</div>';
 }
 function renderStep(){
   const k=state.step;
@@ -272,12 +239,12 @@ function renderStep(){
   if(k==='rapport')return renderReport();
   if(k==='afweging')return renderAfweging();
   const d=S[k];
-  return '<div class="card"><span class="eyebrow">'+esc(d.titel)+'</span><h1>'+esc(d.kop)+'</h1>'+
-    '<p class="ctx">'+esc(d.ctx)+'</p>'+qHtml(d)+tipsHtml(d)+aiHtml(d)+navBtns()+'</div>';
+  return '<div class="card"><span class="eyebrow">'+esc(d.titel)+'</span><h1>'+esc(d.vraag)+'</h1>'+
+    '<p class="ctx">'+esc(d.ctx)+'</p>'+fieldHtml(d)+guideHtml(d)+tipsHtml(d)+aiHtml(d)+navBtns()+'</div>';
 }
 function renderAfweging(){
   const d=S.afweging;
-  return '<div class="card"><span class="eyebrow">'+d.titel+'</span><h1>'+d.kop+'</h1><p class="ctx">'+d.ctx+'</p>'+
+  return '<div class="card"><span class="eyebrow">'+d.titel+'</span><h1>'+esc(d.vraag)+'</h1><p class="ctx">'+esc(d.ctx)+'</p>'+
     '<div class="btnrow"><button class="btn '+(state.afweging==='ja'?'':'ghost')+'" onclick="setAfw(\'ja\')">Ja, dat lukt</button>'+
     '<button class="btn '+(state.afweging==='nee'?'mag':'ghost')+'" onclick="setAfw(\'nee\')">Nee, nog niet</button></div>'+
     aiHtml(d)+
@@ -286,7 +253,6 @@ function renderAfweging(){
 }
 function setAfw(v){state.afweging=v;save();render()}
 
-/* ---------- taken (extractie + labelen) ---------- */
 function renderTaken(){
   const rows=state.taken.map((t,idx)=>
     '<div class="task"><input class="t" value="'+esc(t.tekst)+'" oninput="state.taken['+idx+'].tekst=this.value;save()">'+
@@ -308,7 +274,7 @@ function delTask(i){state.taken.splice(i,1);save();render()}
 function addTask(){const el=document.getElementById('newTask');const v=(el.value||'').trim();if(!v)return;state.taken.push({tekst:v,label:null});el.value='';save();render()}
 async function extractTaken(){
   const b=document.getElementById('extractBtn');b.disabled=true;b.innerHTML='<span class="spin"></span>Bezig…';
-  const ws=[state.answers.ws_dag,state.answers.ws_terug,state.answers.ws_ervaring].filter(Boolean).join('\n');
+  const ws=state.answers.werk||'';
   try{
     const r=await fetch('/api/jdr-taken',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({werksituatie:ws})});
     const d=await r.json();
@@ -317,7 +283,6 @@ async function extractTaken(){
   }catch(e){b.disabled=false;b.textContent='Ophalen lukte niet — voeg handmatig toe';}
 }
 
-/* ---------- AI helper ---------- */
 function toggleAI(){document.getElementById('aiwrap').classList.toggle('open')}
 function aiRender(){
   const box=document.getElementById('aichat');if(!box)return;
@@ -329,7 +294,7 @@ async function askAI(){
   if(!state.ai[state.step])state.ai[state.step]=[];
   state.ai[state.step].push({role:'user',content:v});inp.value='';save();aiRender();
   state.ai[state.step].push({role:'assistant',content:'…'});aiRender();
-  const d=S[state.step]||{};const ctx=(d.kop||'')+' — '+(d.ctx||'');
+  const d=S[state.step]||{};const ctx=(d.vraag||'')+' — '+(d.ctx||'');
   try{
     const r=await fetch('/api/jdr-coach',{method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({messages:state.ai[state.step].filter(m=>m.content!=='…'),step:ctx})});
@@ -341,15 +306,12 @@ async function askAI(){
 }
 function bindStep(){ if(document.getElementById('aichat'))aiRender(); }
 
-/* ---------- rapportage ---------- */
 function buildText(){
   let t='RAPPORTAGE — De weg naar een fijne werkdag\n';
   if(state.naam)t+='Naam: '+state.naam+'\n';
   t+='Datum: '+new Date().toLocaleDateString('nl-NL')+'\n\n';
   t+='TAKEN:\n'+(state.taken.map(x=>'- '+x.tekst+(x.label?' ['+x.label+']':'')).join('\n')||'-')+'\n\n';
-  const f=flow();
-  f.forEach(k=>{const d=S[k];if(!d||!d.q)return;const ans=d.q.filter(q=>state.answers[q.id]);if(!ans.length)return;
-    t+=d.kop.toUpperCase()+':\n';ans.forEach(q=>{t+='• '+q.label+'\n  '+state.answers[q.id]+'\n'});t+='\n';});
+  flow().forEach(k=>{const d=S[k];if(!d||!d.id)return;const a=state.answers[d.id];if(!a)return;t+=d.vraag+'\n'+a+'\n\n';});
   if(state.afweging)t+='AFWEGING: hulpbronnen voldoende? '+state.afweging+'\n';
   return t.trim();
 }
@@ -366,7 +328,7 @@ function renderReport(){
 }
 function dlTxt(){const b=new Blob([buildText()],{type:'text/plain;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='fijne-werkdag'+(state.naam?'-'+state.naam:'')+'.txt';a.click()}
 function mailIt(){location.href='mailto:?subject='+encodeURIComponent('Rapportage – Fijne werkdag'+(state.naam?' '+state.naam:''))+'&body='+encodeURIComponent(buildText())}
-function mdToHtml(t){let h='';t.split('\n').forEach(l=>{l=l.trim();if(!l){return}if(/^#/.test(l)){h+='<h3>'+esc(l.replace(/^#+\s*/,''))+'</h3>'}else if(/^[-•]/.test(l)){h+='<ul><li>'+esc(l.replace(/^[-•]\s*/,''))+'</li></ul>'}else{h+='<p>'+esc(l)+'</p>'}});return '<div class="aimd">'+h+'</div>'}
+function mdToHtml(t){let h='';t.split('\n').forEach(l=>{l=l.trim();if(!l)return;if(/^#/.test(l)){h+='<h3>'+esc(l.replace(/^#+\s*/,''))+'</h3>'}else if(/^[-•]/.test(l)){h+='<ul><li>'+esc(l.replace(/^[-•]\s*/,''))+'</li></ul>'}else{h+='<p>'+esc(l)+'</p>'}});return '<div class="aimd">'+h+'</div>'}
 async function analyse(){
   const box=document.getElementById('aiBox');box.innerHTML='<div class="repblock"><span class="spin"></span> Bezig met de JD-R-analyse…</div>';
   try{
@@ -377,7 +339,6 @@ async function analyse(){
   }catch(e){box.innerHTML='<div class="repblock">Geen verbinding met de analyse (werkt niet lokaal).</div>'}
 }
 
-/* ---------- leescomfort ---------- */
 (function(){
   var A={};try{A=JSON.parse(localStorage.getItem('fw_a11y')||'{}')}catch(e){}
   if(A.calm===undefined&&window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches)A.calm=true;
