@@ -133,6 +133,28 @@ async function mailFiche(project, interview, fiche) {
 export default async function handler(req, res) {
   cors(res);
   if (req.method === "OPTIONS") return res.status(204).end();
+
+  // ---- ADMIN (GET, voor scan-admin.html) ----
+  if (req.method === "GET") {
+    const ADMIN = process.env.SCAN_ADMIN_CODE;
+    const given = req.headers["x-admin-code"] || (req.query && req.query.admincode) || "";
+    if (!ADMIN) return res.status(200).json({ ok: false, reason: "no-admin-code-set" });
+    if (given !== ADMIN) return res.status(403).json({ ok: false, reason: "bad-admin-code" });
+    if (!DB_URL || !DB_KEY) return res.status(200).json({ ok: false, reason: "no-db" });
+    try {
+      if (req.query && req.query.fiche) {
+        const rows = await db(`scan_interviews?select=id,employee_name,employee_email,status,created_at,fiche_md,transcript&id=eq.${encodeURIComponent(req.query.fiche)}&limit=1`);
+        return res.status(200).json({ ok: true, interview: (rows && rows[0]) || null });
+      }
+      const projects = await db("scan_projects?select=id,org_name,access_code,active,created_at&order=created_at.desc");
+      const interviews = await db("scan_interviews?select=id,project_id,employee_name,status,created_at,updated_at&order=created_at.desc");
+      return res.status(200).json({ ok: true, projects: projects || [], interviews: interviews || [] });
+    } catch (e) {
+      console.error("scan-admin", e);
+      return res.status(200).json({ ok: false, reason: "error" });
+    }
+  }
+
   if (req.method !== "POST") return res.status(405).json({ ok: false, reason: "method" });
   if (!AI_KEY) return res.status(200).json({ ok: false, reason: "no-ai" });
   if (!DB_URL || !DB_KEY) return res.status(200).json({ ok: false, reason: "no-db" });
