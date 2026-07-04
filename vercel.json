@@ -19,10 +19,6 @@
     {
       "source": "/fijnewerkdag",
       "destination": "/fijnewerkdag/index.html"
-    },
-    {
-      "source": "/scan-interview",
-      "destination": "/scan-interview.html"
     }
   ]
 }
