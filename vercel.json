@@ -19,6 +19,22 @@
     {
       "source": "/fijnewerkdag",
       "destination": "/fijnewerkdag/index.html"
+    },
+    {
+      "source": "/scan-interview",
+      "destination": "/scan-interview.html"
+    },
+    {
+      "source": "/api/jdr-coach",
+      "destination": "/api/jdr?fn=coach"
+    },
+    {
+      "source": "/api/jdr-taken",
+      "destination": "/api/jdr?fn=taken"
+    },
+    {
+      "source": "/api/jdr-prioriteit",
+      "destination": "/api/jdr?fn=prioriteit"
     }
   ]
 }
