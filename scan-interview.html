@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Procesinterview — GRWN</title>
+<link rel="icon" href="/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet">
+<style>
+  :root{--ink:#173049;--ink-d:#0F2336;--mag:#E83F6F;--mag-d:#C72C58;--cloud:#F6F9FB;--slate:#5C6873;--line:#EAEEF1}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:Inter,system-ui,sans-serif;background:var(--cloud);color:var(--ink);min-height:100vh;display:flex;flex-direction:column}
+  header{background:#fff;border-bottom:1px solid var(--line);padding:14px 20px;display:flex;align-items:center;gap:12px}
+  header img{height:26px}
+  header span{font-size:13px;color:var(--slate)}
+  main{flex:1;display:flex;flex-direction:column;max-width:760px;width:100%;margin:0 auto;padding:0 16px}
+
+  /* Startscherm */
+  .start{margin:auto;background:#fff;border:1px solid var(--line);border-radius:18px;padding:34px 30px;max-width:480px;width:100%;box-shadow:0 18px 50px rgba(23,48,73,.10)}
+  .start h1{font-size:22px;font-weight:800;margin-bottom:10px}
+  .start p{font-size:14px;color:var(--slate);line-height:1.6;margin-bottom:18px}
+  .start label{display:block;font-size:13px;font-weight:600;margin:14px 0 5px}
+  .start input{width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:10px;font:inherit;font-size:15px}
+  .start input:focus{outline:2px solid var(--mag);border-color:transparent}
+  .privacy{font-size:12.5px;color:var(--slate);line-height:1.55;background:var(--cloud);border-radius:10px;padding:12px 14px;margin-top:16px}
+  .start button{width:100%;margin-top:18px;padding:14px;border:0;border-radius:12px;background:var(--mag);color:#fff;font:inherit;font-size:15px;font-weight:700;cursor:pointer}
+  .start button:hover{background:var(--mag-d)}
+  .start button:disabled{opacity:.5;cursor:default}
+  .err{color:var(--mag-d);font-size:13px;margin-top:10px;display:none}
+
+  /* Chat */
+  .chat{display:none;flex-direction:column;flex:1;padding:20px 0 0}
+  .msgs{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:12px;padding-bottom:16px}
+  .msg{max-width:82%;padding:12px 16px;border-radius:16px;font-size:15px;line-height:1.55;white-space:pre-wrap}
+  .msg.ai{background:#fff;border:1px solid var(--line);border-bottom-left-radius:5px;align-self:flex-start}
+  .msg.me{background:var(--ink);color:#fff;border-bottom-right-radius:5px;align-self:flex-end}
+  .typing{align-self:flex-start;color:var(--slate);font-size:13px;padding:4px 6px;display:none}
+  .composer{position:sticky;bottom:0;background:var(--cloud);padding:10px 0 18px;display:flex;gap:10px}
+  .composer textarea{flex:1;resize:none;padding:13px 15px;border:1px solid var(--line);border-radius:14px;font:inherit;font-size:15px;max-height:130px;background:#fff}
+  .composer textarea:focus{outline:2px solid var(--mag);border-color:transparent}
+  .composer button{width:52px;border:0;border-radius:14px;background:var(--mag);color:#fff;font-size:20px;cursor:pointer}
+  .composer button:hover{background:var(--mag-d)}
+  .composer button:disabled{opacity:.5;cursor:default}
+
+  /* Afgerond */
+  .doneCard{display:none;margin:auto;text-align:center;background:#fff;border:1px solid var(--line);border-radius:18px;padding:40px 30px;max-width:460px}
+  .doneCard h2{font-size:20px;font-weight:800;margin-bottom:10px}
+  .doneCard p{font-size:14px;color:var(--slate);line-height:1.6}
+</style>
+</head>
+<body>
+<header>
+  <img src="/grwn-logo.svg" alt="GRWN" onerror="this.replaceWith(Object.assign(document.createElement('b'),{textContent:'GRWN'}))">
+  <span>Procesinterview · onderdeel van de AI-kansenscan</span>
+</header>
+<main>
+  <!-- Startscherm -->
+  <div class="start" id="start">
+    <h1>Fijn dat je meedoet 👋</h1>
+    <p>Dit gesprek duurt ongeveer 25 minuten en gaat over hoe jouw werk écht loopt. Geen beoordeling — juist de dingen die stroef lopen zijn waardevol. Je kunt op elk moment stoppen.</p>
+    <label for="code">Toegangscode (van je organisatie)</label>
+    <input id="code" autocomplete="off" placeholder="bijv. KOPAK-2026">
+    <label for="name">Je naam</label>
+    <input id="name" autocomplete="name" placeholder="Voor- en achternaam">
+    <label for="email">Werk-e-mail (optioneel)</label>
+    <input id="email" type="email" autocomplete="email" placeholder="naam@bedrijf.nl">
+    <div class="privacy"><b>Wat gebeurt er met je antwoorden?</b><br>
+    Je antwoorden worden samengevat in een procesanalyse voor je organisatie. GRWN bewaart het gesprek beveiligd binnen de EU en verwijdert het na afronding van de scan. Citaten worden alleen mét jouw toestemming op naam gebruikt. Vragen? <a href="mailto:info@grwn.ai">info@grwn.ai</a></div>
+    <button id="startBtn">Start het gesprek</button>
+    <div class="err" id="startErr"></div>
+  </div>
+
+  <!-- Chat -->
+  <div class="chat" id="chat">
+    <div class="msgs" id="msgs"></div>
+    <div class="typing" id="typing">De analist denkt na…</div>
+    <div class="composer">
+      <textarea id="input" rows="1" placeholder="Typ je antwoord…"></textarea>
+      <button id="sendBtn" aria-label="Versturen">➤</button>
+    </div>
+  </div>
+
+  <!-- Afgerond -->
+  <div class="doneCard" id="doneCard">
+    <h2>Dat was 'm — dank je wel! 🌱</h2>
+    <p>Je bijdrage is veilig opgeslagen en wordt meegenomen in de analyse. Je team krijgt de uitkomsten via je organisatie te zien. Fijne dag!</p>
+  </div>
+</main>
+
+<script>
+(function(){
+  var API = "/api/scan-interview";
+  var state = { code:null, interviewId:null, messages:[], busy:false };
+  var $ = function(id){ return document.getElementById(id); };
+
+  function show(view){ $("start").style.display = view==="start" ? "block":"none";
+    $("chat").style.display = view==="chat" ? "flex":"none";
+    $("doneCard").style.display = view==="done" ? "block":"none"; }
+
+  function addMsg(role, text){
+    var d = document.createElement("div");
+    d.className = "msg " + (role==="assistant"?"ai":"me");
+    d.textContent = text;
+    $("msgs").appendChild(d);
+    $("msgs").scrollTop = $("msgs").scrollHeight;
+  }
+
+  function setBusy(v){ state.busy=v; $("typing").style.display = v?"block":"none";
+    $("sendBtn").disabled=v; $("msgs").scrollTop = $("msgs").scrollHeight; }
+
+  async function call(extra){
+    var body = Object.assign({ code:state.code, interviewId:state.interviewId, messages:state.messages }, extra||{});
+    var r = await fetch(API, { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify(body) });
+    return r.json();
+  }
+
+  async function send(text){
+    if (state.busy) return;
+    if (text){ state.messages.push({role:"user",content:text}); addMsg("user",text); }
+    setBusy(true);
+    try{
+      var d = await call();
+      if (!d.ok){ addMsg("assistant","Er ging iets mis ("+(d.reason||"onbekend")+"). Probeer het zo nog eens, of mail info@grwn.ai."); return; }
+      state.interviewId = d.interviewId || state.interviewId;
+      state.messages.push({role:"assistant",content:d.reply});
+      addMsg("assistant", d.reply);
+      if (d.done){ setTimeout(function(){ show("done"); }, 2600); }
+    }catch(e){
+      addMsg("assistant","Geen verbinding. Check je internet en probeer het opnieuw — je antwoorden tot nu toe zijn bewaard.");
+    }finally{ setBusy(false); }
+  }
+
+  $("startBtn").addEventListener("click", async function(){
+    var code = $("code").value.trim(), name = $("name").value.trim(), email = $("email").value.trim();
+    var err = $("startErr");
+    err.style.display="none";
+    if (!code || !name){ err.textContent="Vul in elk geval de toegangscode en je naam in."; err.style.display="block"; return; }
+    this.disabled = true; this.textContent = "Even geduld…";
+    state.code = code;
+    try{
+      var d = await call({ name:name, email:email });
+      if (!d.ok){
+        err.textContent = d.reason==="bad-code" ? "Deze toegangscode klopt niet (meer). Check 'm bij je contactpersoon." : "Er ging iets mis. Probeer het opnieuw.";
+        err.style.display="block"; this.disabled=false; this.textContent="Start het gesprek"; return;
+      }
+      state.interviewId = d.interviewId;
+      state.messages.push({role:"user",content:"Start het interview."});
+      state.messages.push({role:"assistant",content:d.reply});
+      show("chat"); addMsg("assistant", d.reply); $("input").focus();
+    }catch(e){
+      err.textContent="Geen verbinding. Probeer het opnieuw."; err.style.display="block";
+      this.disabled=false; this.textContent="Start het gesprek";
+    }
+  });
+
+  $("sendBtn").addEventListener("click", function(){
+    var t = $("input").value.trim();
+    if (!t) return;
+    $("input").value=""; $("input").style.height="auto";
+    send(t);
+  });
+  $("input").addEventListener("keydown", function(e){
+    if (e.key==="Enter" && !e.shiftKey){ e.preventDefault(); $("sendBtn").click(); }
+  });
+  $("input").addEventListener("input", function(){ this.style.height="auto"; this.style.height=Math.min(this.scrollHeight,130)+"px"; });
+
+  // Waarschuw bij wegklikken midden in een gesprek
+  window.addEventListener("beforeunload", function(e){
+    if ($("chat").style.display==="flex" && $("doneCard").style.display!=="block"){ e.preventDefault(); e.returnValue=""; }
+  });
+
+  show("start");
+})();
+</script>
+</body>
+</html>
