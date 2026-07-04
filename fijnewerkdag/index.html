@@ -14,6 +14,7 @@
     --bg:#F6F9FB; --panel:#fff; --muted:#5C6873; --line:#EAEEF1;
   }
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  html,body{max-width:100%;overflow-x:hidden}
   body{font-family:Inter,system-ui,-apple-system,sans-serif;color:var(--ink);background:var(--bg);min-height:100dvh;line-height:1.6;-webkit-font-smoothing:antialiased}
   a{color:var(--cerulean-d)}
   .tk-nav{position:sticky;top:0;z-index:40;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:9px 18px;background:rgba(255,255,255,.92);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line);box-shadow:0 2px 10px rgba(23,48,73,.06)}
@@ -26,6 +27,9 @@
   :focus-visible{outline:3px solid var(--cerulean);outline-offset:2px;border-radius:6px}
   .shell{max-width:1080px;margin:0 auto;padding:18px}
   .cols{display:grid;grid-template-columns:250px 1fr;gap:22px;align-items:start}
+  .cols>*{min-width:0}
+  .card{overflow-wrap:anywhere}
+  .airow input,.addrow input,.field input{min-width:0}
   @media(max-width:820px){.cols{grid-template-columns:1fr}}
   .rail{position:sticky;top:74px;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px}
   @media(max-width:820px){.rail{position:static}}
@@ -85,6 +89,11 @@
   .disc{font-size:12px;color:var(--muted);margin-top:10px;font-style:italic}
   .spin{width:16px;height:16px;border:2px solid var(--line);border-top-color:var(--cerulean);border-radius:50%;display:inline-block;animation:spin .8s linear infinite;vertical-align:-3px;margin-right:6px}
   @keyframes spin{to{transform:rotate(360deg)}}
+  .jdr{margin-top:18px;border:1px solid var(--line);border-radius:12px;padding:0 14px;background:#FBFDFE}
+  .jdr summary{cursor:pointer;font-weight:700;font-size:14px;padding:12px 0;color:var(--cerulean-d)}
+  .jdrbody{font-size:13.5px;padding-bottom:12px;line-height:1.6}
+  .jdrbody ul{margin:6px 0 6px 18px} .jdrbody li{margin-bottom:6px}
+  .jdrbody .src{color:var(--muted);font-size:12px;margin-top:6px}
   .foot{text-align:center;font-size:11.5px;color:var(--muted);padding:16px}
   .comfort{position:fixed;top:52px;right:14px;z-index:60;width:286px;background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:0 16px 40px rgba(23,48,73,.18);padding:16px 17px}
   .comfort[hidden]{display:none}
@@ -201,6 +210,14 @@ function render(){
   app.innerHTML='<div class="cols">'+renderRail()+'<div>'+renderStep()+'</div></div>';
   bindStep();
 }
+function jdrHtml(){return '<div class="jdrbody">'+
+ '<p>Deze tool volgt het <b>Job Demands-Resources model</b> (Schaufeli):</p><ul>'+
+ '<li><b>Werkstressoren</b> (werkeisen zoals werkdruk, werk/priv\u00e9, rolconflict) leiden via <b>stress-reacties</b> tot minder welzijn \u2014 het <i>uitputtingsproces</i>. In deze tool: je <b>hinderlijke taken</b>.</li>'+
+ '<li><b>Energiebronnen</b> (hulpbronnen uit het werk: steun, autonomie, feedback, ontwikkeling) leiden via <b>bevlogenheid</b> tot betere resultaten \u2014 het <i>motivatieproces</i>. In deze tool: <b>Hulp vanuit de organisatie</b>.</li>'+
+ '<li><b>Persoonlijke hulpbronnen</b> (veerkracht, talent, mindset) dempen stress \u00e9n versterken bevlogenheid. In deze tool: <b>Hulp vanuit jezelf</b>.</li>'+
+ '<li><b>Buffer</b>: hulpbronnen verzachten de impact van werkstressoren. In deze tool: de afweging \u201ckun je met deze hulpbronnen het werk weer in balans maken?\u201d.</li>'+
+ '<li><b>Uitdagend vs. hinderlijk werk</b> is een erkende verfijning (challenge- vs. hindrance-eisen): uitdagend werk motiveert (mits er genoeg hulpbronnen tegenover staan), hinderlijk werk kost vooral energie.</li>'+
+ '</ul><p class="src">Bron: Wilmar Schaufeli \u2014 Job Demands-Resources model.</p></div>';}
 function renderStart(){
   let m=Object.keys(MODES).map(k=>'<button class="mode" onclick="pickMode(\''+k+'\')"><div class="em">'+MODES[k].em+'</div><h4>'+MODES[k].naam+'</h4><p>'+MODES[k].desc+'</p></button>').join('');
   app.innerHTML='<div class="card"><span class="eyebrow">JD-R · positieve psychologie</span>'+
@@ -208,6 +225,7 @@ function renderStart(){
     '<p class="ctx">Een gesprek over je werk dat energie geeft en energie kost — en wat je eraan kunt doen. Kies hoe je het wilt doen:</p>'+
     '<div class="modes">'+m+'</div>'+
     '<div class="field"><label for="nm">Je naam (optioneel)</label><input id="nm" value="'+esc(state.naam)+'" placeholder="bijv. Sam" oninput="state.naam=this.value"></div>'+
+    '<details class="jdr"><summary>\u2139\ufe0f Zo werkt het JD-R model achter deze tool</summary>'+jdrHtml()+'</details>'+
     '</div>';
 }
 function pickMode(m){state.mode=m;state.step='werk';save();render()}
