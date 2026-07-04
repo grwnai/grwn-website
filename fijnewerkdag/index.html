@@ -66,7 +66,8 @@
   .field{margin-top:16px} .field label{display:block;font-weight:600;font-size:14px;margin-bottom:6px}
   .field input{width:100%;border:1px solid var(--line);border-radius:11px;padding:11px 13px;font:inherit;font-size:15px}
   .task{display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:10px}
-  .task input.t{flex:1 1 auto;order:0;border:0;font:inherit;font-size:15px;color:var(--ink);background:none;min-width:0}
+  .task .top{display:flex;align-items:center;gap:8px;flex:1 1 100%;order:0;width:100%}
+  .task input.t{flex:1 1 auto;order:0;border:0;font:inherit;font-size:15px;color:var(--ink);background:none;min-width:0;width:auto}
   .task input.t:focus{outline:none}
   .lab{display:flex;gap:8px;flex:1 1 100%;order:2;margin-top:6px}
   .lab button{flex:1;border:1px solid var(--line);background:#fff;font:inherit;font-size:13.5px;font-weight:700;padding:10px 8px;border-radius:9px;cursor:pointer;color:var(--muted)}
@@ -80,7 +81,17 @@
   .priorow .pt b{font-size:14px}
   .priorow .pt span{display:block;font-size:12.5px;color:var(--muted);margin-top:2px}
   .priorow.rec{background:#F3FBF6}
-  .task .x{order:1;border:0;background:none;color:var(--muted);cursor:pointer;font-size:18px;flex:none;padding:2px 4px}
+  .assess{margin:8px 0 4px;border:1px solid var(--line);border-radius:12px;padding:4px 14px 12px;background:#fff}
+  .assess>summary{cursor:pointer;font-weight:700;color:var(--cerulean-d);padding:10px 0;font-size:14.5px}
+  .asscalehead{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin:2px 2px 6px}
+  .asrow{padding:9px 0;border-top:1px solid var(--line)}
+  .asq{font-size:14.5px;margin-bottom:9px;line-height:1.45}
+  .asscale{display:flex;gap:6px;flex-wrap:wrap}
+  .scalebtn{flex:1 1 auto;min-width:46px;min-height:44px;border:1px solid var(--line);background:#fff;border-radius:9px;font:inherit;font-weight:700;font-size:15px;color:var(--muted);cursor:pointer}
+  .scalebtn:hover{border-color:var(--cerulean)}
+  .scalebtn.on{background:var(--cerulean);border-color:var(--cerulean);color:#fff}
+  .asresult{margin-top:12px;padding:12px 14px;border-radius:10px;background:var(--mint);font-size:14px;line-height:1.55}
+  .task .x{order:1;margin-left:auto;border:0;background:none;color:var(--muted);cursor:pointer;font-size:18px;flex:none;padding:2px 4px}
   .addrow{display:flex;gap:8px;margin-top:6px}
   .addrow input{flex:1;border:1px solid var(--line);border-radius:11px;padding:10px 12px;font:inherit;font-size:14.5px}
   .aiwrap{margin-top:18px;border:1px solid var(--line);border-radius:14px;overflow:hidden}
@@ -151,7 +162,7 @@ const MODES={
   interviewer:{em:'🗣️',naam:'Ik begeleid (interviewer)',desc:'Jij voert het gesprek. Je ziet per stap de kernvraag en de vragen die je kunt stellen.'},
   respondent:{em:'💬',naam:'Ik word begeleid',desc:'Je beantwoordt per stap de kernvraag, ziet het proces en de AI denkt met je mee.'}
 };
-var state={mode:null,naam:'',taken:[],afweging:null,answers:{},step:'werk',ai:{},focus:null,prio:null};
+var state={mode:null,naam:'',taken:[],afweging:null,answers:{},step:'werk',ai:{},focus:null,prio:null,assess:{}};
 function save(){try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}}
 function load(){try{const s=localStorage.getItem(KEY);if(s)state=Object.assign(state,JSON.parse(s))}catch(e){}}
 function esc(s){return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
@@ -197,6 +208,63 @@ const S={
     ctx:'Rond af en vat kort samen wat het je heeft opgeleverd.',guide:[]}
 };
 const RAILLABEL={werk:'Werksituatie',taken:'Taken',effect:'Lange termijn',hulpzelf:'Hulp: jezelf',hulporg:'Hulp: organisatie',afweging:'Afweging',andere:'Andere stappen',uitdaag:'Uitdagend',concreet:'Concrete stappen',goedbezig:'Goed bezig',afsluiting:'Afsluiting',rapport:'Rapportage'};
+const ASSESS={
+  uitdaag:{titel:'Mini-scan: energie uit deze taak',intro:'Drie korte stellingen over hoeveel energie en betrokkenheid deze taak je geeft. Zo zie je waar je op kunt bouwen.',
+    items:[{t:'Van deze taak krijg ik energie.',dim:'vitaliteit'},{t:'Ik doe deze taak met plezier en trots.',dim:'toewijding'},{t:'Als ik hiermee bezig ben, gaat de tijd snel.',dim:'opgaan in je werk'}],
+    bron:'Gebaseerd op de bevlogenheidsschaal UWES (Schaufeli & Bakker) — vitaliteit, toewijding en absorptie.'},
+  hulpzelf:{titel:'Mini-scan: jouw persoonlijke hulpbronnen',intro:'Vier stellingen over wat er in jóu zit. Zo zie je welke kracht je meteen kunt inzetten.',
+    items:[{t:'Ik geloof dat ik dit lastige deel van mijn werk kan beïnvloeden.',dim:'zelfvertrouwen'},{t:'Als iets tegenzit, herpak ik me meestal snel.',dim:'veerkracht'},{t:'Ik kijk over het algemeen positief naar hoe dit afloopt.',dim:'optimisme'},{t:'Ik geef mijn grens of mening aan wanneer dat nodig is.',dim:'je stem laten horen'}],
+    bron:'Gebaseerd op persoonlijke hulpbronnen / psychologisch kapitaal (Xanthopoulou e.a.; Luthans).'},
+  hulporg:{titel:'Mini-scan: hulpbronnen vanuit je werk',intro:'Vier stellingen over de steun om je heen. Waar het laag scoort, zit vaak je grootste winst.',
+    items:[{t:'Ik heb genoeg vrijheid om zelf te bepalen hóe ik dit werk doe.',dim:'autonomie'},{t:'Ik kan rekenen op steun van collega’s of mijn leidinggevende.',dim:'steun'},{t:'Ik krijg bruikbare feedback of coaching op dit werk.',dim:'feedback'},{t:'Ik krijg de kans om me hierin te ontwikkelen.',dim:'ontwikkeling'}],
+    bron:'Gebaseerd op de werk-hulpbronnen uit het JD-R model (Bakker & Demerouti): autonomie, steun, feedback, ontwikkeling.'},
+  afweging:{titel:'Mini-scan: balans eisen ↔ hulpbronnen',intro:'Twee stellingen om je afweging scherp te krijgen.',
+    items:[{t:'De hulp die ik heb (van mezelf én mijn werk) is genoeg voor wat deze taak van me vraagt.',dim:'balans'},{t:'Met deze hulp kan ik deze taak weer prettig maken.',dim:'vertrouwen'}],
+    bron:'Gebaseerd op het balansprincipe van het JD-R model: hulpbronnen tegenover taakeisen.'}
+};
+function setAssess(k,i,v){if(!state.assess[k])state.assess[k]={};state.assess[k]['i'+i]=v;save();render()}
+function assessHtml(k){
+  if(state.mode==='interviewer')return '';
+  const cfg=ASSESS[k];if(!cfg)return '';
+  const ans=state.assess[k]||{};
+  const scale=['Helemaal oneens','Oneens','Neutraal','Eens','Helemaal eens'];
+  const rows=cfg.items.map(function(it,i){
+    const btns=[1,2,3,4,5].map(function(v){const on=(ans['i'+i]===v);
+      return '<button class="scalebtn'+(on?' on':'')+'" onclick="setAssess(\''+k+'\','+i+','+v+')" aria-label="'+scale[v-1]+'" title="'+scale[v-1]+'">'+v+'</button>';}).join('');
+    return '<div class="asrow"><div class="asq">'+esc(it.t)+'</div><div class="asscale" role="group" aria-label="'+esc(it.t)+'">'+btns+'</div></div>';
+  }).join('');
+  const done=cfg.items.every(function(_,i){return ans['i'+i];});
+  const result=done?('<div class="asresult">'+assessDuiding(k)+'</div>'):'';
+  return '<details class="assess"><summary>🧭 Doe de mini-scan — '+cfg.items.length+' korte stellingen</summary>'+
+    '<p class="ctx" style="margin:6px 0 4px">'+esc(cfg.intro)+'</p>'+
+    '<div class="asscalehead"><span>1 = oneens</span><span>5 = eens</span></div>'+rows+result+
+    '<p class="src" style="margin-top:10px">'+esc(cfg.bron)+'</p></details>';
+}
+function assessDuiding(k){
+  const cfg=ASSESS[k];const ans=state.assess[k]||{};
+  const vals=cfg.items.map(function(_,i){return ans['i'+i];});
+  const avg=vals.reduce(function(a,b){return a+b;},0)/vals.length;
+  let lo=0,hi=0;for(let i=1;i<vals.length;i++){if(vals[i]<vals[lo])lo=i;if(vals[i]>vals[hi])hi=i;}
+  const loDim=cfg.items[lo].dim,hiDim=cfg.items[hi].dim;
+  if(k==='afweging'){
+    const ja=avg>=3.5;
+    return '<b>Jouw balans:</b> '+(ja?'de hulp lijkt in de buurt van wat deze taak van je vraagt.':'de hulp lijkt nog niet genoeg voor wat deze taak van je vraagt.')+'<br>Hier past waarschijnlijk: <b>'+(ja?'Ja, dat lukt':'Nee, nog niet')+'</b>. Kies hieronder wat voor jou klopt.';
+  }
+  let kern;
+  if(avg>=4)kern='Sterk beeld. Je grootste kracht hier is <b>'+esc(hiDim)+'</b> — zet die bewust in.';
+  else if(avg>=2.75)kern='Gemengd beeld. Leun op je <b>'+esc(hiDim)+'</b>; de meeste winst zit in <b>'+esc(loDim)+'</b>.';
+  else kern='Deze hulpbronnen zijn nu beperkt. De grootste winst zit in <b>'+esc(loDim)+'</b>.';
+  return '<b>Jouw uitkomst:</b> '+kern+'<br><button class="btn sm ghost" style="margin-top:8px" onclick="assessToAnswer(\''+k+'\')">➕ Gebruik dit als startpunt voor mijn antwoord</button>';
+}
+function assessToAnswer(k){
+  const cfg=ASSESS[k];const d=S[k];if(!d)return;const ans=state.assess[k]||{};
+  const vals=cfg.items.map(function(_,i){return ans['i'+i];});
+  let lo=0,hi=0;for(let i=1;i<vals.length;i++){if(vals[i]<vals[lo])lo=i;if(vals[i]>vals[hi])hi=i;}
+  const start='Uit de mini-scan: mijn sterkste punt is “'+cfg.items[hi].dim+'”, en de meeste winst zit in “'+cfg.items[lo].dim+'”. ';
+  const cur=state.answers[d.id]||'';
+  state.answers[d.id]=cur?(cur.replace(/\s*$/,'')+'\n'+start):start;
+  save();render();
+}
 
 function uid(){return Math.random().toString(36).slice(2,9)}
 function focusTask(){return state.taken.find(function(t){return t.id===state.focus})||null}
@@ -280,11 +348,11 @@ function renderStep(){
   if(k==='afweging')return renderAfweging();
   const d=S[k];
   return '<div class="card"><span class="eyebrow">'+esc(d.titel)+'</span><h1>'+esc(d.vraag)+'</h1>'+
-    '<p class="ctx">'+esc(d.ctx)+'</p>'+fieldHtml(d)+guideHtml(d)+tipsHtml(d)+aiHtml(d)+navBtns()+'</div>';
+    '<p class="ctx">'+esc(d.ctx)+'</p>'+assessHtml(k)+fieldHtml(d)+guideHtml(d)+tipsHtml(d)+aiHtml(d)+navBtns()+'</div>';
 }
 function renderAfweging(){
   const d=S.afweging;
-  return '<div class="card"><span class="eyebrow">'+d.titel+'</span><h1>'+esc(d.vraag)+'</h1><p class="ctx">'+esc(d.ctx)+'</p>'+
+  return '<div class="card"><span class="eyebrow">'+d.titel+'</span><h1>'+esc(d.vraag)+'</h1><p class="ctx">'+esc(d.ctx)+'</p>'+assessHtml('afweging')+
     '<div class="btnrow"><button class="btn '+(state.afweging==='ja'?'':'ghost')+'" onclick="setAfw(\'ja\')">Ja, dat lukt</button>'+
     '<button class="btn '+(state.afweging==='nee'?'mag':'ghost')+'" onclick="setAfw(\'nee\')">Nee, nog niet</button></div>'+
     aiHtml(d)+
@@ -388,6 +456,7 @@ function buildText(){
   t+='TAKEN:\n'+(state.taken.map(x=>'- '+x.tekst+(x.label?' ['+x.label+']':'')).join('\n')||'-')+'\n\n';
   var _ft=focusTask();t+='GEKOZEN TAAK:\n'+(_ft?('- '+_ft.tekst+(_ft.label?' ['+_ft.label+']':'')):'-')+'\n\n';
   flow().forEach(k=>{const d=S[k];if(!d||!d.id)return;const a=state.answers[d.id];if(!a)return;t+=d.vraag+'\n'+a+'\n\n';});
+  Object.keys(ASSESS).forEach(function(k){var sc=state.assess[k];if(!sc)return;var cfg=ASSESS[k];if(!cfg.items.every(function(_,i){return sc['i'+i];}))return;var parts=cfg.items.map(function(it,i){return it.dim+'='+sc['i'+i];});t+='MINI-SCAN '+cfg.titel.replace(/^Mini-scan: /,'')+' (1-5): '+parts.join(', ')+'\n';});
   if(state.afweging)t+='AFWEGING: hulpbronnen voldoende? '+state.afweging+'\n';
   return t.trim();
 }
@@ -431,7 +500,7 @@ async function analyse(){
   document.addEventListener('click',function(e){if(!$('comfort').hidden&&!e.target.closest('#comfort')&&!e.target.closest('#comfortBtn')){$('comfort').hidden=true;$('comfortBtn').setAttribute('aria-expanded','false')}});
   ap();
 })();
-document.getElementById('restartBtn').onclick=function(){if(confirm('Opnieuw beginnen? Je antwoorden worden gewist.')){state={mode:null,naam:'',taken:[],afweging:null,answers:{},step:'werk',ai:{},focus:null,prio:null};save();render()}};
+document.getElementById('restartBtn').onclick=function(){if(confirm('Opnieuw beginnen? Je antwoorden worden gewist.')){state={mode:null,naam:'',taken:[],afweging:null,answers:{},step:'werk',ai:{},focus:null,prio:null,assess:{}};save();render()}};
 
 load();render();
 </script>
