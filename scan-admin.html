@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Scanmotor beheer — GRWN</title>
+<link rel="icon" href="/favicon.svg">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet">
+<style>
+  :root{--ink:#173049;--mag:#E83F6F;--mag-d:#C72C58;--cloud:#F6F9FB;--slate:#5C6873;--line:#EAEEF1;--groen:#32936F}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:Inter,system-ui,sans-serif;background:var(--cloud);color:var(--ink);min-height:100vh}
+  header{background:#fff;border-bottom:1px solid var(--line);padding:14px 20px;display:flex;align-items:center;gap:12px}
+  header img{height:26px} header span{font-size:13px;color:var(--slate)}
+  main{max-width:900px;margin:0 auto;padding:24px 16px}
+  .card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px;margin-bottom:16px}
+  h1{font-size:20px;font-weight:800;margin-bottom:12px}
+  h2{font-size:15px;font-weight:800;margin-bottom:8px}
+  input{padding:11px 13px;border:1px solid var(--line);border-radius:10px;font:inherit;font-size:15px}
+  button{border:0;border-radius:10px;background:var(--mag);color:#fff;font:inherit;font-size:14px;font-weight:700;padding:10px 16px;cursor:pointer}
+  button:hover{background:var(--mag-d)}
+  button.sec{background:#fff;color:var(--ink);border:1px solid var(--line)}
+  button.sec:hover{background:var(--cloud)}
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th{text-align:left;font-size:12px;text-transform:uppercase;color:var(--slate);padding:8px 10px;border-bottom:1px solid var(--line)}
+  td{padding:9px 10px;border-bottom:1px solid var(--line)}
+  tr.click{cursor:pointer} tr.click:hover{background:var(--cloud)}
+  .tag{display:inline-block;font-size:12px;font-weight:700;padding:2px 9px;border-radius:999px}
+  .tag.done{background:#E7F5EE;color:var(--groen)} .tag.open{background:#FFF3E8;color:#B36A00}
+  .tag.off{background:var(--line);color:var(--slate)} .tag.on{background:#E7F5EE;color:var(--groen)}
+  pre{white-space:pre-wrap;font-family:ui-monospace,Menlo,monospace;font-size:12.5px;line-height:1.55;background:var(--cloud);border:1px solid var(--line);border-radius:10px;padding:14px;max-height:480px;overflow:auto}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .muted{color:var(--slate);font-size:13px}
+  .err{color:var(--mag-d);font-size:13px;margin-top:8px}
+  .hint{font-size:12.5px;color:var(--slate);background:var(--cloud);border-radius:8px;padding:10px 12px;margin-top:12px;line-height:1.5}
+</style>
+</head>
+<body>
+<header>
+  <img src="/grwn-logo.svg" alt="GRWN" onerror="this.replaceWith(Object.assign(document.createElement('b'),{textContent:'GRWN'}))">
+  <span>Scanmotor · beheer</span>
+</header>
+<main>
+  <!-- Login -->
+  <div class="card" id="login">
+    <h1>Beheer</h1>
+    <div class="row">
+      <input type="password" id="admincode" placeholder="Admin-code" style="flex:1;max-width:320px">
+      <button id="loginBtn">Inloggen</button>
+    </div>
+    <div class="err" id="loginErr" style="display:none"></div>
+    <div class="hint">De admin-code stel je in als <b>SCAN_ADMIN_CODE</b> in Vercel (Environment Variables). Alleen jij hoort deze code te hebben.</div>
+  </div>
+
+  <!-- Overzicht -->
+  <div id="overview" style="display:none">
+    <div class="card">
+      <div class="row" style="justify-content:space-between">
+        <h1 style="margin:0">Scans</h1>
+        <button class="sec" id="refreshBtn">Verversen</button>
+      </div>
+      <div id="projList" style="margin-top:12px"></div>
+      <div class="hint">Nieuwe klant-scan aanmaken doe je (voor nu) in Supabase: <code>insert into scan_projects (org_name, access_code) values ('Naam', 'CODE-2026');</code></div>
+    </div>
+  </div>
+
+  <!-- Fiche detail -->
+  <div id="detail" style="display:none">
+    <div class="card">
+      <div class="row" style="justify-content:space-between">
+        <h1 id="dName" style="margin:0"></h1>
+        <button class="sec" id="backBtn">← Terug</button>
+      </div>
+      <p class="muted" id="dMeta" style="margin:6px 0 14px"></p>
+      <div class="row" style="margin-bottom:12px">
+        <button id="copyBtn">Kopieer fiche</button>
+        <button class="sec" id="dlBtn">Download .md</button>
+        <button class="sec" id="trBtn">Toon transcript</button>
+      </div>
+      <h2>Procesfiche</h2>
+      <pre id="fiche"></pre>
+      <div id="transcriptWrap" style="display:none;margin-top:14px">
+        <h2>Transcript</h2>
+        <pre id="transcript"></pre>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+(function(){
+  var API="/api/scan-interview";
+  var code=null, data=null;
+  var $=function(id){return document.getElementById(id)};
+
+  function show(v){["login","overview","detail"].forEach(function(x){$(x).style.display=x===v?"block":"none"})}
+  function get(qs){return fetch(API+"?"+qs,{headers:{"X-Admin-Code":code}}).then(function(r){return r.json()})}
+  function esc(s){var d=document.createElement("div");d.textContent=s||"";return d.innerHTML}
+  function fmtDate(s){try{return new Date(s).toLocaleString("nl-NL",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})}catch(e){return s}}
+
+  function renderOverview(){
+    var html="";
+    data.projects.forEach(function(p){
+      var ivs=data.interviews.filter(function(i){return i.project_id===p.id});
+      var done=ivs.filter(function(i){return i.status==="done"}).length;
+      html+='<h2 style="margin-top:18px">'+esc(p.org_name)+' <span class="tag '+(p.active?"on":"off")+'">'+(p.active?"actief":"gesloten")+'</span> <span class="muted" style="font-weight:400">code: '+esc(p.access_code)+' · '+done+'/'+ivs.length+' afgerond</span></h2>';
+      if(!ivs.length){html+='<p class="muted">Nog geen interviews.</p>';return}
+      html+='<table><tr><th>Medewerker</th><th>Status</th><th>Gestart</th></tr>';
+      ivs.forEach(function(i){
+        html+='<tr class="click" data-id="'+i.id+'"><td>'+esc(i.employee_name)+'</td><td><span class="tag '+(i.status==="done"?"done":"open")+'">'+(i.status==="done"?"afgerond":"open")+'</span></td><td class="muted">'+fmtDate(i.created_at)+'</td></tr>';
+      });
+      html+='</table>';
+    });
+    if(!data.projects.length) html='<p class="muted">Nog geen scan-projecten.</p>';
+    $("projList").innerHTML=html;
+    Array.prototype.forEach.call(document.querySelectorAll("tr.click"),function(tr){
+      tr.addEventListener("click",function(){openDetail(tr.getAttribute("data-id"))});
+    });
+  }
+
+  async function load(){
+    var d=await get("overview=1");
+    if(!d.ok){
+      $("loginErr").textContent=d.reason==="bad-admin-code"?"Admin-code klopt niet.":(d.reason==="no-admin-code-set"?"SCAN_ADMIN_CODE is nog niet ingesteld in Vercel.":"Er ging iets mis: "+d.reason);
+      $("loginErr").style.display="block";show("login");return;
+    }
+    data=d;renderOverview();show("overview");
+  }
+
+  var current=null;
+  async function openDetail(id){
+    var d=await get("fiche="+encodeURIComponent(id));
+    if(!d.ok||!d.interview)return alert("Kon fiche niet laden.");
+    current=d.interview;
+    $("dName").textContent=current.employee_name;
+    $("dMeta").textContent=(current.employee_email||"geen e-mail")+" · "+(current.status==="done"?"afgerond":"nog open")+" · gestart "+fmtDate(current.created_at);
+    $("fiche").textContent=current.fiche_md||"(Nog geen fiche — interview loopt nog.)";
+    var tr=(current.transcript||[]).map(function(m){return (m.role==="user"?"— MEDEWERKER —\n":"— ANALIST —\n")+m.content}).join("\n\n");
+    $("transcript").textContent=tr||"(leeg)";
+    $("transcriptWrap").style.display="none";$("trBtn").textContent="Toon transcript";
+    show("detail");
+  }
+
+  $("loginBtn").addEventListener("click",function(){code=$("admincode").value.trim();if(code)load()});
+  $("admincode").addEventListener("keydown",function(e){if(e.key==="Enter")$("loginBtn").click()});
+  $("refreshBtn").addEventListener("click",load);
+  $("backBtn").addEventListener("click",function(){show("overview")});
+  $("trBtn").addEventListener("click",function(){
+    var w=$("transcriptWrap");var open=w.style.display!=="none";
+    w.style.display=open?"none":"block";this.textContent=open?"Toon transcript":"Verberg transcript";
+  });
+  $("copyBtn").addEventListener("click",function(){
+    navigator.clipboard.writeText(current.fiche_md||"").then(function(){$("copyBtn").textContent="Gekopieerd ✓";setTimeout(function(){$("copyBtn").textContent="Kopieer fiche"},1500)});
+  });
+  $("dlBtn").addEventListener("click",function(){
+    var blob=new Blob([current.fiche_md||""],{type:"text/markdown"});
+    var a=document.createElement("a");a.href=URL.createObjectURL(blob);
+    a.download="fiche-"+(current.employee_name||"onbekend").toLowerCase().replace(/[^a-z0-9]+/g,"-")+".md";a.click();
+  });
+  show("login");
+})();
+</script>
+</body>
+</html>
