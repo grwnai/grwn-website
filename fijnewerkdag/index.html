@@ -75,6 +75,11 @@
   .task.focus{border-color:var(--cerulean);box-shadow:0 0 0 2px var(--mint)}
   .focusbtn{flex:1 1 100%;order:3;margin-top:8px;border:1px dashed var(--line);background:#fff;font:inherit;font-size:13.5px;font-weight:700;padding:10px;border-radius:9px;cursor:pointer;color:var(--cerulean-d)}
   .focusbtn.on{background:var(--cerulean);border-style:solid;border-color:var(--cerulean);color:#fff}
+  .priobox{margin-top:12px;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  .priorow{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:10px 12px;border-top:1px solid var(--line)}
+  .priorow .pt b{font-size:14px}
+  .priorow .pt span{display:block;font-size:12.5px;color:var(--muted);margin-top:2px}
+  .priorow.rec{background:#F3FBF6}
   .task .x{order:1;border:0;background:none;color:var(--muted);cursor:pointer;font-size:18px;flex:none;padding:2px 4px}
   .addrow{display:flex;gap:8px;margin-top:6px}
   .addrow input{flex:1;border:1px solid var(--line);border-radius:11px;padding:10px 12px;font:inherit;font-size:14.5px}
@@ -146,7 +151,7 @@ const MODES={
   interviewer:{em:'🗣️',naam:'Ik begeleid (interviewer)',desc:'Jij voert het gesprek. Je ziet per stap de kernvraag en de vragen die je kunt stellen.'},
   respondent:{em:'💬',naam:'Ik word begeleid',desc:'Je beantwoordt per stap de kernvraag, ziet het proces en de AI denkt met je mee.'}
 };
-var state={mode:null,naam:'',taken:[],afweging:null,answers:{},step:'werk',ai:{},focus:null};
+var state={mode:null,naam:'',taken:[],afweging:null,answers:{},step:'werk',ai:{},focus:null,prio:null};
 function save(){try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}}
 function load(){try{const s=localStorage.getItem(KEY);if(s)state=Object.assign(state,JSON.parse(s))}catch(e){}}
 function esc(s){return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
@@ -306,15 +311,38 @@ function renderTaken(){
     '<div class="btnrow" style="margin:8px 0 14px"><button class="btn mag sm" id="extractBtn" onclick="extractTaken()">✨ Laat AI taken voorstellen</button></div>'+
     '<div id="taskList">'+(rows||'<p class="ctx">Nog geen taken. Voeg ze met AI toe of hieronder handmatig.</p>')+'</div>'+
     '<div class="addrow"><input id="newTask" placeholder="Zelf een taak toevoegen…" onkeydown="if(event.key===\'Enter\')addTask()"><button class="btn ghost sm" onclick="addTask()">Toevoegen</button></div>'+
+    prioHtml()+
     '<p class="ctx" style="margin-top:12px">'+hint+'</p>'+
     '<div class="btnrow"><button class="btn ghost" onclick="prevStep()">← Vorige</button>'+
     (ready?'<button class="btn" onclick="nextStep()">Volgende →</button>':'')+'</div></div>';
 }
 function editTask(id,v){const t=state.taken.find(function(x){return x.id===id});if(t){t.tekst=v;save()}}
 function labelTask(id,l){const t=state.taken.find(function(x){return x.id===id});if(t){t.label=(t.label===l?null:l);save();render()}}
-function delTask(id){state.taken=state.taken.filter(function(x){return x.id!==id});if(state.focus===id)state.focus=null;save();render()}
+function delTask(id){state.taken=state.taken.filter(function(x){return x.id!==id});if(state.focus===id)state.focus=null;state.prio=null;save();render()}
 function setFocus(id){state.focus=(state.focus===id?null:id);save();render()}
-function addTask(){const el=document.getElementById('newTask');const v=(el.value||'').trim();if(!v)return;state.taken.push({id:uid(),tekst:v,label:null});el.value='';save();render()}
+function setFocusByText(txt){const t=state.taken.find(function(x){return x.tekst===txt});if(t){state.focus=t.id;save();render()}}
+function prioHtml(){
+  if(state.taken.length<2)return '';
+  const btn='<div class="btnrow" style="margin:6px 0 0"><button class="btn ghost sm" id="prioBtn" onclick="askPrio()">🧭 Help me kiezen — welke taak raakt mijn werkgeluk het meest?</button></div>';
+  if(!state.prio)return btn;
+  const p=state.prio;
+  const items=(p.ranking||[]).map(function(r){
+    const t=state.taken.find(function(x){return x.tekst===r.taak});const id=t?t.id:'';const rec=(r.taak===p.aanbevolen);
+    return '<div class="priorow'+(rec?' rec':'')+'"><div class="pt"><b>'+(rec?'⭐ ':'')+esc(r.taak)+'</b><span>'+esc(r.reden||'')+'</span></div>'+(id?'<button class="btn sm '+(rec?'':'ghost')+'" onclick="setFocus(\''+id+'\')">Kies</button>':'')+'</div>';
+  }).join('');
+  return btn+'<div class="priobox"><div class="aihelphead">🧭 Advies — meeste impact op je werkgeluk</div><div style="padding:12px 14px"><p style="font-size:14px;margin-bottom:6px">'+esc(p.advies||'')+'</p>'+items+'</div></div>';
+}
+async function askPrio(){
+  const b=document.getElementById('prioBtn');if(b){b.disabled=true;b.innerHTML='<span class="spin"></span>Even meedenken…';}
+  const taken=state.taken.map(function(t){return {tekst:t.tekst,label:t.label};});
+  try{
+    const r=await fetch('/api/jdr-prioriteit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({werk:state.answers.werk||'',taken:taken})});
+    const j=await r.json();
+    if(r.ok&&j&&(j.ranking||j.advies)){state.prio=j;save();render();}
+    else{if(b){b.disabled=false;b.textContent='Kon geen advies ophalen — probeer opnieuw';}}
+  }catch(e){if(b){b.disabled=false;b.textContent='Geen verbinding (werkt niet lokaal)';}}
+}
+function addTask(){const el=document.getElementById('newTask');const v=(el.value||'').trim();if(!v)return;state.taken.push({id:uid(),tekst:v,label:null});state.prio=null;el.value='';save();render()}
 async function extractTaken(){
   const b=document.getElementById('extractBtn');b.disabled=true;b.innerHTML='<span class="spin"></span>Bezig…';
   const ws=state.answers.werk||'';
@@ -403,7 +431,7 @@ async function analyse(){
   document.addEventListener('click',function(e){if(!$('comfort').hidden&&!e.target.closest('#comfort')&&!e.target.closest('#comfortBtn')){$('comfort').hidden=true;$('comfortBtn').setAttribute('aria-expanded','false')}});
   ap();
 })();
-document.getElementById('restartBtn').onclick=function(){if(confirm('Opnieuw beginnen? Je antwoorden worden gewist.')){state={mode:null,naam:'',taken:[],afweging:null,answers:{},step:'werk',ai:{},focus:null};save();render()}};
+document.getElementById('restartBtn').onclick=function(){if(confirm('Opnieuw beginnen? Je antwoorden worden gewist.')){state={mode:null,naam:'',taken:[],afweging:null,answers:{},step:'werk',ai:{},focus:null,prio:null};save();render()}};
 
 load();render();
 </script>
