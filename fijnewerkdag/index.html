@@ -72,6 +72,9 @@
   .lab button{flex:1;border:1px solid var(--line);background:#fff;font:inherit;font-size:13.5px;font-weight:700;padding:10px 8px;border-radius:9px;cursor:pointer;color:var(--muted)}
   .lab button.u.on{background:var(--seagreen);border-color:var(--seagreen);color:#fff}
   .lab button.h.on{background:var(--magenta);border-color:var(--magenta);color:#fff}
+  .task.focus{border-color:var(--cerulean);box-shadow:0 0 0 2px var(--mint)}
+  .focusbtn{flex:1 1 100%;order:3;margin-top:8px;border:1px dashed var(--line);background:#fff;font:inherit;font-size:13.5px;font-weight:700;padding:10px;border-radius:9px;cursor:pointer;color:var(--cerulean-d)}
+  .focusbtn.on{background:var(--cerulean);border-style:solid;border-color:var(--cerulean);color:#fff}
   .task .x{order:1;border:0;background:none;color:var(--muted);cursor:pointer;font-size:18px;flex:none;padding:2px 4px}
   .addrow{display:flex;gap:8px;margin-top:6px}
   .addrow input{flex:1;border:1px solid var(--line);border-radius:11px;padding:10px 12px;font:inherit;font-size:14.5px}
@@ -137,13 +140,13 @@
   <div class="foot">Een instrument van <a href="/">GRWN</a> · JD-R model · with AI</div>
 
 <script>
-const KEY='fw2_v2';
+const KEY='fw2_v3';
 const MODES={
   zelf:{em:'🧭',naam:'Zelfreflectie',desc:'Je doorloopt het zelf, in je eigen tempo — de AI denkt per stap met je mee.'},
   interviewer:{em:'🗣️',naam:'Ik begeleid (interviewer)',desc:'Jij voert het gesprek. Je ziet per stap de kernvraag en de vragen die je kunt stellen.'},
   respondent:{em:'💬',naam:'Ik word begeleid',desc:'Je beantwoordt per stap de kernvraag, ziet het proces en de AI denkt met je mee.'}
 };
-var state={mode:null,naam:'',taken:[],afweging:null,answers:{},step:'werk',ai:{}};
+var state={mode:null,naam:'',taken:[],afweging:null,answers:{},step:'werk',ai:{},focus:null};
 function save(){try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}}
 function load(){try{const s=localStorage.getItem(KEY);if(s)state=Object.assign(state,JSON.parse(s))}catch(e){}}
 function esc(s){return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
@@ -190,11 +193,13 @@ const S={
 };
 const RAILLABEL={werk:'Werksituatie',taken:'Taken',effect:'Lange termijn',hulpzelf:'Hulp: jezelf',hulporg:'Hulp: organisatie',afweging:'Afweging',andere:'Andere stappen',uitdaag:'Uitdagend',concreet:'Concrete stappen',goedbezig:'Goed bezig',afsluiting:'Afsluiting',rapport:'Rapportage'};
 
-function labels(){const s=new Set(state.taken.map(t=>t.label).filter(Boolean));return{hinder:s.has('hinderlijk'),uitdaag:s.has('uitdagend')}}
+function uid(){return Math.random().toString(36).slice(2,9)}
+function focusTask(){return state.taken.find(function(t){return t.id===state.focus})||null}
 function flow(){
-  const f=['werk','taken','effect']; const L=labels();
-  if(L.uitdaag){f.push('uitdaag');}
-  if(L.hinder){f.push('hulpzelf','hulporg','afweging'); if(state.afweging==='nee')f.push('andere');}
+  const ft=focusTask(); const lab=ft?ft.label:null;
+  const f=['werk','taken','effect'];
+  if(lab==='uitdagend'){f.push('uitdaag');}
+  else if(lab==='hinderlijk'){f.push('hulpzelf','hulporg','afweging'); if(state.afweging==='nee')f.push('andere');}
   f.push('concreet','goedbezig','afsluiting','rapport');
   return f;
 }
@@ -284,32 +289,39 @@ function renderAfweging(){
 function setAfw(v){state.afweging=v;save();render()}
 
 function renderTaken(){
-  const rows=state.taken.map((t,idx)=>
-    '<div class="task"><input class="t" value="'+esc(t.tekst)+'" oninput="state.taken['+idx+'].tekst=this.value;save()">'+
-    '<div class="lab"><button class="u '+(t.label==='uitdagend'?'on':'')+'" onclick="labelTask('+idx+',\'uitdagend\')" title="Geeft energie">Uitdagend</button>'+
-    '<button class="h '+(t.label==='hinderlijk'?'on':'')+'" onclick="labelTask('+idx+',\'hinderlijk\')" title="Kost energie">Hinderlijk</button></div>'+
-    '<button class="x" onclick="delTask('+idx+')" aria-label="Verwijder">✕</button></div>').join('');
-  const L=labels();const anyLabeled=state.taken.some(t=>t.label);
-  const spoor=(L.uitdaag&&L.hinder)?'Je krijgt straks <b>beide sporen</b>: energiegevers én energievreters.':(L.uitdaag?'Je krijgt het <b>uitdagende spoor</b>.':(L.hinder?'Je krijgt het <b>hinderlijke spoor</b>.':''));
-  return '<div class="card"><span class="eyebrow">Taken</span><h1>Welke taken springen eruit?</h1>'+
-    '<p class="ctx">Verzamel je terugkerende taken. Laat de AI een voorzet doen, vul aan wat mist, en label elke taak: geeft die energie (<b>uitdagend</b>) of kost die energie (<b>hinderlijk</b>)? Dit bepaalt welk spoor je hierna doorloopt.</p>'+
+  const rows=state.taken.map(function(t){
+    const sel=t.id===state.focus;
+    return '<div class="task'+(sel?' focus':'')+'"><div class="top"><input class="t" value="'+esc(t.tekst)+'" oninput="editTask(\''+t.id+'\',this.value)"><button class="x" onclick="delTask(\''+t.id+'\')" aria-label="Verwijder">✕</button></div>'+
+      '<div class="lab"><button class="u '+(t.label==='uitdagend'?'on':'')+'" onclick="labelTask(\''+t.id+'\',\'uitdagend\')" title="Geeft energie">Uitdagend</button>'+
+      '<button class="h '+(t.label==='hinderlijk'?'on':'')+'" onclick="labelTask(\''+t.id+'\',\'hinderlijk\')" title="Kost energie">Hinderlijk</button></div>'+
+      '<button class="focusbtn'+(sel?' on':'')+'" onclick="setFocus(\''+t.id+'\')">'+(sel?'✓ Hiermee ga je verder':'🎯 Kies deze taak')+'</button></div>';
+  }).join('');
+  const ft=focusTask();const ready=ft&&ft.label;
+  let hint;
+  if(!ft)hint='Kies één taak waarmee je verder wilt — die je het meeste dwarszit óf het meeste energie geeft.';
+  else if(!ft.label)hint='Label je gekozen taak nog als <b>uitdagend</b> of <b>hinderlijk</b>.';
+  else hint='Je gaat verder met: <b>'+esc(ft.tekst)+'</b> ('+ft.label+'). Een volgende keer kun je een andere taak pakken.';
+  return '<div class="card"><span class="eyebrow">Taken</span><h1>Welke taak pak je aan?</h1>'+
+    '<p class="ctx">Verzamel je terugkerende taken (laat de AI een voorzet doen of voeg zelf toe) en label ze. <b>Kies er daarna één</b> om nu mee verder te gaan — de taak die je het meeste dwarszit of juist het meeste energie geeft.</p>'+
     '<div class="btnrow" style="margin:8px 0 14px"><button class="btn mag sm" id="extractBtn" onclick="extractTaken()">✨ Laat AI taken voorstellen</button></div>'+
-    '<div id="taskList">'+(rows||'<p class="ctx">Nog geen taken. Voeg ze hierboven met AI toe of hieronder handmatig.</p>')+'</div>'+
+    '<div id="taskList">'+(rows||'<p class="ctx">Nog geen taken. Voeg ze met AI toe of hieronder handmatig.</p>')+'</div>'+
     '<div class="addrow"><input id="newTask" placeholder="Zelf een taak toevoegen…" onkeydown="if(event.key===\'Enter\')addTask()"><button class="btn ghost sm" onclick="addTask()">Toevoegen</button></div>'+
-    (spoor?'<p class="ctx" style="margin-top:12px">'+spoor+'</p>':'<p class="ctx" style="margin-top:12px">Label minstens één taak om verder te gaan.</p>')+
+    '<p class="ctx" style="margin-top:12px">'+hint+'</p>'+
     '<div class="btnrow"><button class="btn ghost" onclick="prevStep()">← Vorige</button>'+
-    (anyLabeled?'<button class="btn" onclick="nextStep()">Volgende →</button>':'')+'</div></div>';
+    (ready?'<button class="btn" onclick="nextStep()">Volgende →</button>':'')+'</div></div>';
 }
-function labelTask(i,l){state.taken[i].label=(state.taken[i].label===l?null:l);save();render()}
-function delTask(i){state.taken.splice(i,1);save();render()}
-function addTask(){const el=document.getElementById('newTask');const v=(el.value||'').trim();if(!v)return;state.taken.push({tekst:v,label:null});el.value='';save();render()}
+function editTask(id,v){const t=state.taken.find(function(x){return x.id===id});if(t){t.tekst=v;save()}}
+function labelTask(id,l){const t=state.taken.find(function(x){return x.id===id});if(t){t.label=(t.label===l?null:l);save();render()}}
+function delTask(id){state.taken=state.taken.filter(function(x){return x.id!==id});if(state.focus===id)state.focus=null;save();render()}
+function setFocus(id){state.focus=(state.focus===id?null:id);save();render()}
+function addTask(){const el=document.getElementById('newTask');const v=(el.value||'').trim();if(!v)return;state.taken.push({id:uid(),tekst:v,label:null});el.value='';save();render()}
 async function extractTaken(){
   const b=document.getElementById('extractBtn');b.disabled=true;b.innerHTML='<span class="spin"></span>Bezig…';
   const ws=state.answers.werk||'';
   try{
     const r=await fetch('/api/jdr-taken',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({werksituatie:ws})});
     const d=await r.json();
-    if(d.taken&&d.taken.length){d.taken.forEach(t=>{if(!state.taken.some(x=>x.tekst.toLowerCase()===t.toLowerCase()))state.taken.push({tekst:t,label:null})});save();render();}
+    if(d.taken&&d.taken.length){d.taken.forEach(t=>{if(!state.taken.some(x=>x.tekst.toLowerCase()===t.toLowerCase()))state.taken.push({id:uid(),tekst:t,label:null})});save();render();}
     else{b.disabled=false;b.textContent='Geen taken gevonden — voeg ze handmatig toe';}
   }catch(e){b.disabled=false;b.textContent='Ophalen lukte niet — voeg handmatig toe';}
 }
@@ -324,7 +336,7 @@ async function aiSend(text){
   if(!state.ai[state.step])state.ai[state.step]=[];
   state.ai[state.step].push({role:'user',content:text});
   state.ai[state.step].push({role:'assistant',content:'…'});save();aiRender();
-  const d=S[state.step]||{};const ctx=(d.vraag||'')+' — '+(d.ctx||'');
+  const d=S[state.step]||{};const _fs=focusTask();const ctx=(d.vraag||'')+' — '+(d.ctx||'')+(_fs?(' [Gekozen taak: '+_fs.tekst+(_fs.label?' ('+_fs.label+')':'')+']'):'');
   try{
     const r=await fetch('/api/jdr-coach',{method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({messages:state.ai[state.step].filter(m=>m.content!=='…'),step:ctx})});
@@ -346,6 +358,7 @@ function buildText(){
   if(state.naam)t+='Naam: '+state.naam+'\n';
   t+='Datum: '+new Date().toLocaleDateString('nl-NL')+'\n\n';
   t+='TAKEN:\n'+(state.taken.map(x=>'- '+x.tekst+(x.label?' ['+x.label+']':'')).join('\n')||'-')+'\n\n';
+  var _ft=focusTask();t+='GEKOZEN TAAK:\n'+(_ft?('- '+_ft.tekst+(_ft.label?' ['+_ft.label+']':'')):'-')+'\n\n';
   flow().forEach(k=>{const d=S[k];if(!d||!d.id)return;const a=state.answers[d.id];if(!a)return;t+=d.vraag+'\n'+a+'\n\n';});
   if(state.afweging)t+='AFWEGING: hulpbronnen voldoende? '+state.afweging+'\n';
   return t.trim();
@@ -390,7 +403,7 @@ async function analyse(){
   document.addEventListener('click',function(e){if(!$('comfort').hidden&&!e.target.closest('#comfort')&&!e.target.closest('#comfortBtn')){$('comfort').hidden=true;$('comfortBtn').setAttribute('aria-expanded','false')}});
   ap();
 })();
-document.getElementById('restartBtn').onclick=function(){if(confirm('Opnieuw beginnen? Je antwoorden worden gewist.')){state={mode:null,naam:'',taken:[],afweging:null,answers:{},step:'werk',ai:{}};save();render()}};
+document.getElementById('restartBtn').onclick=function(){if(confirm('Opnieuw beginnen? Je antwoorden worden gewist.')){state={mode:null,naam:'',taken:[],afweging:null,answers:{},step:'werk',ai:{},focus:null};save();render()}};
 
 load();render();
 </script>
