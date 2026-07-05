@@ -11,11 +11,11 @@
 <style>
   :root{--ink:#173049;--ink-d:#0F2336;--mag:#E83F6F;--mag-d:#C72C58;--cloud:#F6F9FB;--slate:#5C6873;--line:#EAEEF1}
   *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:Inter,system-ui,sans-serif;background:var(--cloud);color:var(--ink);min-height:100vh;display:flex;flex-direction:column}
+  body{font-family:Inter,system-ui,sans-serif;background:var(--cloud);color:var(--ink);height:100dvh;display:flex;flex-direction:column}
   header{background:#fff;border-bottom:1px solid var(--line);padding:14px 20px;display:flex;align-items:center;gap:12px}
   header img{height:26px}
   header span{font-size:13px;color:var(--slate)}
-  main{flex:1;display:flex;flex-direction:column;max-width:760px;width:100%;margin:0 auto;padding:0 16px}
+  main{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;max-width:760px;width:100%;margin:0 auto;padding:0 16px}
 
   /* Startscherm */
   .start{margin:auto;background:#fff;border:1px solid var(--line);border-radius:18px;padding:34px 30px;max-width:480px;width:100%;box-shadow:0 18px 50px rgba(23,48,73,.10)}
@@ -31,8 +31,11 @@
   .err{color:var(--mag-d);font-size:13px;margin-top:10px;display:none}
 
   /* Chat */
-  .chat{display:none;flex-direction:column;flex:1;padding:20px 0 0}
-  .msgs{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:12px;padding-bottom:16px}
+  .chat{display:none;flex-direction:column;flex:1;min-height:0;padding:20px 0 0}
+  .msgs{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:12px;padding-bottom:16px}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;padding:2px 0 6px}
+  .chip{border:1px solid var(--mag);background:#fff;color:var(--mag-d);font:inherit;font-size:14px;font-weight:600;padding:8px 14px;border-radius:999px;cursor:pointer}
+  .chip:hover{background:#FFF1F5}
   .msg{max-width:82%;padding:12px 16px;border-radius:16px;font-size:15px;line-height:1.55;white-space:pre-wrap}
   .msg.ai{background:#fff;border:1px solid var(--line);border-bottom-left-radius:5px;align-self:flex-start}
   .msg.me{background:var(--ink);color:#fff;border-bottom-right-radius:5px;align-self:flex-end}
@@ -110,6 +113,28 @@
   function setBusy(v){ state.busy=v; $("typing").style.display = v?"block":"none";
     $("sendBtn").disabled=v; $("msgs").scrollTop = $("msgs").scrollHeight; }
 
+  // Klikbare antwoordopties: de agent sluit een bericht af met "[OPTIES] a | b | c"
+  var chipsEl=null;
+  function clearChips(){ if(chipsEl){ chipsEl.remove(); chipsEl=null; } }
+  function renderChips(opts){
+    clearChips();
+    chipsEl=document.createElement("div"); chipsEl.className="chips";
+    opts.slice(0,6).forEach(function(o){
+      var b=document.createElement("button"); b.className="chip"; b.textContent=o;
+      b.addEventListener("click",function(){ if(state.busy)return; clearChips(); send(o); });
+      chipsEl.appendChild(b);
+    });
+    $("msgs").appendChild(chipsEl);
+    $("msgs").scrollTop=$("msgs").scrollHeight;
+  }
+  function handleReply(raw){
+    var m=raw.match(/\n?\[OPTIES\]\s*([^\n]+)\s*$/);
+    var text=m ? raw.replace(m[0],"").trim() : raw;
+    state.messages.push({role:"assistant",content:raw});
+    addMsg("assistant", text);
+    if(m){ renderChips(m[1].split("|").map(function(s){return s.trim()}).filter(Boolean)); }
+  }
+
   async function call(extra){
     var body = Object.assign({ code:state.code, interviewId:state.interviewId, messages:state.messages }, extra||{});
     var r = await fetch(API, { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify(body) });
@@ -118,14 +143,14 @@
 
   async function send(text){
     if (state.busy) return;
+    clearChips();
     if (text){ state.messages.push({role:"user",content:text}); addMsg("user",text); }
     setBusy(true);
     try{
       var d = await call();
       if (!d.ok){ addMsg("assistant","Er ging iets mis ("+(d.reason||"onbekend")+"). Probeer het zo nog eens, of mail info@grwn.ai."); return; }
       state.interviewId = d.interviewId || state.interviewId;
-      state.messages.push({role:"assistant",content:d.reply});
-      addMsg("assistant", d.reply);
+      handleReply(d.reply);
       if (d.done){ setTimeout(function(){ show("done"); }, 2600); }
     }catch(e){
       addMsg("assistant","Geen verbinding. Check je internet en probeer het opnieuw — je antwoorden tot nu toe zijn bewaard.");
@@ -147,8 +172,7 @@
       }
       state.interviewId = d.interviewId;
       state.messages.push({role:"user",content:"Start het interview."});
-      state.messages.push({role:"assistant",content:d.reply});
-      show("chat"); addMsg("assistant", d.reply); $("input").focus();
+      show("chat"); handleReply(d.reply); $("input").focus();
     }catch(e){
       err.textContent="Geen verbinding. Probeer het opnieuw."; err.style.display="block";
       this.disabled=false; this.textContent="Start het gesprek";
