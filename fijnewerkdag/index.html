@@ -131,6 +131,31 @@
   body.roomy .card{line-height:1.9;letter-spacing:.01em}
   body.calm *{animation:none !important;transition:none !important}
   @media (prefers-reduced-motion: reduce){*{animation-duration:.001ms !important;transition-duration:.001ms !important}}
+
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+  .chip{border:1px solid var(--line);background:#fff;border-radius:999px;font:inherit;font-size:13px;font-weight:600;color:var(--cerulean-d);padding:8px 13px;cursor:pointer;text-align:left}
+  .chip:hover{border-color:var(--cerulean);background:var(--mint)}
+  .panel{margin:12px 0;border:1px solid var(--line);border-radius:14px;background:#fff;padding:14px 16px}
+  .panel .ph{font-weight:700;color:var(--cerulean-d);font-size:14.5px;margin-bottom:6px}
+  .qbox{border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin:12px 0;background:#FBFDFE}
+  .qbox.good{border-left:4px solid var(--seagreen)}
+  .qbox.warn{border-left:4px solid var(--gold)}
+  .qbox.bad{border-left:4px solid var(--magenta)}
+  .qbox h4{font-size:15px;margin-bottom:4px}
+  .gap{display:flex;gap:11px;align-items:flex-start;padding:11px 0;border-top:1px solid var(--line)}
+  .gap input[type=checkbox]{width:22px;height:22px;flex:none;margin-top:3px;accent-color:var(--seagreen);cursor:pointer}
+  .gap .gt{flex:1;min-width:0}
+  .gap .gt b{font-size:14.5px;font-weight:600}
+  .gap .gt input[type=text]{width:100%;margin-top:6px;border:1px solid var(--line);border-radius:9px;padding:8px 10px;font:inherit;font-size:13.5px}
+  .checkban{margin-top:16px;border-radius:12px;padding:12px 14px;background:#FFF8E6;border:1px solid #F3E4B0;font-size:14px;line-height:1.5}
+  .sub{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+  @media(max-width:560px){.sub{grid-template-columns:1fr}}
+  .sub input{width:100%;border:1px solid var(--line);border-radius:10px;padding:9px 11px;font:inherit;font-size:14px}
+  .sumrow{padding:9px 0;border-top:1px solid var(--line);font-size:14px;line-height:1.5}
+  .sumrow:first-child{border-top:0}
+  .sumrow b{display:block;font-size:12px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);margin-bottom:2px;font-weight:700}
+  .priorow .pt{flex:1;min-width:0}
+  .priorow .btn.sm{flex:none;white-space:nowrap;min-width:74px}
 </style>
 </head>
 <body>
@@ -156,115 +181,103 @@
   <div class="foot">Een instrument van <a href="/">GRWN</a> · JD-R model · with AI</div>
 
 <script>
-const KEY='fw2_v3';
+const KEY='fw3_v1';
 const MODES={
-  zelf:{em:'🧭',naam:'Zelfreflectie',desc:'Je doorloopt het zelf, in je eigen tempo — de AI denkt per stap met je mee.'},
+  zelf:{em:'🧭',naam:'Zelfreflectie',desc:'Je doorloopt het zelf, in je eigen tempo — met per stap concrete hulp om verder te komen.'},
   interviewer:{em:'🗣️',naam:'Ik begeleid (interviewer)',desc:'Jij voert het gesprek. Je ziet per stap de kernvraag en de vragen die je kunt stellen.'},
-  respondent:{em:'💬',naam:'Ik word begeleid',desc:'Je beantwoordt per stap de kernvraag, ziet het proces en de AI denkt met je mee.'}
+  respondent:{em:'💬',naam:'Ik word begeleid',desc:'Je beantwoordt per stap de kernvraag, ziet het proces en krijgt hulp om verder te komen.'}
 };
-var state={mode:null,naam:'',taken:[],afweging:null,answers:{},step:'werk',ai:{},focus:null,prio:null,assess:{}};
+const CATS=[
+  {l:'Overleggen & afstemming',e:'teamoverleg, 1-op-1s, afstemmen met andere afdelingen'},
+  {l:'E-mail & communicatie',e:'mail beantwoorden, telefoon, chatberichten'},
+  {l:'Administratie & registratie',e:'dossiers bijwerken, uren schrijven, formulieren'},
+  {l:'Klantcontact',e:'vragen beantwoorden, klachten, adviesgesprekken'},
+  {l:'Projectwerk',e:'aan projecten werken, deadlines halen'},
+  {l:'Plannen & organiseren',e:'agenda beheren, planning maken, prioriteren'},
+  {l:'Leidinggeven & coachen',e:'aansturen, begeleiden, beoordelen'},
+  {l:'Rapportage & analyse',e:'rapporten maken, cijfers analyseren'},
+  {l:'Kwaliteit & controle',e:'controleren, nakijken, verbeteren'},
+  {l:'Ontwikkeling & leren',e:'trainingen, jezelf of anderen ontwikkelen'}
+];
+var state={mode:null,naam:'',taken:[],focus:null,prio:null,takenTried:false,answers:{},assess:{},longterm:{},gaps:{eisen:null,checked:{},note:{}},concreet:{},afweging:null,step:'werk',ai:{},check:{},_checking:false,_extracting:false,_eisenLoading:false};
 function save(){try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}}
 function load(){try{const s=localStorage.getItem(KEY);if(s)state=Object.assign(state,JSON.parse(s))}catch(e){}}
 function esc(s){return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
 
-/* Per stap: één simpele kernvraag (vraag) met een concreet voorbeeld (ph). De scriptvragen staan als begeleiding (guide). */
 const S={
-  werk:{titel:'Werksituatie',id:'werk',vraag:'Vertel eens: hoe ziet een gewone werkdag van jou eruit?',
-    ph:'Bijv. Ik start met mijn mail, daarna overleg, dan dossiers… Wat doe je zoal, en wat valt je op?',
-    ctx:'We beginnen bij je dagelijkse werk. Beschrijf het gewoon in je eigen woorden — daarna halen we samen de terugkerende taken eruit.',
-    guide:['Welke taken of situaties komen vaak terug?','Hoe ervaar je jouw werk op dit moment, en waardoor komt dat?'],
+  werk:{titel:'Je werk',id:'werk',vraag:'Wat zijn je terugkerende taken?',
+    ph:'Som je taken op — één per regel. Bijv.\nKlantcontact: vragen beantwoorden per mail en telefoon\nOverleg: wekelijks teamoverleg voorbereiden\nAdministratie: dossiers bijwerken\n(Je kunt je functieomschrijving als startpunt plakken, maar vul vooral aan met wat je écht doet.)',
+    ctx:'We kijken naar je terugkerende taken, niet naar één losse dag. Som ze op — per regel één. Een functieomschrijving alleen is meestal te summier, dus vul aan met wat je in de praktijk doet. De categorieën hieronder helpen je aan een complete lijst.',
+    guide:['Wat doe je dagelijks, wekelijks en maandelijks?','Welke overleggen, systemen of mensen horen erbij?','Welke taken kosten of geven je het meeste energie?'],
     tipsI:['Gebruik open vragen (hoe, wat, welke).','Vat samen wat je hoort en check of je het goed begrijpt.','Focus op inzicht en oplossingen, niet op oordeel.']},
-  effect:{titel:'Lange termijn',id:'effect',vraag:'Als je zo doorgaat, hoe voel je je dan over een tijdje?',
-    ph:'Bijv. Ik ben bang dat ik opbrand / Ik zou meer rust en trots willen voelen.',
-    ctx:'Sta even stil bij de langere termijn — daar zit vaak je motivatie om iets te veranderen.',
-    guide:['Wat gebeurt er met jouw balans als je dit zo blijft doen?','Als je meer energie en minder stress hebt, wat kun je dan bereiken?','Hoe zou het voelen als je vaker trots bent op wat je doet?','Wat zou het jou opleveren als je meer uitdagende taken hebt?']},
-  uitdaag:{titel:'Uitdagend',id:'ud_nodig',vraag:'Wat zou je helpen om méér te doen van het werk dat je energie geeft?',
-    ph:'Bijv. meer tijd, samenwerken met een bepaalde collega, een training, ruimte van mijn leidinggevende…',
-    ctx:'Je versterkt wat energie geeft. Verken wat je nodig hebt om meer van dit soort werk te doen.',guide:[]},
+  effect:{titel:'Lange termijn',id:'effect',vraag:'Als je zo doorgaat, waar loopt dit dan op uit?',
+    ph:'Bijv. Als dit zo blijft loop ik leeg / Ik wil over een half jaar met meer energie en trots op mijn werk staan.',
+    ctx:'De korte scan hieronder laat zien welke kant je op beweegt. Sta daar even bij stil — dat is vaak je motivatie om iets te veranderen.',guide:[]},
+  uitdaag:{titel:'Versterken',id:'ud_nodig',vraag:'Wat zou je helpen om méér te doen van dit werk dat je energie geeft?',
+    ph:'Bijv. meer tijd hiervoor, samenwerken met een bepaalde collega, een training, ruimte van mijn leidinggevende…',
+    ctx:'Je versterkt wat energie geeft. De scan laat zien hoeveel energie deze taak je geeft; daaronder concrete manieren om er meer ruimte voor te maken.',guide:[]},
   hulpzelf:{titel:'Hulp: jezelf',id:'hulp_zelf',vraag:'Wat kun jij zélf doen of inzetten om dit lastige deel lichter te maken?',
     ph:'Bijv. een talent van me gebruiken, mijn grens aangeven, mijn energie beter verdelen…',
-    ctx:'Denk aan hulp die in jóu zit: je talenten, je veerkracht, je mindset.',
-    guide:['Kun je jouw stem laten horen wanneer het nodig is?','Bezit je talenten en/of sterke punten die je nu in kunt zetten?','Hoe ga je om met onverwachte uitdagingen?','Is jouw energie in balans, ben je hier bewust mee bezig?','Welke mindset kan je nu helpen?']},
-  hulporg:{titel:'Hulp: organisatie',id:'hulp_org',vraag:'Welke hulp of steun vanuit je werk zou je hierbij helpen?',
+    ctx:'Denk aan hulp die in jóu zit: je talenten, je veerkracht, je mindset. Doe eerst de scan — die wijst je naar het punt met de meeste winst en geeft concrete acties.',guide:[]},
+  hulporg:{titel:'Hulp: je werk',id:'hulp_org',vraag:'Welke hulp of steun vanuit je werk zou je hierbij helpen?',
     ph:'Bijv. meer autonomie, duidelijkere afspraken, betere systemen, hulp van een collega of leidinggevende…',
-    ctx:'Denk aan hulp om je heen: mensen, opleiding, systemen, duidelijkheid.',
-    guide:['Heb je voldoende autonomie om keuzes te maken in je werk?','Is er sprake van rolduidelijkheid?','Geeft je leidinggevende feedback en coaching?','Zijn de systemen ondersteunend aan jouw taak?','Heb je voldoende kennis en kunde op dit gebied?']},
-  afweging:{titel:'Afweging',vraag:'Denk je dat dit genoeg is om het werk weer prettig te maken?',choice:true,
-    ctx:'Weeg af of de hulp — vanuit jezelf én je werk — genoeg is.'},
-  andere:{titel:'Andere stappen',id:'andere',vraag:'Wat zou je nog méér kunnen doen om de druk te verlichten?',
-    ph:'Bijv. een taak schrappen of vereenvoudigen, anders prioriteren, iets uit handen geven…',
-    ctx:'De hulp is misschien nog niet genoeg. Kijk naar andere manieren — ook dit worden hulpbronnen.',
-    guide:['Zijn er taken die je kunt vereenvoudigen of schrappen?','Is de prioritering juist?','Hoe kun je nu jouw tijdsdruk verminderen?']},
-  concreet:{titel:'Concrete stappen',id:'concreet',vraag:'Wat ga je concreet doen — en wanneer?',
-    ph:'Bijv. Deze week bespreek ik X met mijn leidinggevende. Uiterlijk vrijdag.',
-    ctx:'Beide sporen komen hier samen. Maak het klein en concreet — kleine stappen tellen.',
-    guide:['Wat kun je deze week doen om meer grip te krijgen op je werkdruk?','Met wie ga je in gesprek om meer steun of samenwerking te organiseren?','Welke ontwikkelmogelijkheid wil je concreet oppakken, en wanneer?','Wat is je deadline voor deze eerste stap?','Welke vervolgstap volgt daarna om de balans verder te verbeteren?']},
-  goedbezig:{titel:'Goed bezig',id:'goedbezig',vraag:'Wat gaat er al goed? Waar mag je trots op zijn?',
-    ph:'Bijv. Ik weet nu helder wat me energie geeft / Ik durf hulp te vragen.',
-    ctx:'Sluit positief af: benoem wat goed gaat.',
-    guide:['Goed dat je helder kunt benoemen wat jou energie geeft.','Fijn dat je zelf al ideeën hebt om meer uitdagende taken te creëren.','Goed dat je aangeeft welke ondersteuning je mist — dat helpt om samen te verbeteren.','Je hebt duidelijk inzicht in wat je nodig hebt; hoe ga je dit realiseren?']},
-  afsluiting:{titel:'Afsluiting',id:'af_opbrengst',vraag:'Wat neem je uit dit gesprek mee?',
+    ctx:'Denk aan hulp om je heen: mensen, feedback, systemen, ruimte. Doe eerst de scan — die wijst je naar de hulpbron met de meeste winst en geeft concrete acties.',guide:[]},
+  afweging:{titel:'Afweging',id:'afw_onderbouwing',vraag:'Is de beschikbare hulp echt genoeg voor wat deze taak van je vraagt?',
+    ctx:'We zetten de eisen van je taak naast de hulp die je hebt. Vink per eis af of daar echt hulp tegenover staat. Blijven er gaten, dan kijken we bij de volgende stap naar andere opties.'},
+  andere:{titel:'Andere opties',id:'andere',vraag:'Wat kun je nog méér doen om de druk te verlichten?',
+    ph:'Bijv. deze taak vereenvoudigen, een deel delegeren, anders prioriteren, om meer regelruimte vragen…',
+    ctx:'De hulp is nog niet genoeg. Hieronder denk je gestructureerd na over wat je zelf kunt bijstellen aan je werk (job crafting). Tik ideeën aan die passen.'},
+  concreet:{titel:'Concrete actie',id:'concreet',vraag:'Wat ga je concreet doen — en wanneer?',
+    ph:'Bijv. Deze week bespreek ik met mijn leidinggevende dat ik één vast blok per week voor dit werk wil.',
+    ctx:'Zet je inzichten om in één concrete, haalbare eerste actie. Klein en concreet wint.'},
+  afronding:{titel:'Afronding',id:'afronding',vraag:'Wat neem je hieruit mee?',
     ph:'Bijv. één concrete stap, een nieuw inzicht, of gewoon meer rust in mijn hoofd.',
-    ctx:'Rond af en vat kort samen wat het je heeft opgeleverd.',guide:[]}
+    ctx:'Hieronder je samenvatting. Je hebt goed nagedacht en het omgezet in een concrete actie — precies zo krijg je grip.'}
 };
-const RAILLABEL={werk:'Werksituatie',taken:'Taken',effect:'Lange termijn',hulpzelf:'Hulp: jezelf',hulporg:'Hulp: organisatie',afweging:'Afweging',andere:'Andere stappen',uitdaag:'Uitdagend',concreet:'Concrete stappen',goedbezig:'Goed bezig',afsluiting:'Afsluiting',rapport:'Rapportage'};
+const RAILLABEL={werk:'Je werk',taken:'Je taak',effect:'Lange termijn',uitdaag:'Versterken',hulpzelf:'Hulp: jezelf',hulporg:'Hulp: je werk',afweging:'Afweging',andere:'Andere opties',concreet:'Concrete actie',afronding:'Afronding',rapport:'Rapportage'};
+const CHECKSTEPS=['werk','effect','uitdaag','hulpzelf','hulporg','andere','concreet','afronding'];
+
 const ASSESS={
-  uitdaag:{titel:'Mini-scan: energie uit deze taak',intro:'Drie korte stellingen over hoeveel energie en betrokkenheid deze taak je geeft. Zo zie je waar je op kunt bouwen.',
+  uitdaag:{titel:'Mini-scan: energie uit deze taak',intro:'Drie korte stellingen over hoeveel energie en betrokkenheid deze taak je geeft.',
     items:[{t:'Van deze taak krijg ik energie.',dim:'vitaliteit'},{t:'Ik doe deze taak met plezier en trots.',dim:'toewijding'},{t:'Als ik hiermee bezig ben, gaat de tijd snel.',dim:'opgaan in je werk'}],
-    bron:'Gebaseerd op de bevlogenheidsschaal UWES (Schaufeli & Bakker) — vitaliteit, toewijding en absorptie.'},
-  hulpzelf:{titel:'Mini-scan: jouw persoonlijke hulpbronnen',intro:'Vier stellingen over wat er in jóu zit. Zo zie je welke kracht je meteen kunt inzetten.',
+    bron:'Gebaseerd op de bevlogenheidsschaal UWES (Schaufeli & Bakker): vitaliteit, toewijding en absorptie.'},
+  hulpzelf:{titel:'Mini-scan: jouw persoonlijke hulpbronnen',intro:'Vier stellingen over wat er in jóu zit. Zo zie je welke kracht je meteen kunt inzetten en waar de winst zit.',
     items:[{t:'Ik geloof dat ik dit lastige deel van mijn werk kan beïnvloeden.',dim:'zelfvertrouwen'},{t:'Als iets tegenzit, herpak ik me meestal snel.',dim:'veerkracht'},{t:'Ik kijk over het algemeen positief naar hoe dit afloopt.',dim:'optimisme'},{t:'Ik geef mijn grens of mening aan wanneer dat nodig is.',dim:'je stem laten horen'}],
     bron:'Gebaseerd op persoonlijke hulpbronnen / psychologisch kapitaal (Xanthopoulou e.a.; Luthans).'},
   hulporg:{titel:'Mini-scan: hulpbronnen vanuit je werk',intro:'Vier stellingen over de steun om je heen. Waar het laag scoort, zit vaak je grootste winst.',
     items:[{t:'Ik heb genoeg vrijheid om zelf te bepalen hóe ik dit werk doe.',dim:'autonomie'},{t:'Ik kan rekenen op steun van collega’s of mijn leidinggevende.',dim:'steun'},{t:'Ik krijg bruikbare feedback of coaching op dit werk.',dim:'feedback'},{t:'Ik krijg de kans om me hierin te ontwikkelen.',dim:'ontwikkeling'}],
-    bron:'Gebaseerd op de werk-hulpbronnen uit het JD-R model (Bakker & Demerouti): autonomie, steun, feedback, ontwikkeling.'},
-  afweging:{titel:'Mini-scan: balans eisen ↔ hulpbronnen',intro:'Twee stellingen om je afweging scherp te krijgen.',
-    items:[{t:'De hulp die ik heb (van mezelf én mijn werk) is genoeg voor wat deze taak van me vraagt.',dim:'balans'},{t:'Met deze hulp kan ik deze taak weer prettig maken.',dim:'vertrouwen'}],
-    bron:'Gebaseerd op het balansprincipe van het JD-R model: hulpbronnen tegenover taakeisen.'}
+    bron:'Gebaseerd op de werk-hulpbronnen uit het JD-R model (Bakker & Demerouti): autonomie, steun, feedback, ontwikkeling.'}
 };
-function setAssess(k,i,v){if(!state.assess[k])state.assess[k]={};state.assess[k]['i'+i]=v;save();render()}
-function assessHtml(k){
-  if(state.mode==='interviewer')return '';
-  const cfg=ASSESS[k];if(!cfg)return '';
-  const ans=state.assess[k]||{};
-  const scale=['Helemaal oneens','Oneens','Neutraal','Eens','Helemaal eens'];
-  const rows=cfg.items.map(function(it,i){
-    const btns=[1,2,3,4,5].map(function(v){const on=(ans['i'+i]===v);
-      return '<button class="scalebtn'+(on?' on':'')+'" onclick="setAssess(\''+k+'\','+i+','+v+')" aria-label="'+scale[v-1]+'" title="'+scale[v-1]+'">'+v+'</button>';}).join('');
-    return '<div class="asrow"><div class="asq">'+esc(it.t)+'</div><div class="asscale" role="group" aria-label="'+esc(it.t)+'">'+btns+'</div></div>';
-  }).join('');
-  const done=cfg.items.every(function(_,i){return ans['i'+i];});
-  const result=done?('<div class="asresult">'+assessDuiding(k)+'</div>'):'';
-  return '<details class="assess"><summary>🧭 Doe de mini-scan — '+cfg.items.length+' korte stellingen</summary>'+
-    '<p class="ctx" style="margin:6px 0 4px">'+esc(cfg.intro)+'</p>'+
-    '<div class="asscalehead"><span>1 = oneens</span><span>5 = eens</span></div>'+rows+result+
-    '<p class="src" style="margin-top:10px">'+esc(cfg.bron)+'</p></details>';
-}
-function assessDuiding(k){
-  const cfg=ASSESS[k];const ans=state.assess[k]||{};
-  const vals=cfg.items.map(function(_,i){return ans['i'+i];});
-  const avg=vals.reduce(function(a,b){return a+b;},0)/vals.length;
-  let lo=0,hi=0;for(let i=1;i<vals.length;i++){if(vals[i]<vals[lo])lo=i;if(vals[i]>vals[hi])hi=i;}
-  const loDim=cfg.items[lo].dim,hiDim=cfg.items[hi].dim;
-  if(k==='afweging'){
-    const ja=avg>=3.5;
-    return '<b>Jouw balans:</b> '+(ja?'de hulp lijkt in de buurt van wat deze taak van je vraagt.':'de hulp lijkt nog niet genoeg voor wat deze taak van je vraagt.')+'<br>Hier past waarschijnlijk: <b>'+(ja?'Ja, dat lukt':'Nee, nog niet')+'</b>. Kies hieronder wat voor jou klopt.';
-  }
-  let kern;
-  if(avg>=4)kern='Sterk beeld. Je grootste kracht hier is <b>'+esc(hiDim)+'</b> — zet die bewust in.';
-  else if(avg>=2.75)kern='Gemengd beeld. Leun op je <b>'+esc(hiDim)+'</b>; de meeste winst zit in <b>'+esc(loDim)+'</b>.';
-  else kern='Deze hulpbronnen zijn nu beperkt. De grootste winst zit in <b>'+esc(loDim)+'</b>.';
-  return '<b>Jouw uitkomst:</b> '+kern+'<br><button class="btn sm ghost" style="margin-top:8px" onclick="assessToAnswer(\''+k+'\')">➕ Gebruik dit als startpunt voor mijn antwoord</button>';
-}
-function assessToAnswer(k){
-  const cfg=ASSESS[k];const d=S[k];if(!d)return;const ans=state.assess[k]||{};
-  const vals=cfg.items.map(function(_,i){return ans['i'+i];});
-  let lo=0,hi=0;for(let i=1;i<vals.length;i++){if(vals[i]<vals[lo])lo=i;if(vals[i]>vals[hi])hi=i;}
-  const start='Uit de mini-scan: mijn sterkste punt is “'+cfg.items[hi].dim+'”, en de meeste winst zit in “'+cfg.items[lo].dim+'”. ';
-  const cur=state.answers[d.id]||'';
-  state.answers[d.id]=cur?(cur.replace(/\s*$/,'')+'\n'+start):start;
-  save();render();
-}
+const ACT_ZELF={
+  'zelfvertrouwen':['Schrijf op welk vergelijkbaar probleem je eerder wél oploste','Vraag iemand die je vertrouwt om een eerlijke reality-check'],
+  'veerkracht':['Plan een vast hersteldmoment ná deze taak','Bepaal vooraf: als het tegenzit, dan doe ik…'],
+  'optimisme':['Benoem één ding dat wél in jouw controle ligt','Richt je op de eerstvolgende kleine stap, niet op het hele probleem'],
+  'je stem laten horen':['Bereid één zin voor waarmee je je grens aangeeft','Vraag deze week concreet om wat je nodig hebt']
+};
+const ACT_ORG={
+  'autonomie':['Vraag om meer ruimte om zelf te bepalen hóe je dit doet','Stel voor een deel van je werk zelf in te delen'],
+  'steun':['Vraag een collega om mee te denken of samen te doen','Bespreek met je leidinggevende welke steun je mist'],
+  'feedback':['Vraag gericht om feedback op dit specifieke werk','Plan een kort evaluatiemoment na afloop'],
+  'ontwikkeling':['Zoek een training of iemand die je dit kan leren','Vraag om een taak waarin je je hierin kunt ontwikkelen']
+};
+const ACT_UD=['Vraag om meer van dit soort taken','Blok vaste tijd voor dit werk in je agenda','Zoek een project waarin dit centraal staat','Deel je ambitie met je leidinggevende','Combineer het met een taak die minder leuk is'];
+const CRAFT=[
+  {kop:'Minder last van belemmerende taken',opts:['Deze taak schrappen','Deze taak vereenvoudigen','Een deel uit handen geven / delegeren','Anders prioriteren','Standaardiseren of automatiseren']},
+  {kop:'Meer regelruimte en ontwikkeling',opts:['Om meer autonomie of regelruimte vragen','Vaste tijd blokken voor dit werk','Iets nieuws leren dat dit makkelijker maakt']},
+  {kop:'Meer steun organiseren',opts:['Hulp of steun vragen aan een collega','Iets samen doen in plaats van alleen','Feedback of meedenken organiseren']},
+  {kop:'Meer energie uit je werk halen',opts:['Een deel dat je leuk vindt uitbreiden','Betekenis toevoegen: waarvoor doe je het?']}
+];
+const LONG={
+  items:[
+    {t:'Aan het eind van mijn werkdag voel ik me leeg.',g:'u'},
+    {t:'Ik moet steeds meer moeite doen om mijn werk vol te houden.',g:'u'},
+    {t:'’s Ochtends kost het me moeite om er weer voor te gaan.',g:'u'},
+    {t:'Ik voel me energiek tijdens mijn werk.',g:'b'},
+    {t:'Ik ben enthousiast over mijn werk.',g:'b'},
+    {t:'Als ik werk, gaat de tijd vaak snel voorbij.',g:'b'}
+  ],
+  bron:'Gebaseerd op de twee JD-R-processen: het uitputtingsproces (energieverlies) en het motivatieproces (bevlogenheid, o.a. UWES).'
+};
 
 function uid(){return Math.random().toString(36).slice(2,9)}
 function focusTask(){return state.taken.find(function(t){return t.id===state.focus})||null}
@@ -273,11 +286,11 @@ function flow(){
   const f=['werk','taken','effect'];
   if(lab==='uitdagend'){f.push('uitdaag');}
   else if(lab==='hinderlijk'){f.push('hulpzelf','hulporg','afweging'); if(state.afweging==='nee')f.push('andere');}
-  f.push('concreet','goedbezig','afsluiting','rapport');
+  f.push('concreet','afronding','rapport');
   return f;
 }
 function go(step){state.step=step;save();render()}
-function nextStep(){const f=flow();const i=f.indexOf(state.step);if(i<f.length-1)go(f[i+1])}
+function advance(){const f=flow();const i=f.indexOf(state.step);if(i<f.length-1)go(f[i+1])}
 function prevStep(){const f=flow();const i=f.indexOf(state.step);if(i>0)go(f[i-1]);else{state.mode=null;save();render()}}
 const app=document.getElementById('app');
 
@@ -290,12 +303,13 @@ function render(){
 }
 function jdrHtml(){return '<div class="jdrbody">'+
  '<p>Deze tool volgt het <b>Job Demands-Resources model</b> (Schaufeli):</p><ul>'+
- '<li><b>Werkstressoren</b> (werkeisen zoals werkdruk, werk/priv\u00e9, rolconflict) leiden via <b>stress-reacties</b> tot minder welzijn \u2014 het <i>uitputtingsproces</i>. In deze tool: je <b>hinderlijke taken</b>.</li>'+
- '<li><b>Energiebronnen</b> (hulpbronnen uit het werk: steun, autonomie, feedback, ontwikkeling) leiden via <b>bevlogenheid</b> tot betere resultaten \u2014 het <i>motivatieproces</i>. In deze tool: <b>Hulp vanuit de organisatie</b>.</li>'+
- '<li><b>Persoonlijke hulpbronnen</b> (veerkracht, talent, mindset) dempen stress \u00e9n versterken bevlogenheid. In deze tool: <b>Hulp vanuit jezelf</b>.</li>'+
- '<li><b>Buffer</b>: hulpbronnen verzachten de impact van werkstressoren. In deze tool: de afweging \u201ckun je met deze hulpbronnen het werk weer in balans maken?\u201d.</li>'+
+ '<li><b>Werkstressoren</b> (werkeisen zoals werkdruk, werk/privé, rolconflict) leiden via <b>stress-reacties</b> tot minder welzijn — het <i>uitputtingsproces</i>. In deze tool: je <b>hinderlijke taken</b>.</li>'+
+ '<li><b>Energiebronnen</b> (hulpbronnen uit het werk: steun, autonomie, feedback, ontwikkeling) leiden via <b>bevlogenheid</b> tot betere resultaten — het <i>motivatieproces</i>. In deze tool: <b>Hulp vanuit je werk</b>.</li>'+
+ '<li><b>Persoonlijke hulpbronnen</b> (veerkracht, talent, mindset) dempen stress én versterken bevlogenheid. In deze tool: <b>Hulp vanuit jezelf</b>.</li>'+
+ '<li><b>Buffer</b>: hulpbronnen verzachten de impact van werkstressoren. In deze tool: de <b>afweging</b> — is de hulp genoeg voor wat de taak vraagt?</li>'+
  '<li><b>Uitdagend vs. hinderlijk werk</b> is een erkende verfijning (challenge- vs. hindrance-eisen): uitdagend werk motiveert (mits er genoeg hulpbronnen tegenover staan), hinderlijk werk kost vooral energie.</li>'+
- '</ul><p class="src">Bron: Wilmar Schaufeli \u2014 Job Demands-Resources model.</p></div>';}
+ '<li><b>Job crafting</b> (Tims & Bakker): zelf je werk bijstellen — dat is wat je bij "Andere opties" en "Concrete actie" doet.</li>'+
+ '</ul><p class="src">Bron: Wilmar Schaufeli — Job Demands-Resources model; Tims & Bakker — job crafting.</p></div>';}
 function renderStart(){
   let m=Object.keys(MODES).map(k=>'<button class="mode" onclick="pickMode(\''+k+'\')"><div class="em">'+MODES[k].em+'</div><h4>'+MODES[k].naam+'</h4><p>'+MODES[k].desc+'</p></button>').join('');
   app.innerHTML='<div class="card"><span class="eyebrow">JD-R · positieve psychologie</span>'+
@@ -303,7 +317,7 @@ function renderStart(){
     '<p class="ctx">Een gesprek over je werk dat energie geeft en energie kost — en wat je eraan kunt doen. Kies hoe je het wilt doen:</p>'+
     '<div class="modes">'+m+'</div>'+
     '<div class="field"><label for="nm">Je naam (optioneel)</label><input id="nm" value="'+esc(state.naam)+'" placeholder="bijv. Sam" oninput="state.naam=this.value"></div>'+
-    '<details class="jdr"><summary>\u2139\ufe0f Zo werkt het JD-R model achter deze tool</summary>'+jdrHtml()+'</details>'+
+    '<details class="jdr"><summary>ℹ️ Zo werkt het JD-R model achter deze tool</summary>'+jdrHtml()+'</details>'+
     '</div>';
 }
 function pickMode(m){state.mode=m;state.step='werk';save();render()}
@@ -317,6 +331,18 @@ function renderRail(){
 }
 function backHome(){if(confirm('Terug naar het beginscherm? Je antwoorden blijven bewaard.')){state.mode=null;save();render()}return false}
 
+/* ---------- generieke bouwstenen ---------- */
+function scaleRow(q,cur,mk){
+  const s=['Helemaal oneens','Oneens','Neutraal','Eens','Helemaal eens'];
+  let b='';for(let v=1;v<=5;v++){b+='<button class="scalebtn'+(cur===v?' on':'')+'" onclick="'+mk(v)+'" aria-label="'+s[v-1]+'" title="'+s[v-1]+'">'+v+'</button>';}
+  return '<div class="asrow"><div class="asq">'+esc(q)+'</div><div class="asscale" role="group" aria-label="'+esc(q)+'">'+b+'</div></div>';
+}
+function fieldHtml(d){
+  return '<textarea id="'+d.id+'" placeholder="'+esc(d.ph||'Jouw antwoord…')+'" oninput="onAnswer(\''+state.step+'\',\''+d.id+'\',this.value)">'+esc(state.answers[d.id]||'')+'</textarea>';
+}
+function onAnswer(step,id,v){state.answers[id]=v;if(state.check[step])state.check[step]=null;save()}
+function insertA(id,txt){const cur=state.answers[id]||'';state.answers[id]=cur?(cur.replace(/\s*$/,'')+'\n'+txt):txt;if(state.check[state.step])state.check[state.step]=null;save();render()}
+function chip(id,t){return '<button class="chip" data-v="'+esc(t)+'" onclick="insertA(\''+id+'\',this.dataset.v)">+ '+esc(t)+'</button>';}
 function guideHtml(d){
   if(!d.guide||!d.guide.length)return '';
   const t=(state.mode==='interviewer')?'Vragen die je kunt stellen':'Denk hierbij aan';
@@ -326,69 +352,136 @@ function tipsHtml(d){
   if(state.mode!=='interviewer'||!d.tipsI||!d.tipsI.length)return '';
   return '<div class="tips" style="border-left-color:var(--gold)"><b>Begeleidingstips</b><ul>'+d.tipsI.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul></div>';
 }
-function fieldHtml(d){
-  return '<textarea id="'+d.id+'" placeholder="'+esc(d.ph||'Jouw antwoord…')+'" oninput="state.answers[\''+d.id+'\']=this.value;save()">'+esc(state.answers[d.id]||'')+'</textarea>';
-}
-function aiHtml(d){
+function aiHtml(open){
   if(state.mode==='interviewer')return '';
-  return '<div class="aiwrap open" id="aiwrap"><div class="aihelphead">✨ AI-hulp bij deze stap — vastlopen of twijfel? Ik denk met je mee.</div>'+
+  const head=open?'✨ AI-hulp bij deze stap — vastlopen of twijfel? Ik denk met je mee.':'✨ Kom je er niet uit? Open AI-hulp';
+  return '<div class="aiwrap'+(open?' open':'')+'" id="aiwrap"><div class="aihelphead" onclick="toggleAi()" style="cursor:pointer">'+head+'</div>'+
     '<div class="aibody"><div class="aiquick"><button class="btn sm mag" onclick="aiFeedback()">🤝 Denk met me mee</button><button class="btn sm ghost" onclick="aiExample()">💡 Geef een voorbeeld</button></div>'+
     '<div id="aichat"></div><div class="airow"><input id="aiinp" placeholder="Of stel zelf een vraag…" onkeydown="if(event.key===\'Enter\')askAI()"><button class="btn sm ghost" onclick="askAI()">Vraag</button></div></div></div>';
 }
+function toggleAi(){const w=document.getElementById('aiwrap');if(w)w.classList.toggle('open')}
 function navBtns(){
-  const f=flow();const i=f.indexOf(state.step);
-  let html='<div class="btnrow"><button class="btn ghost" onclick="prevStep()">← Vorige</button>';
-  if(i<f.length-1)html+='<button class="btn" onclick="nextStep()">Volgende →</button>';
-  return html+'</div>';
+  const f=flow();const i=f.indexOf(state.step);const k=state.step;
+  const st=state.check[k]||{};const warn=st.shown&&!st.ok&&!st.ackd;
+  const ban=warn?('<div class="checkban">🔎 <b>Even meedenken:</b> '+esc(st.tip)+'<br><span class="ctx" style="font-size:12.5px">Pas je antwoord aan, of ga toch verder.</span></div>'):'';
+  let primary='';
+  if(i<f.length-1){
+    if(state._checking)primary='<button class="btn" disabled><span class="spin"></span>Even controleren…</button>';
+    else if(warn)primary='<button class="btn mag" onclick="ackNext()">Toch doorgaan →</button>';
+    else primary='<button class="btn" onclick="nextStep()">Volgende →</button>';
+  }
+  return ban+'<div class="btnrow"><button class="btn ghost" onclick="prevStep()">← Vorige</button>'+primary+'</div>';
 }
+
+/* ---------- antwoordcheck ---------- */
+async function nextStep(){
+  const k=state.step;const d=S[k];
+  if(CHECKSTEPS.indexOf(k)>=0&&d&&d.id){
+    const ans=(state.answers[d.id]||'').trim();
+    const st=state.check[k]||{};
+    if(!st.ackd){
+      if(!ans){state.check[k]={ok:false,tip:'Je hebt nog niets ingevuld. Beschrijf kort je antwoord op de vraag.',shown:true,done:true};save();render();return;}
+      if(!st.done){
+        state._checking=true;render();
+        const res=await runCheck(d.vraag,ans);
+        state._checking=false;
+        state.check[k]={ok:res.ok,tip:res.tip,done:true,shown:!res.ok};save();
+        if(!res.ok){render();return;}
+      }
+    }
+  }
+  advance();
+}
+function ackNext(){const k=state.step;state.check[k]=Object.assign(state.check[k]||{},{ackd:true});save();advance()}
+async function runCheck(vraag,ans){
+  try{
+    const r=await fetch('/api/jdr-check',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({vraag:vraag,antwoord:ans})});
+    const j=await r.json();
+    if(r.ok&&typeof j.ok==='boolean')return {ok:j.ok,tip:j.tip||''};
+  }catch(e){}
+  return {ok:true,tip:''};
+}
+
+/* ---------- router ---------- */
 function renderStep(){
   const k=state.step;
+  if(k==='werk')return renderWerk();
   if(k==='taken')return renderTaken();
-  if(k==='rapport')return renderReport();
+  if(k==='effect')return renderEffect();
+  if(k==='uitdaag')return renderUitdaag();
+  if(k==='hulpzelf'||k==='hulporg')return renderHulp(k);
   if(k==='afweging')return renderAfweging();
+  if(k==='andere')return renderAndere();
+  if(k==='concreet')return renderConcreet();
+  if(k==='afronding')return renderAfronding();
+  if(k==='rapport')return renderReport();
   const d=S[k];
-  return '<div class="card"><span class="eyebrow">'+esc(d.titel)+'</span><h1>'+esc(d.vraag)+'</h1>'+
-    '<p class="ctx">'+esc(d.ctx)+'</p>'+assessHtml(k)+fieldHtml(d)+guideHtml(d)+tipsHtml(d)+aiHtml(d)+navBtns()+'</div>';
+  return '<div class="card"><span class="eyebrow">'+esc(d.titel)+'</span><h1>'+esc(d.vraag)+'</h1><p class="ctx">'+esc(d.ctx)+'</p>'+fieldHtml(d)+navBtns()+'</div>';
 }
-function renderAfweging(){
-  const d=S.afweging;
-  return '<div class="card"><span class="eyebrow">'+d.titel+'</span><h1>'+esc(d.vraag)+'</h1><p class="ctx">'+esc(d.ctx)+'</p>'+assessHtml('afweging')+
-    '<div class="btnrow"><button class="btn '+(state.afweging==='ja'?'':'ghost')+'" onclick="setAfw(\'ja\')">Ja, dat lukt</button>'+
-    '<button class="btn '+(state.afweging==='nee'?'mag':'ghost')+'" onclick="setAfw(\'nee\')">Nee, nog niet</button></div>'+
-    aiHtml(d)+
-    '<div class="btnrow"><button class="btn ghost" onclick="prevStep()">← Vorige</button>'+
-    (state.afweging?'<button class="btn" onclick="nextStep()">Volgende →</button>':'')+'</div></div>';
-}
-function setAfw(v){state.afweging=v;save();render()}
 
+/* ---------- stap 1: werk ---------- */
+function renderWerk(){
+  const d=S.werk;
+  const chips=CATS.map(function(c){return '<button class="chip" data-v="'+esc(c.l+': ')+'" onclick="insertA(\'werk\',this.dataset.v)" title="'+esc(c.e)+'">+ '+esc(c.l)+'</button>';}).join('');
+  const exlist=CATS.map(function(c){return '<li><b>'+esc(c.l)+'</b> — <span style="color:var(--muted)">'+esc(c.e)+'</span></li>';}).join('');
+  const helper=(state.mode!=='interviewer')?('<div class="panel"><div class="ph">Loop deze soorten werk langs</div>'+
+    '<p class="ctx" style="margin:0 0 8px">Ga de categorieën langs en noteer per categorie je échte, terugkerende taken — ook de kleine en de vervelende. Tik een categorie aan om hem als kopje in je lijst te zetten.</p>'+
+    '<div class="chips">'+chips+'</div>'+
+    '<details style="margin-top:8px"><summary style="cursor:pointer;font-size:13px;font-weight:600;color:var(--cerulean-d)">Voorbeelden per categorie</summary><ul style="margin:8px 0 0 18px;font-size:13.5px;line-height:1.6">'+exlist+'</ul></details></div>'):'';
+  return '<div class="card"><span class="eyebrow">'+esc(d.titel)+'</span><h1>'+esc(d.vraag)+'</h1>'+
+    '<p class="ctx">'+esc(d.ctx)+'</p>'+fieldHtml(d)+helper+
+    guideHtml(d)+tipsHtml(d)+navBtns()+'</div>';
+}
+
+/* ---------- stap 2: taken ---------- */
+function labbtns(t){
+  return '<button class="u '+(t.label==='uitdagend'?'on':'')+'" onclick="labelTask(\''+t.id+'\',\'uitdagend\')" title="Geeft energie">Uitdagend — geeft energie</button>'+
+    '<button class="h '+(t.label==='hinderlijk'?'on':'')+'" onclick="labelTask(\''+t.id+'\',\'hinderlijk\')" title="Kost energie">Hinderlijk — kost energie</button>';
+}
 function renderTaken(){
+  const ft=focusTask();
+  let chosen='';
+  if(ft){
+    chosen='<div class="qbox good"><h4>🎯 Je gekozen taak</h4><p style="font-weight:600;font-size:15px">'+esc(ft.tekst)+'</p>'+
+      '<p class="ctx" style="margin:6px 0 8px">Is dit voor jou vooral <b>uitdagend</b> (geeft energie) of <b>hinderlijk</b> (kost energie)?</p>'+
+      '<div class="lab" style="position:static">'+labbtns(ft)+'</div>'+
+      (ft.label?('<div class="btnrow" style="margin-top:14px"><button class="btn" onclick="nextStep()">Volgende →</button></div>'):'<p class="ctx" style="margin-top:10px">Kies een label om verder te gaan.</p>')+
+      '</div>';
+  }
   const rows=state.taken.map(function(t){
     const sel=t.id===state.focus;
     return '<div class="task'+(sel?' focus':'')+'"><div class="top"><input class="t" value="'+esc(t.tekst)+'" oninput="editTask(\''+t.id+'\',this.value)"><button class="x" onclick="delTask(\''+t.id+'\')" aria-label="Verwijder">✕</button></div>'+
-      '<div class="lab"><button class="u '+(t.label==='uitdagend'?'on':'')+'" onclick="labelTask(\''+t.id+'\',\'uitdagend\')" title="Geeft energie">Uitdagend</button>'+
-      '<button class="h '+(t.label==='hinderlijk'?'on':'')+'" onclick="labelTask(\''+t.id+'\',\'hinderlijk\')" title="Kost energie">Hinderlijk</button></div>'+
-      '<button class="focusbtn'+(sel?' on':'')+'" onclick="setFocus(\''+t.id+'\')">'+(sel?'✓ Hiermee ga je verder':'🎯 Kies deze taak')+'</button></div>';
+      '<button class="focusbtn'+(sel?' on':'')+'" onclick="setFocus(\''+t.id+'\')">'+(sel?'✓ Dit is je gekozen taak':'🎯 Kies deze taak')+'</button></div>';
   }).join('');
-  const ft=focusTask();const ready=ft&&ft.label;
-  let hint;
-  if(!ft)hint='Kies één taak waarmee je verder wilt — die je het meeste dwarszit óf het meeste energie geeft.';
-  else if(!ft.label)hint='Label je gekozen taak nog als <b>uitdagend</b> of <b>hinderlijk</b>.';
-  else hint='Je gaat verder met: <b>'+esc(ft.tekst)+'</b> ('+ft.label+'). Een volgende keer kun je een andere taak pakken.';
-  return '<div class="card"><span class="eyebrow">Taken</span><h1>Welke taak pak je aan?</h1>'+
-    '<p class="ctx">Verzamel je terugkerende taken (laat de AI een voorzet doen of voeg zelf toe) en label ze. <b>Kies er daarna één</b> om nu mee verder te gaan — de taak die je het meeste dwarszit of juist het meeste energie geeft.</p>'+
-    '<div class="btnrow" style="margin:8px 0 14px"><button class="btn mag sm" id="extractBtn" onclick="extractTaken()">✨ Laat AI taken voorstellen</button></div>'+
-    '<div id="taskList">'+(rows||'<p class="ctx">Nog geen taken. Voeg ze met AI toe of hieronder handmatig.</p>')+'</div>'+
+  let status='';
+  if(state._extracting)status='<p class="ctx"><span class="spin"></span>Ik haal je taken uit je beschrijving…</p>';
+  else if(state.takenTried&&!state.taken.length)status='<p class="ctx">Ik kon niet automatisch taken herkennen. Voeg ze hieronder handmatig toe, of vul stap 1 aan.</p>';
+  return '<div class="card"><span class="eyebrow">Je taak</span><h1>Welke taak pak je nu aan?</h1>'+
+    '<p class="ctx">Hieronder je taken. Kies er één om nu mee verder te gaan — bij twijfel helpt "Help me kiezen". Een volgende keer kun je een andere pakken.</p>'+
+    chosen+
+    '<div class="btnrow" style="margin:8px 0 12px"><button class="btn mag sm" id="extractBtn" onclick="extractTaken(true)">✨ Taken opnieuw ophalen</button></div>'+
+    status+
+    '<div id="taskList">'+(rows||'')+'</div>'+
     '<div class="addrow"><input id="newTask" placeholder="Zelf een taak toevoegen…" onkeydown="if(event.key===\'Enter\')addTask()"><button class="btn ghost sm" onclick="addTask()">Toevoegen</button></div>'+
     prioHtml()+
-    '<p class="ctx" style="margin-top:12px">'+hint+'</p>'+
-    '<div class="btnrow"><button class="btn ghost" onclick="prevStep()">← Vorige</button>'+
-    (ready?'<button class="btn" onclick="nextStep()">Volgende →</button>':'')+'</div></div>';
+    '<div class="btnrow"><button class="btn ghost" onclick="prevStep()">← Vorige</button></div></div>';
 }
 function editTask(id,v){const t=state.taken.find(function(x){return x.id===id});if(t){t.tekst=v;save()}}
 function labelTask(id,l){const t=state.taken.find(function(x){return x.id===id});if(t){t.label=(t.label===l?null:l);save();render()}}
 function delTask(id){state.taken=state.taken.filter(function(x){return x.id!==id});if(state.focus===id)state.focus=null;state.prio=null;save();render()}
-function setFocus(id){state.focus=(state.focus===id?null:id);save();render()}
-function setFocusByText(txt){const t=state.taken.find(function(x){return x.tekst===txt});if(t){state.focus=t.id;save();render()}}
+function setFocus(id){state.focus=(state.focus===id?null:id);save();render();try{window.scrollTo({top:0,behavior:'smooth'})}catch(e){}}
+function addTask(){const el=document.getElementById('newTask');const v=(el.value||'').trim();if(!v)return;state.taken.push({id:uid(),tekst:v,label:null});state.prio=null;el.value='';save();render()}
+async function extractTaken(force){
+  if(state._extracting)return;
+  state._extracting=true;state.takenTried=true;render();
+  const ws=state.answers.werk||'';
+  try{
+    const r=await fetch('/api/jdr-taken',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({werksituatie:ws})});
+    const d=await r.json();
+    if(d.taken&&d.taken.length){d.taken.forEach(t=>{if(!state.taken.some(x=>x.tekst.toLowerCase()===t.toLowerCase()))state.taken.push({id:uid(),tekst:t,label:null})});}
+  }catch(e){}
+  state._extracting=false;save();render();
+}
 function prioHtml(){
   if(state.taken.length<2)return '';
   const btn='<div class="btnrow" style="margin:6px 0 0"><button class="btn ghost sm" id="prioBtn" onclick="askPrio()">🧭 Help me kiezen — welke taak raakt mijn werkgeluk het meest?</button></div>';
@@ -410,18 +503,184 @@ async function askPrio(){
     else{if(b){b.disabled=false;b.textContent='Kon geen advies ophalen — probeer opnieuw';}}
   }catch(e){if(b){b.disabled=false;b.textContent='Geen verbinding (werkt niet lokaal)';}}
 }
-function addTask(){const el=document.getElementById('newTask');const v=(el.value||'').trim();if(!v)return;state.taken.push({id:uid(),tekst:v,label:null});state.prio=null;el.value='';save();render()}
-async function extractTaken(){
-  const b=document.getElementById('extractBtn');b.disabled=true;b.innerHTML='<span class="spin"></span>Bezig…';
-  const ws=state.answers.werk||'';
-  try{
-    const r=await fetch('/api/jdr-taken',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({werksituatie:ws})});
-    const d=await r.json();
-    if(d.taken&&d.taken.length){d.taken.forEach(t=>{if(!state.taken.some(x=>x.tekst.toLowerCase()===t.toLowerCase()))state.taken.push({id:uid(),tekst:t,label:null})});save();render();}
-    else{b.disabled=false;b.textContent='Geen taken gevonden — voeg ze handmatig toe';}
-  }catch(e){b.disabled=false;b.textContent='Ophalen lukte niet — voeg handmatig toe';}
+
+/* ---------- stap 3: lange termijn ---------- */
+function setLong(i,v){state.longterm['i'+i]=v;save();render()}
+function longAverages(){
+  let us=[],bs=[];
+  LONG.items.forEach(function(it,i){const val=state.longterm['i'+i];if(!val)return;if(it.g==='u')us.push(val);else bs.push(val);});
+  const av=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:null;
+  return {u:av(us),b:av(bs),done:LONG.items.every(function(_,i){return state.longterm['i'+i];})};
+}
+function longResult(){
+  const a=longAverages();if(!a.done)return '';
+  const hiU=a.u>=3.5, hiB=a.b>=3;
+  let cls,kop,txt;
+  if(hiU&&!hiB){cls='bad';kop='Richting opbranden';txt='Je energie loopt leeg en je betrokkenheid is laag. Dit is het uitputtingsproces uit JD-R. Als het zo doorgaat, groeit het risico dat je écht vastloopt. Juist nu ingrijpen loont.';}
+  else if(hiU&&hiB){cls='warn';kop='Bevlogen, maar het kost veel';txt='Je bent betrokken én het vraagt veel van je. Dat houd je een tijd vol, maar zonder voldoende herstel kan het omslaan in uitputting. Bewaak bewust je energie.';}
+  else if(!hiU&&hiB){cls='good';kop='Gezonde koers';txt='Genoeg energie en betrokkenheid — je zit in het motivatieproces. Als je zo doorgaat, groei je verder. Mooi vertrekpunt om je sterke punten uit te bouwen.';}
+  else{cls='warn';kop='Vlak';txt='Weinig energieverlies, maar ook weinig bevlogenheid — het werk laat je een beetje koud. Op termijn kan dat gaan vervelen. Meer uitdaging of betekenis helpt.';}
+  const sc='<span class="ctx" style="font-size:12.5px">Energieverlies: '+a.u.toFixed(1)+'/5 · Bevlogenheid: '+a.b.toFixed(1)+'/5</span>';
+  return '<div class="qbox '+cls+'"><h4>'+kop+'</h4><p style="font-size:14px;line-height:1.55">'+txt+'</p>'+sc+'</div>';
+}
+function renderEffect(){
+  const d=S.effect;
+  let rows=LONG.items.map(function(it,i){return scaleRow(it.t, state.longterm['i'+i], (function(ii){return function(v){return 'setLong('+ii+','+v+')';}})(i));}).join('');
+  const panel=(state.mode==='interviewer')?'':('<div class="panel"><div class="ph">🧭 Korte scan: waar beweeg je naartoe?</div><p class="ctx" style="margin:0 0 8px">Denk aan de afgelopen weken.</p><div class="asscalehead"><span>1 = oneens</span><span>5 = eens</span></div>'+rows+longResult()+'<p style="color:var(--muted);font-size:12px;margin-top:10px">'+esc(LONG.bron)+'</p></div>');
+  return '<div class="card"><span class="eyebrow">'+esc(d.titel)+'</span><h1>'+esc(d.vraag)+'</h1><p class="ctx">'+esc(d.ctx)+'</p>'+
+    panel+
+    '<p class="ctx" style="margin-top:14px"><b>Jouw reflectie:</b> wat betekent dit beeld voor jou — wat wil je dat er over een half jaar anders is?</p>'+
+    fieldHtml(d)+guideHtml(d)+tipsHtml(d)+navBtns()+'</div>';
 }
 
+/* ---------- stap: uitdaag & hulp (met scan) ---------- */
+function setAssess(k,i,v){if(!state.assess[k])state.assess[k]={};state.assess[k]['i'+i]=v;save();render()}
+function assessPanel(k){
+  if(state.mode==='interviewer')return '';
+  const cfg=ASSESS[k];if(!cfg)return '';
+  const ans=state.assess[k]||{};
+  const rows=cfg.items.map(function(it,i){return scaleRow(it.t, ans['i'+i], (function(kk,ii){return function(v){return "setAssess('"+kk+"',"+ii+","+v+")";}})(k,i));}).join('');
+  const done=cfg.items.every(function(_,i){return ans['i'+i];});
+  const res=done?('<div class="asresult">'+assessResult(k)+'</div>'):'';
+  return '<div class="panel"><div class="ph">🧭 '+esc(cfg.titel)+'</div><p class="ctx" style="margin:0 0 8px">'+esc(cfg.intro)+'</p><div class="asscalehead"><span>1 = oneens</span><span>5 = eens</span></div>'+rows+res+'<p style="color:var(--muted);font-size:12px;margin-top:10px">'+esc(cfg.bron)+'</p></div>';
+}
+function assessResult(k){
+  const cfg=ASSESS[k];const ans=state.assess[k]||{};
+  const vals=cfg.items.map(function(_,i){return ans['i'+i];});
+  const avg=vals.reduce(function(a,b){return a+b;},0)/vals.length;
+  let lo=0,hi=0;for(let i=1;i<vals.length;i++){if(vals[i]<vals[lo])lo=i;if(vals[i]>vals[hi])hi=i;}
+  const loDim=cfg.items[lo].dim,hiDim=cfg.items[hi].dim;
+  if(k==='uitdaag'){
+    const chips=ACT_UD.map(function(t){return chip('ud_nodig',t);}).join('');
+    return '<b>Energie uit deze taak:</b> '+(avg>=3.5?'duidelijk aanwezig — een mooi vertrekpunt om uit te bouwen.':'aanwezig, maar nog beperkt. Juist daarom loont het om er bewust meer ruimte voor te maken.')+'<div class="chips">'+chips+'</div><p class="ctx" style="margin:4px 0 0">Tik een idee aan — het komt in je antwoord te staan.</p>';
+  }
+  const map=(k==='hulpzelf')?ACT_ZELF:ACT_ORG;const id=(k==='hulpzelf')?'hulp_zelf':'hulp_org';
+  const acts=(map[loDim]||[]).map(function(t){return chip(id,t);}).join('');
+  return '<b>Je sterkste punt:</b> '+esc(hiDim)+'. <b>Meeste winst:</b> '+esc(loDim)+'.<br>Concrete dingen die je hiervoor kunt doen:<div class="chips">'+acts+'</div><p class="ctx" style="margin:4px 0 0">Tik aan wat past — het komt in je antwoord, dat je nog kunt aanpassen.</p>';
+}
+function renderUitdaag(){
+  const d=S.uitdaag;const ft=focusTask();
+  const head=ft?('<p class="ctx">Je gekozen taak: <b>'+esc(ft.tekst)+'</b> — die je energie geeft.</p>'):'';
+  return '<div class="card"><span class="eyebrow">'+esc(d.titel)+'</span><h1>'+esc(d.vraag)+'</h1><p class="ctx">'+esc(d.ctx)+'</p>'+head+
+    assessPanel('uitdaag')+fieldHtml(d)+guideHtml(d)+tipsHtml(d)+aiHtml(false)+navBtns()+'</div>';
+}
+function renderHulp(k){
+  const d=S[k];const ft=focusTask();
+  const head=ft?('<p class="ctx">Je gekozen taak: <b>'+esc(ft.tekst)+'</b> — het hinderlijke deel dat je lichter wilt maken.</p>'):'';
+  return '<div class="card"><span class="eyebrow">'+esc(d.titel)+'</span><h1>'+esc(d.vraag)+'</h1><p class="ctx">'+esc(d.ctx)+'</p>'+head+
+    assessPanel(k)+fieldHtml(d)+guideHtml(d)+tipsHtml(d)+aiHtml(false)+navBtns()+'</div>';
+}
+
+/* ---------- stap 6: afweging (gap-analyse) ---------- */
+function renderAfweging(){
+  const d=S.afweging;const ft=focusTask();
+  if(state.gaps.eisen===null&&!state._eisenLoading){fetchEisen();}
+  let body='';
+  if(state._eisenLoading){body='<p class="ctx"><span class="spin"></span>Ik zet de eisen van je taak op een rij…</p>';}
+  else if(!state.gaps.eisen||!state.gaps.eisen.length){body='<p class="ctx">Voeg hieronder zelf de belangrijkste eisen van deze taak toe.</p>';}
+  const eisen=state.gaps.eisen||[];
+  const rows=eisen.map(function(e,i){
+    const ch=!!state.gaps.checked[i];
+    return '<div class="gap"><input type="checkbox" '+(ch?'checked':'')+' onclick="toggleGap('+i+')" aria-label="Hulp aanwezig"><div class="gt"><b>'+esc(e)+'</b>'+
+      '<input type="text" placeholder="Welke hulp staat hier tegenover? (van jezelf of je werk)" value="'+esc(state.gaps.note[i]||'')+'" oninput="gapNote('+i+',this.value)"></div></div>';
+  }).join('');
+  const allc=eisen.length>0&&eisen.every(function(_,i){return state.gaps.checked[i];});
+  state.afweging=allc?'ja':(eisen.length?'nee':null);
+  let concl='';
+  if(eisen.length){
+    if(allc){
+      concl='<div class="qbox good"><h4>Bij elke eis staat hulp</h4><p class="ctx" style="margin:4px 0 8px">Mooi. Beschrijf in één zin waaróm dit geheel genoeg is om deze taak weer prettig te maken — dan weet je het zeker.</p>'+
+        '<textarea id="'+d.id+'" placeholder="Bijv. Met meer regelruimte én hulp van een collega kan ik de piek opvangen." oninput="onAnswer(\'afweging\',\''+d.id+'\',this.value)">'+esc(state.answers[d.id]||'')+'</textarea></div>';
+    } else {
+      concl='<div class="qbox warn"><h4>Er zijn nog gaten</h4><p class="ctx" style="margin:4px 0 0">Bij één of meer eisen staat nog geen hulp. Dat is niet erg — bij de volgende stap (Andere opties) kijken we hoe je die gaten kunt dichten.</p></div>';
+    }
+  }
+  const onderbouwd=state.answers[d.id]&&state.answers[d.id].trim();
+  let primary='';
+  if(!eisen.length){primary='';}
+  else if(allc){primary=onderbouwd?'<button class="btn" onclick="advance()">Volgende →</button>':'<button class="btn" disabled title="Beschrijf eerst kort waarom het genoeg is">Volgende →</button>';}
+  else {primary='<button class="btn" onclick="advance()">Verder naar Andere opties →</button>';}
+  return '<div class="card"><span class="eyebrow">'+esc(d.titel)+'</span><h1>'+esc(d.vraag)+'</h1><p class="ctx">'+esc(d.ctx)+'</p>'+
+    (ft?('<p class="ctx">Taak: <b>'+esc(ft.tekst)+'</b></p>'):'')+
+    body+rows+
+    '<div class="addrow" style="margin-top:10px"><input id="newEis" placeholder="Zelf een eis van deze taak toevoegen…" onkeydown="if(event.key===\'Enter\')addEis()"><button class="btn ghost sm" onclick="addEis()">Toevoegen</button></div>'+
+    concl+
+    '<div class="btnrow"><button class="btn ghost" onclick="prevStep()">← Vorige</button>'+primary+'</div></div>';
+}
+function toggleGap(i){state.gaps.checked[i]=!state.gaps.checked[i];save();render()}
+function gapNote(i,v){state.gaps.note[i]=v;save()}
+function addEis(){const el=document.getElementById('newEis');const v=(el.value||'').trim();if(!v)return;if(state.gaps.eisen===null)state.gaps.eisen=[];state.gaps.eisen.push(v);el.value='';save();render()}
+async function fetchEisen(){
+  state._eisenLoading=true;const ft=focusTask();
+  try{
+    const r=await fetch('/api/jdr-eisen',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({taak:ft?ft.tekst:'',werk:state.answers.werk||''})});
+    const j=await r.json();
+    state.gaps.eisen=(r.ok&&Array.isArray(j.eisen)&&j.eisen.length)?j.eisen:[];
+  }catch(e){state.gaps.eisen=[];}
+  state._eisenLoading=false;save();render();
+}
+
+/* ---------- stap 7: andere opties (job crafting) ---------- */
+function renderAndere(){
+  const d=S.andere;
+  const blocks=CRAFT.map(function(c){
+    const chips=c.opts.map(function(o){return chip('andere',o);}).join('');
+    return '<div style="margin-bottom:12px"><div class="ph" style="font-size:13.5px;margin-bottom:6px">'+esc(c.kop)+'</div><div class="chips" style="margin:0">'+chips+'</div></div>';
+  }).join('');
+  const panel=(state.mode==='interviewer')?'':('<div class="panel"><div class="ph">🧰 Wat kun je zelf aan je werk bijstellen? (job crafting)</div><p class="ctx" style="margin:0 0 10px">Tik ideeën aan die passen — ze komen in je antwoord. Kies daarna wat je écht wilt oppakken.</p>'+blocks+'<p style="color:var(--muted);font-size:12px;margin-top:2px">Gebaseerd op job crafting (Tims & Bakker): zelf hulpbronnen vergroten en belemmeringen verkleinen.</p></div>');
+  return '<div class="card"><span class="eyebrow">'+esc(d.titel)+'</span><h1>'+esc(d.vraag)+'</h1><p class="ctx">'+esc(d.ctx)+'</p>'+
+    panel+fieldHtml(d)+guideHtml(d)+tipsHtml(d)+aiHtml(false)+navBtns()+'</div>';
+}
+
+/* ---------- stap 8: concrete actie ---------- */
+function setConc(f,v){state.concreet[f]=v;save()}
+function renderConcreet(){
+  const d=S.concreet;const c=state.concreet||{};
+  const preview=(state.answers.concreet||'').trim();
+  const helper=(state.mode==='interviewer')?'':('<div class="panel"><div class="ph">🎯 Maak het concreet</div>'+
+    '<label style="font-size:13px;font-weight:600;display:block;margin-bottom:4px;color:var(--muted)">Wat ga je precies doen?</label>'+
+    '<textarea id="concreet" placeholder="'+esc(d.ph)+'" oninput="onAnswer(\'concreet\',\'concreet\',this.value)">'+esc(state.answers.concreet||'')+'</textarea>'+
+    '<div class="sub"><div><label>Wanneer?</label><input value="'+esc(c.wanneer||'')+'" placeholder="bijv. deze week / vrijdag" oninput="setConc(\'wanneer\',this.value)"></div>'+
+    '<div><label>Met wie?</label><input value="'+esc(c.wie||'')+'" placeholder="bijv. mijn leidinggevende" oninput="setConc(\'wie\',this.value)"></div></div>'+
+    '<div style="margin-top:8px"><label style="font-size:13px;font-weight:600;display:block;margin-bottom:4px;color:var(--muted)">Wat is je állereerste kleine stap?</label><input style="width:100%;border:1px solid var(--line);border-radius:10px;padding:9px 11px;font:inherit;font-size:14px" value="'+esc(c.eerste||'')+'" placeholder="bijv. een half uur inplannen om het voor te bereiden" oninput="setConc(\'eerste\',this.value)"></div>'+
+    '<p class="ctx" style="margin:10px 0 0">Tip: koppel je stap aan een moment — "als het [dag/tijd] is, dan doe ik [stap]." Dat maakt de kans veel groter dat het lukt.</p></div>');
+  const field=(state.mode==='interviewer')?fieldHtml(d):'';
+  return '<div class="card"><span class="eyebrow">'+esc(d.titel)+'</span><h1>'+esc(d.vraag)+'</h1><p class="ctx">'+esc(d.ctx)+'</p>'+
+    helper+field+guideHtml(d)+tipsHtml(d)+aiHtml(false)+navBtns()+'</div>';
+}
+
+/* ---------- stap 9: afronding (samenvatting) ---------- */
+function scanHighlight(k){
+  const cfg=ASSESS[k];const ans=state.assess[k];if(!cfg||!ans)return null;
+  if(!cfg.items.every(function(_,i){return ans['i'+i];}))return null;
+  const vals=cfg.items.map(function(_,i){return ans['i'+i];});
+  let lo=0,hi=0;for(let i=1;i<vals.length;i++){if(vals[i]<vals[lo])lo=i;if(vals[i]>vals[hi])hi=i;}
+  return {sterk:cfg.items[hi].dim,winst:cfg.items[lo].dim};
+}
+function renderAfronding(){
+  const d=S.afronding;const ft=focusTask();const a=longAverages();
+  let rows='';
+  if(ft)rows+='<div class="sumrow"><b>Je taak</b>'+esc(ft.tekst)+(ft.label?(' — '+ft.label):'')+'</div>';
+  if(a.done){const hiU=a.u>=3.5,hiB=a.b>=3;const kop=(hiU&&!hiB)?'richting opbranden':(hiU&&hiB)?'bevlogen maar het kost veel':(!hiU&&hiB)?'gezonde koers':'vlak';rows+='<div class="sumrow"><b>Lange termijn</b>'+kop+' (energieverlies '+a.u.toFixed(1)+'/5, bevlogenheid '+a.b.toFixed(1)+'/5)</div>';}
+  const hz=scanHighlight('hulpzelf'),ho=scanHighlight('hulporg');
+  if(hz)rows+='<div class="sumrow"><b>Hulp: jezelf</b>sterk: '+esc(hz.sterk)+' · meeste winst: '+esc(hz.winst)+'</div>';
+  if(ho)rows+='<div class="sumrow"><b>Hulp: je werk</b>sterk: '+esc(ho.sterk)+' · meeste winst: '+esc(ho.winst)+'</div>';
+  if(state.answers.hulp_zelf)rows+='<div class="sumrow"><b>Wat je zelf inzet</b>'+esc(state.answers.hulp_zelf)+'</div>';
+  if(state.answers.hulp_org)rows+='<div class="sumrow"><b>Hulp uit je werk</b>'+esc(state.answers.hulp_org)+'</div>';
+  if(state.answers.ud_nodig)rows+='<div class="sumrow"><b>Om te versterken</b>'+esc(state.answers.ud_nodig)+'</div>';
+  if(state.afweging)rows+='<div class="sumrow"><b>Afweging</b>hulp voldoende? '+state.afweging+'</div>';
+  if(state.answers.andere)rows+='<div class="sumrow"><b>Andere opties</b>'+esc(state.answers.andere)+'</div>';
+  const c=state.concreet||{};
+  let actie=(state.answers.concreet||'');if(c.wanneer)actie+=' — '+c.wanneer;if(c.wie)actie+=' (met '+c.wie+')';
+  if(actie.trim())rows+='<div class="sumrow"><b>Concrete actie</b>'+esc(actie)+(c.eerste?('<br>Eerste stap: '+esc(c.eerste)):'')+'</div>';
+  const conf='<div class="qbox good"><h4>Goed bezig 👏</h4><p style="font-size:14px;line-height:1.55">Je hebt je werk eerlijk bekeken, de juiste taak gekozen en het omgezet in een concrete stap. Dat is precies hoe je grip krijgt op een fijne werkdag.</p></div>';
+  return '<div class="card"><span class="eyebrow">'+esc(d.titel)+'</span><h1>Je bent goed bezig</h1><p class="ctx">'+esc(d.ctx)+'</p>'+
+    conf+
+    '<div class="panel"><div class="ph">📋 Samenvatting</div>'+(rows||'<p class="ctx" style="margin:0">Nog weinig ingevuld — vul eerder stappen aan voor een vollere samenvatting.</p>')+'</div>'+
+    '<p class="ctx" style="margin-top:14px"><b>'+esc(d.vraag)+'</b></p>'+fieldHtml(d)+navBtns()+'</div>';
+}
+
+/* ---------- AI-coach ---------- */
 function aiRender(){
   const box=document.getElementById('aichat');if(!box)return;
   const list=state.ai[state.step]||[];
@@ -429,6 +688,7 @@ function aiRender(){
   box.scrollTop=box.scrollHeight;
 }
 async function aiSend(text){
+  const w=document.getElementById('aiwrap');if(w)w.classList.add('open');
   if(!state.ai[state.step])state.ai[state.step]=[];
   state.ai[state.step].push({role:'user',content:text});
   state.ai[state.step].push({role:'assistant',content:'…'});save();aiRender();
@@ -447,22 +707,48 @@ function aiFeedback(){const a=(state.answers[(S[state.step]||{}).id]||'').trim()
   if(!a){aiSend('Ik weet nog niet goed wat ik hier moet antwoorden. Leg de vraag simpel uit en geef één concreet voorbeeld waar ik aan kan denken.');return}
   aiSend('Dit is mijn antwoord tot nu toe: "'+a+'". Denk met me mee: geef korte, warme feedback, één concrete suggestie of voorbeeld, en één vervolgvraag om dieper te gaan.');}
 function aiExample(){aiSend('Geef een kort, concreet voorbeeld-antwoord op deze vraag, en leg in één zin uit waar ik aan kan denken. Het hoeft niet op mij te slaan — puur ter inspiratie.');}
-function bindStep(){ if(document.getElementById('aichat'))aiRender(); }
+function bindStep(){
+  if(state.step==='taken'&&!state.takenTried&&!state.taken.length&&(state.answers.werk||'').trim())extractTaken();
+  if(document.getElementById('aichat'))aiRender();
+}
 
+/* ---------- rapportage ---------- */
 function buildText(){
   let t='RAPPORTAGE — De weg naar een fijne werkdag\n';
   if(state.naam)t+='Naam: '+state.naam+'\n';
-  t+='Datum: '+new Date().toLocaleDateString('nl-NL')+'\n\n';
-  t+='TAKEN:\n'+(state.taken.map(x=>'- '+x.tekst+(x.label?' ['+x.label+']':'')).join('\n')||'-')+'\n\n';
-  var _ft=focusTask();t+='GEKOZEN TAAK:\n'+(_ft?('- '+_ft.tekst+(_ft.label?' ['+_ft.label+']':'')):'-')+'\n\n';
-  flow().forEach(k=>{const d=S[k];if(!d||!d.id)return;const a=state.answers[d.id];if(!a)return;t+=d.vraag+'\n'+a+'\n\n';});
-  Object.keys(ASSESS).forEach(function(k){var sc=state.assess[k];if(!sc)return;var cfg=ASSESS[k];if(!cfg.items.every(function(_,i){return sc['i'+i];}))return;var parts=cfg.items.map(function(it,i){return it.dim+'='+sc['i'+i];});t+='MINI-SCAN '+cfg.titel.replace(/^Mini-scan: /,'')+' (1-5): '+parts.join(', ')+'\n';});
-  if(state.afweging)t+='AFWEGING: hulpbronnen voldoende? '+state.afweging+'\n';
+  t+='Datum: '+new Date().toLocaleDateString('nl-NL')+'\n';
+  t+='Modus: '+((MODES[state.mode]||{}).naam||'-')+'\n\n';
+  t+='== JE WERK ==\n'+(state.answers.werk||'-')+'\n\n';
+  t+='== TAKEN ==\n'+(state.taken.map(x=>'- '+x.tekst+(x.label?' ['+x.label+']':'')).join('\n')||'-')+'\n\n';
+  const _ft=focusTask();t+='== GEKOZEN TAAK ==\n'+(_ft?('- '+_ft.tekst+(_ft.label?' ['+_ft.label+']':'')):'-')+'\n\n';
+  const a=longAverages();
+  if(a.done){const hiU=a.u>=3.5,hiB=a.b>=3;const kop=(hiU&&!hiB)?'richting opbranden':(hiU&&hiB)?'bevlogen maar het kost veel':(!hiU&&hiB)?'gezonde koers':'vlak';
+    t+='== LANGE TERMIJN (scan) ==\nEnergieverlies: '+a.u.toFixed(1)+'/5 · Bevlogenheid: '+a.b.toFixed(1)+'/5 → '+kop+'\n';}
+  if(state.answers.effect)t+='Reflectie: '+state.answers.effect+'\n';
+  t+='\n';
+  ['uitdaag','hulpzelf','hulporg'].forEach(function(k){
+    const cfg=ASSESS[k];const sc=state.assess[k];if(!cfg||!sc)return;if(!cfg.items.every(function(_,i){return sc['i'+i];}))return;
+    const parts=cfg.items.map(function(it,i){return it.dim+'='+sc['i'+i];});
+    t+='== SCAN '+cfg.titel.replace(/^Mini-scan: /,'')+' (1-5) ==\n'+parts.join(', ')+'\n';
+  });
+  if(state.answers.ud_nodig)t+='== VERSTERKEN ==\n'+state.answers.ud_nodig+'\n\n';
+  if(state.answers.hulp_zelf)t+='== HULP: JEZELF ==\n'+state.answers.hulp_zelf+'\n\n';
+  if(state.answers.hulp_org)t+='== HULP: JE WERK ==\n'+state.answers.hulp_org+'\n\n';
+  if(state.gaps.eisen&&state.gaps.eisen.length){
+    t+='== AFWEGING (eisen ↔ hulp) ==\n';
+    state.gaps.eisen.forEach(function(e,i){t+=(state.gaps.checked[i]?'[v] ':'[ ] ')+e+(state.gaps.note[i]?(' → '+state.gaps.note[i]):'')+'\n';});
+    if(state.afweging)t+='Conclusie: hulp '+(state.afweging==='ja'?'voldoende':'nog niet voldoende')+'\n';
+    if(state.answers.afw_onderbouwing)t+='Onderbouwing: '+state.answers.afw_onderbouwing+'\n';
+    t+='\n';
+  }
+  if(state.answers.andere)t+='== ANDERE OPTIES ==\n'+state.answers.andere+'\n\n';
+  if(state.answers.concreet){const c=state.concreet||{};t+='== CONCRETE ACTIE ==\n'+state.answers.concreet+'\n'+(c.wanneer?('Wanneer: '+c.wanneer+'\n'):'')+(c.wie?('Met wie: '+c.wie+'\n'):'')+(c.eerste?('Eerste stap: '+c.eerste+'\n'):'')+'\n';}
+  if(state.answers.afronding)t+='== MEEGENOMEN ==\n'+state.answers.afronding+'\n';
   return t.trim();
 }
 function renderReport(){
   return '<div class="card"><span class="eyebrow">Rapportage</span><h1>Jouw rapportage</h1>'+
-    '<p class="ctx">Hieronder je samenvatting. Vraag desgewenst een AI-analyse volgens het JD-R model, of exporteer.</p>'+
+    '<p class="ctx">Een volledig overzicht van je antwoorden en scans. Vraag desgewenst een AI-analyse volgens het JD-R model, of exporteer.</p>'+
     '<div class="btnrow" style="margin:6px 0 4px"><button class="btn mag" onclick="analyse()">✨ AI-analyse (JD-R)</button>'+
     '<button class="btn ghost" onclick="window.print()">🖨 Print / PDF</button>'+
     '<button class="btn ghost" onclick="dlTxt()">⬇ Tekst</button>'+
@@ -500,7 +786,7 @@ async function analyse(){
   document.addEventListener('click',function(e){if(!$('comfort').hidden&&!e.target.closest('#comfort')&&!e.target.closest('#comfortBtn')){$('comfort').hidden=true;$('comfortBtn').setAttribute('aria-expanded','false')}});
   ap();
 })();
-document.getElementById('restartBtn').onclick=function(){if(confirm('Opnieuw beginnen? Je antwoorden worden gewist.')){state={mode:null,naam:'',taken:[],afweging:null,answers:{},step:'werk',ai:{},focus:null,prio:null,assess:{}};save();render()}};
+document.getElementById('restartBtn').onclick=function(){if(confirm('Opnieuw beginnen? Je antwoorden worden gewist.')){state={mode:null,naam:'',taken:[],focus:null,prio:null,takenTried:false,answers:{},assess:{},longterm:{},gaps:{eisen:null,checked:{},note:{}},concreet:{},afweging:null,step:'werk',ai:{},check:{},_checking:false,_extracting:false,_eisenLoading:false};save();render()}};
 
 load();render();
 </script>
