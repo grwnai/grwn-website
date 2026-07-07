@@ -1,0 +1,23 @@
+{
+  "name": "primary",
+  "version": "1.0.0",
+  "description": "Marketingsite (`/`) + LVL UP-app (`/lvlup`) + serverless functies (`/api`). Privé-repo, gedeployed via Vercel.",
+  "main": "grwn-chat.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/grwnai/grwn-website.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/grwnai/grwn-website/issues"
+  },
+  "homepage": "https://github.com/grwnai/grwn-website#readme",
+  "dependencies": {
+    "@vercel/analytics": "^2.0.1"
+  }
+}
