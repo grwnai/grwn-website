@@ -25,7 +25,7 @@ export default async function handler(req, res) {
     const payload = {
       contents: [{ role: "user", parts: [{ text: userText }] }],
       generationConfig: {
-        maxOutputTokens: 200, temperature: 0.2,
+        maxOutputTokens: 200, temperature: 0.2, thinkingConfig: { thinkingBudget: 0 },
         responseMimeType: "application/json",
         responseSchema: { type: "object", properties: { ok: { type: "boolean" }, tip: { type: "string" } }, required: ["ok", "tip"] },
       },

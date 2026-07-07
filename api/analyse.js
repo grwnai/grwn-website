@@ -42,7 +42,7 @@ export default async function handler(req, res) {
 
     const payload = {
       contents: [{ role: "user", parts: [{ text: String(report).slice(0, 12000) }] }],
-      generationConfig: { maxOutputTokens: 1500, temperature: 0.5 },
+      generationConfig: { maxOutputTokens: 1500, temperature: 0.5, thinkingConfig: { thinkingBudget: 0 } },
       system_instruction: { parts: [{ text: SYSTEM }] },
     };
 

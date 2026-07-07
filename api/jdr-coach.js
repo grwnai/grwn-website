@@ -29,7 +29,7 @@ export default async function handler(req, res) {
     const sys = SYSTEM + (step ? `\n\nHUIDIGE STAP (context): ${step}` : "");
     const payload = {
       contents,
-      generationConfig: { maxOutputTokens: 700, temperature: 0.6 },
+      generationConfig: { maxOutputTokens: 900, temperature: 0.6, thinkingConfig: { thinkingBudget: 0 } },
       system_instruction: { parts: [{ text: sys }] },
     };
     const isBusy = (o) => /503|429|overload|UNAVAILABLE|RESOURCE_EXHAUSTED/i.test(JSON.stringify(o || ""));
