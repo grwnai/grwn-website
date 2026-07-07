@@ -174,6 +174,27 @@
   .star{font-size:28px;line-height:1;background:none;border:0;cursor:pointer;color:#cdd7e0;padding:0 2px}
   .star.on{color:var(--gold)}
   @media print{.tk-nav,.rail,.btnrow,.comfort{display:none !important}.card{box-shadow:none;border:0;padding:0}.cols{grid-template-columns:1fr}}
+
+  .rcover{background:linear-gradient(135deg,var(--cerulean),var(--cerulean-d));color:#fff;border-radius:16px;padding:20px 22px;margin:6px 0 12px}
+  .rcover .rcz{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;opacity:.85}
+  .rcover .rct{font-size:22px;font-weight:800;margin:6px 0 4px}
+  .rki{background:var(--mint);border-radius:12px;padding:12px 16px;margin:0 0 6px}
+  .rki .rkih{font-weight:800;font-size:13px;color:var(--cerulean-d);margin-bottom:4px}
+  .rki ul{margin:0 0 0 18px}.rki li{font-size:14px;margin:3px 0}
+  .chartrow{display:flex;gap:18px;flex-wrap:wrap;align-items:center;margin:6px 0}
+  .chart{width:100%;max-width:320px;height:auto;display:block}
+  .ractie{background:linear-gradient(135deg,#FCE6EE,#fff);border:1px solid var(--line);border-left:4px solid var(--magenta);border-radius:12px;padding:14px 16px;margin:10px 0}
+  .ractie .ractieh{font-weight:800;color:var(--magenta-d);font-size:13px;margin-bottom:6px}
+  .rpill{display:inline-block;background:#fff;border:1px solid var(--line);border-radius:999px;font-size:12.5px;font-weight:600;color:var(--ink);padding:4px 11px;margin:2px 6px 2px 0}
+  .rfoot{text-align:center;color:var(--muted);font-size:12px;margin-top:22px;padding-top:12px;border-top:1px solid var(--line)}
+  .hkchoose{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:8px 0}
+  @media(max-width:560px){.hkchoose{grid-template-columns:1fr}}
+  .hkbtn{text-align:left;background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:14px 16px;cursor:pointer;font:inherit;transition:.15s}
+  .hkbtn:hover{border-color:var(--cerulean);transform:translateY(-1px)}
+  .hkbtn.on{border-color:var(--cerulean);background:var(--mint)}
+  .hkbtn b{display:block;font-size:15px;color:var(--ink);margin-bottom:3px}
+  .hkbtn span{font-size:13px;color:var(--muted)}
+  @media print{.chart{max-width:260px}}
 </style>
 </head>
 <body>
@@ -201,6 +222,7 @@
 <script>
 
 
+
 const KEY='fw3_v1';
 const MODES={
   zelf:{em:'🧭',naam:'Zelfreflectie',desc:'Je doorloopt het zelf, in je eigen tempo — met per stap concrete hulp om verder te komen.'},
@@ -219,7 +241,7 @@ const CATS=[
   {l:'Kwaliteit & controle',e:'controleren, nakijken, verbeteren'},
   {l:'Ontwikkeling & leren',e:'trainingen, jezelf of anderen ontwikkelen'}
 ];
-var state={mode:null,naam:'',taken:[],focus:null,prio:null,takenTried:false,answers:{},assess:{},longterm:{},gaps:{eisen:null,checked:{},note:{}},concreet:{},afweging:null,step:'werk',ai:{},check:{},feedback:{score:null,waarom:'',tekst:'',sent:false},acties:null,_checking:false,_extracting:false,_eisenLoading:false,_actiesTried:false};
+var state={mode:null,naam:'',taken:[],focus:null,hulpkeuze:null,hkScan:{},prio:null,takenTried:false,answers:{},assess:{},longterm:{},gaps:{eisen:null,checked:{},note:{}},concreet:{},afweging:null,step:'werk',ai:{},check:{},feedback:{score:null,waarom:'',tekst:'',sent:false},acties:null,_checking:false,_extracting:false,_eisenLoading:false,_actiesTried:false};
 function save(){try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}}
 function load(){try{const s=localStorage.getItem(KEY);if(s)state=Object.assign(state,JSON.parse(s))}catch(e){}}
 function esc(s){return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
@@ -233,7 +255,7 @@ const S={
   effect:{titel:'Lange termijn',id:'effect',vraag:'Als je zo doorgaat, waar loopt dit dan op uit?',
     ph:'Bijv. Als dit zo blijft loop ik leeg / Ik wil over een half jaar met meer energie en trots op mijn werk staan.',
     ctx:'De korte scan hieronder laat zien welke kant je op beweegt. Sta daar even bij stil — dat is vaak je motivatie om iets te veranderen.',guide:[]},
-  uitdaag:{titel:'Versterken',id:'ud_nodig',vraag:'Wat zou je helpen om méér te doen van dit werk dat je energie geeft?',
+  uitdaag:{titel:'Meer uitdaging',id:'ud_nodig',vraag:'Wie of wat heb je nodig om meer uitdagende taken toe te voegen?',
     ph:'Bijv. meer tijd hiervoor, samenwerken met een bepaalde collega, een training, ruimte van mijn leidinggevende…',
     ctx:'Je versterkt wat energie geeft. De scan laat zien hoeveel energie deze taak je geeft; daaronder concrete manieren om er meer ruimte voor te maken.',guide:[]},
   hulpzelf:{titel:'Hulp: jezelf',id:'hulp_zelf',vraag:'Wat kun jij zélf doen of inzetten om dit lastige deel lichter te maken?',
@@ -242,7 +264,9 @@ const S={
   hulporg:{titel:'Hulp: je werk',id:'hulp_org',vraag:'Welke hulp of steun vanuit je werk zou je hierbij helpen?',
     ph:'Bijv. meer autonomie, duidelijkere afspraken, betere systemen, hulp van een collega of leidinggevende…',
     ctx:'Denk aan hulp om je heen: mensen, feedback, systemen, ruimte. Doe eerst de scan — die wijst je naar de hulpbron met de meeste winst en geeft concrete acties.',guide:[]},
-  afweging:{titel:'Afweging',id:'afw_onderbouwing',vraag:'Is de beschikbare hulp echt genoeg voor wat deze taak van je vraagt?',
+  hulpkeuze:{titel:'Welke hulp?',id:'hulpkeuze',vraag:'Welke hulp kun je het beste inzetten?',
+    ctx:'Hulp kan uit twee hoeken komen: vanuit jezelf of vanuit je werk. Doe de korte scan, dan zie je waar jouw grootste kans ligt — daarna kies je zelf.'},
+  afweging:{titel:'Afweging',id:'afw_onderbouwing',vraag:'Kun je met deze hulp deze taak weer prettig en werkbaar maken?',
     ctx:'Nu wegen we samen af of de hulp die je hebt genoeg is voor deze taak.'},
   andere:{titel:'Andere opties',id:'andere',vraag:'Wat kun je nog méér doen om de druk te verlichten?',
     ph:'Bijv. deze taak vereenvoudigen, een deel delegeren, anders prioriteren, om meer regelruimte vragen…',
@@ -254,7 +278,7 @@ const S={
     ph:'Bijv. één concrete stap, een nieuw inzicht, of gewoon meer rust in mijn hoofd.',
     ctx:'Hieronder je samenvatting. Je hebt goed nagedacht en het omgezet in een concrete actie — precies zo krijg je grip.'}
 };
-const RAILLABEL={werk:'Je werk',taken:'Je taak',effect:'Lange termijn',uitdaag:'Versterken',hulpzelf:'Hulp: jezelf',hulporg:'Hulp: je werk',afweging:'Afweging',andere:'Andere opties',concreet:'Concrete actie',afronding:'Afronding',rapport:'Rapportage'};
+const RAILLABEL={werk:'Je werk',taken:'Je taak',effect:'Lange termijn',uitdaag:'Meer uitdaging',hulpkeuze:'Welke hulp?',hulpzelf:'Hulp: jezelf',hulporg:'Hulp: je werk',afweging:'Afweging',andere:'Andere opties',concreet:'Concrete actie',afronding:'Goed bezig',rapport:'Rapportage'};
 const CHECKSTEPS=['werk','effect','uitdaag','hulpzelf','hulporg','andere','concreet','afronding'];
 
 const ASSESS={
@@ -304,9 +328,11 @@ function uid(){return Math.random().toString(36).slice(2,9)}
 function focusTask(){return state.taken.find(function(t){return t.id===state.focus})||null}
 function flow(){
   const ft=focusTask(); const lab=ft?ft.label:null;
-  const f=['werk','taken','effect'];
-  if(lab==='uitdagend'){f.push('uitdaag');}
-  else if(lab==='hinderlijk'){f.push('hulpzelf','hulporg','afweging'); if(state.afweging==='nee')f.push('andere');}
+  const f=['werk','taken'];
+  if(!lab) return f;
+  f.push('effect');
+  if(lab==='uitdagend'){ f.push('uitdaag'); }
+  else { f.push('hulpkeuze'); if(state.hulpkeuze){ f.push(state.hulpkeuze==='org'?'hulporg':'hulpzelf','afweging'); if(state.afweging==='nee')f.push('andere'); } }
   f.push('concreet','afronding','rapport');
   return f;
 }
@@ -429,6 +455,7 @@ function renderStep(){
   if(k==='werk')return renderWerk();
   if(k==='taken')return renderTaken();
   if(k==='effect')return renderEffect();
+  if(k==='hulpkeuze')return renderHulpkeuze();
   if(k==='uitdaag')return renderUitdaag();
   if(k==='hulpzelf'||k==='hulporg')return renderHulp(k);
   if(k==='afweging')return renderAfweging();
@@ -463,10 +490,10 @@ function renderTaken(){
   const ft=focusTask();
   let chosen='';
   if(ft){
-    chosen='<div class="qbox good"><h4>🎯 Je gekozen taak</h4><p style="font-weight:600;font-size:15px">'+esc(ft.tekst)+'</p>'+
-      '<p class="ctx" style="margin:6px 0 8px">Is dit voor jou vooral <b>uitdagend</b> (geeft energie) of <b>hinderlijk</b> (kost energie)?</p>'+
+    chosen='<div class="qbox good" style="border-left-width:5px"><h4>🎯 Je gekozen taak: '+esc(ft.tekst)+'</h4>'+
+      '<p class="ctx" style="margin:6px 0 10px"><b>Nog één ding — kies een label.</b> Geeft deze taak je vooral energie, of kost hij energie? Dit bepaalt jouw route.</p>'+
       '<div class="lab" style="position:static">'+labbtns(ft)+'</div>'+
-      (ft.label?('<div class="btnrow" style="margin-top:14px"><button class="btn" onclick="nextStep()">Volgende →</button></div>'):'<p class="ctx" style="margin-top:10px">Kies een label om verder te gaan.</p>')+
+      (ft.label?('<div style="margin:14px 0 0;background:var(--mint);border-radius:12px;padding:14px 16px"><p style="margin:0 0 10px;font-weight:600">Top — je gaat verder met deze taak.</p><button class="btn" style="font-size:16px;padding:14px 28px" onclick="nextStep()">Volgende stap →</button></div>'):'<p style="margin-top:12px;font-weight:700;color:var(--magenta-d)">👆 Kies hierboven <b>uitdagend</b> of <b>hinderlijk</b> om verder te kunnen.</p>')+
       '</div>';
   }
   const rows=state.taken.map(function(t){
@@ -485,7 +512,7 @@ function renderTaken(){
     '<div id="taskList">'+(rows||'')+'</div>'+
     '<div class="addrow"><input id="newTask" placeholder="Zelf een taak toevoegen…" onkeydown="if(event.key===\'Enter\')addTask()"><button class="btn ghost sm" onclick="addTask()">Toevoegen</button></div>'+
     prioHtml()+
-    '<div class="btnrow"><button class="btn ghost" onclick="prevStep()">← Vorige</button></div></div>';
+    '<div class="btnrow"><button class="btn ghost" onclick="prevStep()">← Vorige</button>'+((ft&&ft.label)?'<button class="btn" onclick="nextStep()">Volgende →</button>':'')+'</div></div>';
 }
 function editTask(id,v){const t=state.taken.find(function(x){return x.id===id});if(t){t.tekst=v;save()}}
 function labelTask(id,l){const t=state.taken.find(function(x){return x.id===id});if(t){t.label=(t.label===l?null:l);save();render()}}
@@ -547,7 +574,7 @@ function longResult(){
 function renderEffect(){
   const d=S.effect;
   let rows=LONG.items.map(function(it,i){return scaleRow(it.t, state.longterm['i'+i], (function(ii){return function(v){return 'setLong('+ii+','+v+')';}})(i));}).join('');
-  const panel=(state.mode==='interviewer')?'':('<div class="panel"><div class="ph">🧭 Korte scan: waar beweeg je naartoe?</div>'+(LONG.waarom?('<div class="rgedachte">'+esc(LONG.waarom)+'</div>'):'')+'<p class="ctx" style="margin:0 0 8px">Denk aan de afgelopen weken.</p><div class="asscalehead"><span>1 = oneens</span><span>5 = eens</span></div>'+rows+longResult()+longExamples()+'<p style="color:var(--muted);font-size:12px;margin-top:10px">'+esc(LONG.bron)+'</p></div>');
+  const panel=(state.mode==='interviewer')?'':('<div class="panel"><div class="ph">🧭 Korte scan: waar beweeg je naartoe?</div>'+(LONG.waarom?('<div class="rgedachte">'+esc(LONG.waarom)+'</div>'):'')+LONGMEER+'<p class="ctx" style="margin:0 0 8px">Denk aan de afgelopen weken.</p><div class="asscalehead"><span>1 = oneens</span><span>5 = eens</span></div>'+rows+longResult()+longExamples()+'<p style="color:var(--muted);font-size:12px;margin-top:10px">'+esc(LONG.bron)+'</p></div>');
   return '<div class="card"><span class="eyebrow">'+esc(d.titel)+'</span><h1>'+esc(d.vraag)+'</h1><p class="ctx">'+esc(d.ctx)+'</p>'+
     panel+
     '<p class="ctx" style="margin-top:14px"><b>Jouw reflectie:</b> wat betekent dit beeld voor jou — wat wil je dat er over een half jaar anders is?</p>'+
@@ -807,6 +834,36 @@ function longExamples(){
   const chips=ex.map(function(t){return chip('effect',t);}).join('');
   return '<div style="margin-top:12px"><p class="ctx" style="margin:0 0 6px"><b>Concrete voorbeelden voor je reflectie</b> — tik aan wat past, je kunt het daarna aanpassen:</p><div class="chips" style="margin:0">'+chips+'</div></div>';
 }
+const LONGMEER='<details class="jdr" style="margin:0 0 8px"><summary>Meer over deze scan — wat, waarom en hoe</summary><div class="jdrbody"><p><b>Wat meet deze scan?</b> Zes korte stellingen over de afgelopen weken. Drie gaan over <b>energieverlies</b> (voel je je leeg, kost het steeds meer moeite) en drie over <b>bevlogenheid</b> (energie, enthousiasme, opgaan in je werk).</p><p><b>Achterliggende theorie en bronnen.</b> Het Job Demands-Resources model (Bakker &amp; Demerouti; Schaufeli) beschrijft twee routes: een <i>uitputtingsproces</i> waarin hoge eisen met te weinig hulpbronnen leiden tot opbranden, en een <i>motivatieproces</i> waarin hulpbronnen leiden tot bevlogenheid. Bevlogenheid wordt gemeten met de wetenschappelijk gevalideerde UWES-schaal (vitaliteit, toewijding, absorptie).</p><p><b>Hoe gebruik je de uitslag?</b> De twee scores samen laten zien waar je nu staat en welke kant je op beweegt als er niets verandert: richting opbranden, richting groei, of ergens daartussen. Dat inzicht is je vertrekpunt: het maakt duidelijk hoe urgent verandering is en geeft richting aan de rest van deze reflectie.</p></div></details>';
+const HKSCAN={
+  waarom:'Waarom deze scan? Hulp komt uit twee hoeken: uit jóu (je veerkracht, mindset en aanpak) of uit je wérk (regelruimte, steun, feedback, ontwikkeling). Vaak zit je grootste winst vooral in één van de twee. Deze vier stellingen laten zien waar dat voor jou geldt, zodat je je energie op de meest kansrijke kant richt. Gebaseerd op het onderscheid tussen persoonlijke hulpbronnen en werk-hulpbronnen in het JD-R model.',
+  items:[
+    {t:'Ik kan zélf veel doen om dit deel lichter te maken.',g:'zelf'},
+    {t:'Mijn eigen aanpak of houding maakt hier een groot verschil.',g:'zelf'},
+    {t:'Wat ik nodig heb moet vooral van mijn werk of organisatie komen.',g:'org'},
+    {t:'Zonder meer ruimte of steun van mijn werk gaat dit niet lukken.',g:'org'}
+  ]
+};
+function setHk(i,v){state.hkScan['i'+i]=v;save();render()}
+function setHulpkeuze(v){state.hulpkeuze=v;save();render()}
+function renderHulpkeuze(){
+  const d=S.hulpkeuze;
+  const rows=HKSCAN.items.map(function(it,i){return scaleRow(it.t, state.hkScan['i'+i], (function(ii){return function(v){return 'setHk('+ii+','+v+')';}})(i));}).join('');
+  const done=HKSCAN.items.every(function(_,i){return state.hkScan['i'+i];});
+  let advies='';
+  if(done){
+    let z=0,o=0;HKSCAN.items.forEach(function(it,i){if(it.g==='zelf')z+=state.hkScan['i'+i];else o+=state.hkScan['i'+i];});
+    const rec=(z>=o)?'zelf':'org';
+    advies='<div class="qbox good" style="margin-top:10px"><h4>Advies: hulp vanuit '+(rec==='zelf'?'jezelf':'je werk')+'</h4><p style="font-size:14px;margin:0">Op basis van je antwoorden lijkt de meeste winst te zitten in hulp vanuit '+(rec==='zelf'?'<b>jezelf</b> — je hebt hier zelf veel invloed op.':'<b>je werk</b> — hier is ruimte of steun van je organisatie het meest nodig.')+' Maar kies gerust wat voor jou het beste klopt.</p></div>';
+  }
+  const scan=(state.mode==='interviewer')?'':('<div class="panel"><div class="ph">🧭 Korte scan: waar zit jouw grootste kans?</div><div class="rgedachte">'+esc(HKSCAN.waarom)+'</div><div class="asscalehead"><span>1 = oneens</span><span>5 = eens</span></div>'+rows+advies+'</div>');
+  const choose='<p class="ctx" style="margin-top:8px"><b>Kies waar je op wilt focussen:</b></p><div class="hkchoose">'+
+    '<button class="hkbtn'+(state.hulpkeuze==='zelf'?' on':'')+'" onclick="setHulpkeuze(\'zelf\')"><b>💪 Hulp vanuit jezelf</b><span>Je veerkracht, talenten, mindset en grenzen.</span></button>'+
+    '<button class="hkbtn'+(state.hulpkeuze==='org'?' on':'')+'" onclick="setHulpkeuze(\'org\')"><b>🏢 Hulp vanuit je werk</b><span>Autonomie, steun, feedback en ontwikkeling.</span></button></div>';
+  return '<div class="card"><span class="eyebrow">'+esc(d.titel)+'</span><h1>'+esc(d.vraag)+'</h1><p class="ctx">'+esc(d.ctx)+'</p>'+
+    scan+choose+
+    '<div class="btnrow"><button class="btn ghost" onclick="prevStep()">← Vorige</button>'+(state.hulpkeuze?'<button class="btn" onclick="nextStep()">Volgende →</button>':'')+'</div></div>';
+}
 const THOUGHT={
   werk:'In JD-R begint alles bij je concrete taken. Door ze volledig in beeld te brengen zie je waar je energie vandaan komt en waar hij weglekt.',
   effect:'JD-R kent twee processen: te veel eisen zonder hulpbronnen leidt tot uitputting; genoeg hulpbronnen leidt tot bevlogenheid. Deze scan laat zien welke kant je op beweegt.',
@@ -904,37 +961,99 @@ function scanBlock(k){
   return '<div class="rscores">'+rows+'</div>';
 }
 function sec(kop,gedachte,inner){return '<h2>'+esc(kop)+'</h2>'+(gedachte?('<div class="rgedachte">'+esc(gedachte)+'</div>'):'')+inner;}
+function svgRadar(labels,vals,ttl){
+  const n=labels.length,cx=150,cy=140,R=92,max=5;
+  const ang=function(k){return (-Math.PI/2)+k*2*Math.PI/n;};
+  const pt=function(k,r){return [cx+Math.cos(ang(k))*R*(r/max),cy+Math.sin(ang(k))*R*(r/max)];};
+  let grid='';[1.66,3.33,5].forEach(function(rr){let p=labels.map(function(_,k){const q=pt(k,rr);return q[0].toFixed(1)+','+q[1].toFixed(1);}).join(' ');grid+='<polygon points="'+p+'" fill="none" stroke="#EAEEF1"/>';});
+  let axes='';labels.forEach(function(l,k){const q=pt(k,max);axes+='<line x1="'+cx+'" y1="'+cy+'" x2="'+q[0].toFixed(1)+'" y2="'+q[1].toFixed(1)+'" stroke="#EAEEF1"/>';const lp=pt(k,max+1.2);const anc=Math.abs(lp[0]-cx)<10?'middle':(lp[0]<cx?'end':'start');axes+='<text x="'+lp[0].toFixed(1)+'" y="'+lp[1].toFixed(1)+'" font-size="10" fill="#5C6873" text-anchor="'+anc+'" dominant-baseline="middle">'+esc(l)+'</text>';});
+  const dp=vals.map(function(v,k){const q=pt(k,v);return q[0].toFixed(1)+','+q[1].toFixed(1);}).join(' ');
+  const poly='<polygon points="'+dp+'" fill="rgba(34,116,165,.18)" stroke="#2274A5" stroke-width="2"/>';
+  const dots=vals.map(function(v,k){const q=pt(k,v);return '<circle cx="'+q[0].toFixed(1)+'" cy="'+q[1].toFixed(1)+'" r="3.5" fill="#2274A5"/>';}).join('');
+  return '<svg viewBox="0 0 300 280" class="chart" role="img" aria-label="'+esc(ttl||'radar')+'">'+grid+axes+poly+dots+'</svg>';
+}
+function svgQuadrant(u,b){
+  const x0=44,y0=26,w=232,h=180,midx=x0+w/2,midy=y0+h/2;
+  const px=x0+(b/5)*w, py=y0+(1-u/5)*h;
+  let g='<svg viewBox="0 0 320 250" class="chart" role="img" aria-label="JD-R kwadrant">';
+  g+='<rect x="'+x0+'" y="'+y0+'" width="'+(w/2)+'" height="'+(h/2)+'" fill="rgba(232,63,111,.07)"/>';
+  g+='<rect x="'+midx+'" y="'+y0+'" width="'+(w/2)+'" height="'+(h/2)+'" fill="rgba(245,180,0,.09)"/>';
+  g+='<rect x="'+x0+'" y="'+midy+'" width="'+(w/2)+'" height="'+(h/2)+'" fill="rgba(92,104,115,.06)"/>';
+  g+='<rect x="'+midx+'" y="'+midy+'" width="'+(w/2)+'" height="'+(h/2)+'" fill="rgba(50,147,111,.09)"/>';
+  g+='<rect x="'+x0+'" y="'+y0+'" width="'+w+'" height="'+h+'" fill="none" stroke="#EAEEF1"/>';
+  g+='<line x1="'+midx+'" y1="'+y0+'" x2="'+midx+'" y2="'+(y0+h)+'" stroke="#EAEEF1"/><line x1="'+x0+'" y1="'+midy+'" x2="'+(x0+w)+'" y2="'+midy+'" stroke="#EAEEF1"/>';
+  g+='<text x="'+(x0+w/4)+'" y="'+(y0+14)+'" font-size="9" fill="#C72C58" text-anchor="middle">Opbranden</text>';
+  g+='<text x="'+(midx+w/4)+'" y="'+(y0+14)+'" font-size="9" fill="#B98900" text-anchor="middle">Bevlogen, zwaar</text>';
+  g+='<text x="'+(x0+w/4)+'" y="'+(y0+h-7)+'" font-size="9" fill="#5C6873" text-anchor="middle">Vlak</text>';
+  g+='<text x="'+(midx+w/4)+'" y="'+(y0+h-7)+'" font-size="9" fill="#2A7D5F" text-anchor="middle">Gezonde koers</text>';
+  g+='<text x="'+(x0+w/2)+'" y="'+(y0+h+20)+'" font-size="10" fill="#5C6873" text-anchor="middle">bevlogenheid →</text>';
+  g+='<text x="16" y="'+(y0+h/2)+'" font-size="10" fill="#5C6873" text-anchor="middle" transform="rotate(-90 16 '+(y0+h/2)+')">energieverlies →</text>';
+  g+='<circle cx="'+px.toFixed(1)+'" cy="'+py.toFixed(1)+'" r="7" fill="#2274A5" stroke="#fff" stroke-width="2"/></svg>';
+  return g;
+}
+function svgDonut(cov,total){
+  const pct=total?cov/total:0,r=42,c=2*Math.PI*r;
+  const dash=(pct*c).toFixed(1)+' '+(c-pct*c).toFixed(1);
+  return '<svg viewBox="0 0 120 120" class="chart" style="max-width:128px" role="img" aria-label="dekking">'+
+    '<circle cx="60" cy="60" r="42" fill="none" stroke="#EAEEF1" stroke-width="14"/>'+
+    '<circle cx="60" cy="60" r="42" fill="none" stroke="#32936F" stroke-width="14" stroke-dasharray="'+dash+'" transform="rotate(-90 60 60)"/>'+
+    '<text x="60" y="56" font-size="20" font-weight="800" fill="#173049" text-anchor="middle">'+cov+'/'+total+'</text>'+
+    '<text x="60" y="76" font-size="10" fill="#5C6873" text-anchor="middle">gedekt</text></svg>';
+}
+function scanRadar(k){
+  const cfg=ASSESS[k];const sc=state.assess[k];if(!cfg||!sc)return '';
+  if(!cfg.items.every(function(_,i){return sc['i'+i];}))return scanBlock(k);
+  const labels=cfg.items.map(function(it){return it.dim;});
+  const vals=cfg.items.map(function(_,i){return sc['i'+i];});
+  return '<div class="chartrow"><div style="flex:0 0 auto">'+svgRadar(labels,vals,cfg.titel)+'</div><div style="flex:1;min-width:160px">'+scanBlock(k)+'</div></div>';
+}
 function buildReportHtml(){
   const ft=focusTask();const a=longAverages();let out='<div class="report">';
-  out+='<p class="rlead">Naam: '+(esc(state.naam)||'—')+' · Datum: '+esc(new Date().toLocaleDateString('nl-NL'))+' · Modus: '+esc((MODES[state.mode]||{}).naam||'')+'</p>';
-  out+=sec('Over deze rapportage','','<p>Deze rapportage vat jouw reflectie samen volgens het <b>Job Demands-Resources (JD-R) model</b>. Per stap lees je kort de gedachte erachter, gevolgd door wat jij hebt ingevuld. Het is een hulpmiddel om grip te krijgen op een fijne werkdag — geen oordeel.</p>');
+  out+='<div class="rcover"><div class="rcz">JD-R · positieve psychologie</div><div class="rct">De weg naar een fijne werkdag</div><p style="margin:0;opacity:.92;font-size:13.5px">'+(esc(state.naam)||'—')+' · '+esc(new Date().toLocaleDateString('nl-NL'))+' · '+esc((MODES[state.mode]||{}).naam||'')+'</p></div>';
+  const hz=scanHighlight('hulpzelf'),ho=scanHighlight('hulporg');
+  let ki=[];
+  if(ft)ki.push('Je focust op <b>'+esc(ft.tekst)+'</b>'+(ft.label?(' ('+ft.label+')'):'')+'.');
+  if(a.done){const hiU=a.u>=3.5,hiB=a.b>=3;const kop=(hiU&&!hiB)?'richting opbranden':(hiU&&hiB)?'bevlogen, maar het kost veel':(!hiU&&hiB)?'een gezonde koers':'een vlakke koers';ki.push('Op de lange termijn beweeg je '+kop+'.');}
+  if(ho)ki.push('De meeste winst vanuit je werk zit in <b>'+esc(ho.winst)+'</b>.');
+  else if(hz)ki.push('De meeste winst bij jezelf zit in <b>'+esc(hz.winst)+'</b>.');
+  if(state.answers.concreet)ki.push('Je concrete actie: '+esc((state.answers.concreet||'').split('\n')[0])+'.');
+  if(ki.length)out+='<div class="rki"><div class="rkih">Kern in het kort</div><ul>'+ki.map(function(x){return '<li>'+x+'</li>';}).join('')+'</ul></div>';
+  out+=sec('Over deze rapportage','','<p>Deze rapportage vat jouw reflectie samen volgens het <b>Job Demands-Resources (JD-R) model</b>. Per stap lees je de gedachte erachter, je eigen antwoorden en — waar er een scan was — een beeld van je scores. Zie het als een spiegel en een startpunt, geen oordeel.</p>');
   const taken=state.taken.map(function(t){return '<li>'+esc(t.tekst)+(t.label?(' <i>('+t.label+')</i>'):'')+'</li>';}).join('');
   out+=sec('1. Je werk en taken',THOUGHT.werk,'<div class="rblock"><ul>'+(taken||'<li>—</li>')+'</ul>'+(ft?('<p><b>Gekozen taak:</b> '+esc(ft.tekst)+(ft.label?(' ('+ft.label+')'):'')+'</p>'):'')+'</div>');
   if(a.done||state.answers.effect){
-    let lt='';
-    if(a.done){const hiU=a.u>=3.5,hiB=a.b>=3;const kop=(hiU&&!hiB)?'richting opbranden':(hiU&&hiB)?'bevlogen maar het kost veel':(!hiU&&hiB)?'gezonde koers':'vlak';lt+='<div class="rscores"><div class="rscore"><span>energieverlies</span><div class="rbar"><i style="width:'+Math.round(a.u/5*100)+'%"></i></div><b>'+a.u.toFixed(1)+'</b></div><div class="rscore"><span>bevlogenheid</span><div class="rbar"><i style="width:'+Math.round(a.b/5*100)+'%"></i></div><b>'+a.b.toFixed(1)+'</b></div></div><p><b>Beeld:</b> '+kop+'.</p>';}
-    if(state.answers.effect)lt+='<p><b>Jouw reflectie:</b> '+repVal('effect')+'</p>';
-    out+=sec('2. Lange termijn',THOUGHT.effect,'<div class="rblock">'+lt+'</div>');
+    let inner='';
+    if(a.done){const hiU=a.u>=3.5,hiB=a.b>=3;const kop=(hiU&&!hiB)?'richting opbranden':(hiU&&hiB)?'bevlogen maar het kost veel':(!hiU&&hiB)?'gezonde koers':'vlak';
+      inner+='<div class="chartrow"><div style="flex:1;min-width:210px">'+svgQuadrant(a.u,a.b)+'</div><div style="flex:1;min-width:180px">'+
+        '<div class="rscore"><span>energieverlies</span><div class="rbar"><i style="width:'+Math.round(a.u/5*100)+'%;background:#E83F6F"></i></div><b>'+a.u.toFixed(1)+'</b></div>'+
+        '<div class="rscore"><span>bevlogenheid</span><div class="rbar"><i style="width:'+Math.round(a.b/5*100)+'%;background:#32936F"></i></div><b>'+a.b.toFixed(1)+'</b></div>'+
+        '<p style="margin-top:8px"><b>Beeld:</b> '+kop+'.</p></div></div>';}
+    if(state.answers.effect)inner+='<p><b>Jouw reflectie:</b> '+repVal('effect')+'</p>';
+    out+=sec('2. Lange termijn',THOUGHT.effect,'<div class="rblock">'+inner+'</div>');
   }
   if(ft&&ft.label==='uitdagend'){
-    out+=sec('3. Versterken',THOUGHT.uitdaag,'<div class="rblock">'+scanBlock('uitdaag')+(state.answers.ud_nodig?('<p>'+repVal('ud_nodig')+'</p>'):'')+'</div>');
+    out+=sec('3. Meer uitdaging',THOUGHT.uitdaag,'<div class="rblock">'+scanRadar('uitdaag')+(state.answers.ud_nodig?('<p>'+repVal('ud_nodig')+'</p>'):'')+'</div>');
   } else if(ft&&ft.label==='hinderlijk'){
-    out+=sec('3. Hulp vanuit jezelf',THOUGHT.hulpzelf,'<div class="rblock">'+scanBlock('hulpzelf')+(state.answers.hulp_zelf?('<p>'+repVal('hulp_zelf')+'</p>'):'')+'</div>');
-    out+=sec('4. Hulp vanuit je werk',THOUGHT.hulporg,'<div class="rblock">'+scanBlock('hulporg')+(state.answers.hulp_org?('<p>'+repVal('hulp_org')+'</p>'):'')+'</div>');
-    if(state.gaps.eisen&&state.gaps.eisen.length){
-      const gr=state.gaps.eisen.map(function(e,i){return '<li>'+(state.gaps.checked[i]?'✅ ':'⬜ ')+esc(e)+(state.gaps.note[i]?(' — <i>'+esc(state.gaps.note[i])+'</i>'):'')+'</li>';}).join('');
-      out+=sec('5. Afweging: eisen tegenover hulp',THOUGHT.afweging,'<div class="rblock"><ul style="list-style:none;padding:0;margin:0">'+gr+'</ul>'+(state.afweging?('<p><b>Conclusie:</b> hulp '+(state.afweging==='ja'?'voldoende':'nog niet voldoende')+'.</p>'):'')+(state.answers.afw_onderbouwing?('<p><b>Onderbouwing:</b> '+repVal('afw_onderbouwing')+'</p>'):'')+'</div>');
+    if(state.hulpkeuze==='org'){
+      out+=sec('3. Hulp vanuit je werk',THOUGHT.hulporg,'<div class="rblock">'+scanRadar('hulporg')+(ho?('<p class="rlead">Sterkste punt: <b>'+esc(ho.sterk)+'</b> · meeste winst: <b>'+esc(ho.winst)+'</b>.</p>'):'')+(state.answers.hulp_org?('<p>'+repVal('hulp_org')+'</p>'):'')+'</div>');
+    } else {
+      out+=sec('3. Hulp vanuit jezelf',THOUGHT.hulpzelf,'<div class="rblock">'+scanRadar('hulpzelf')+(hz?('<p class="rlead">Sterkste punt: <b>'+esc(hz.sterk)+'</b> · meeste winst: <b>'+esc(hz.winst)+'</b>.</p>'):'')+(state.answers.hulp_zelf?('<p>'+repVal('hulp_zelf')+'</p>'):'')+'</div>');
     }
-    if(state.answers.andere)out+=sec('6. Andere opties (job crafting)',THOUGHT.andere,'<div class="rblock"><p>'+repVal('andere')+'</p></div>');
+    if(state.gaps.eisen&&state.gaps.eisen.length){
+      const tot=state.gaps.eisen.length;let cov=0;state.gaps.eisen.forEach(function(_,i){if(state.gaps.checked[i])cov++;});
+      const gr=state.gaps.eisen.map(function(e,i){return '<li>'+(state.gaps.checked[i]?'✅ ':'⬜ ')+esc(e)+(state.gaps.note[i]?(' — <i>'+esc(state.gaps.note[i])+'</i>'):'')+'</li>';}).join('');
+      out+=sec('4. Afweging: eisen tegenover hulp',THOUGHT.afweging,'<div class="rblock"><div class="chartrow"><div>'+svgDonut(cov,tot)+'</div><div style="flex:1;min-width:180px"><ul style="list-style:none;padding:0;margin:0">'+gr+'</ul></div></div>'+(state.afweging?('<p><b>Conclusie:</b> hulp '+(state.afweging==='ja'?'voldoende':'nog niet voldoende')+'.</p>'):'')+(state.answers.afw_onderbouwing?('<p><b>Onderbouwing:</b> '+repVal('afw_onderbouwing')+'</p>'):'')+'</div>');
+    }
+    if(state.answers.andere)out+=sec('5. Andere opties (job crafting)',THOUGHT.andere,'<div class="rblock"><p>'+repVal('andere')+'</p></div>');
   }
   const c=state.concreet||{};
-  if(state.answers.concreet)out+=sec('7. Concrete actie',THOUGHT.concreet,'<div class="rblock"><p>'+repVal('concreet')+'</p>'+(c.wanneer?('<p><b>Wanneer:</b> '+esc(c.wanneer)+'</p>'):'')+(c.wie?('<p><b>Met wie:</b> '+esc(c.wie)+'</p>'):'')+(c.eerste?('<p><b>Eerste stap:</b> '+esc(c.eerste)+'</p>'):'')+'</div>');
-  if(state.answers.afronding)out+=sec('8. Wat je meeneemt',THOUGHT.afronding,'<div class="rblock"><p>'+repVal('afronding')+'</p></div>');
-  out+=sec('Over het JD-R model','','<p>Het Job Demands-Resources model (Bakker & Demerouti; Schaufeli) verklaart werkgeluk uit de balans tussen <b>taakeisen</b> (wat je werk van je vraagt) en <b>hulpbronnen</b> (wat je werk én jijzelf te bieden hebben). Te veel eisen met te weinig hulpbronnen leidt tot uitputting; genoeg hulpbronnen leidt tot bevlogenheid en groei.</p><h3>Toepassing</h3><p>Door bewust hulpbronnen te vergroten (autonomie, steun, feedback, ontwikkeling én persoonlijke kracht) en belemmerende eisen te verkleinen — <b>job crafting</b> — verschuif je van het uitputtings- naar het motivatieproces.</p><h3>Valkuilen</h3><ul><li>Alleen naar de eisen kijken en je hulpbronnen vergeten.</li><li>Te grote stappen ineens willen zetten; klein en concreet werkt beter.</li><li>Uitdaging verwarren met overbelasting.</li><li>Denken dat verandering alleen van je werkgever moet komen — jij hebt zelf ook invloed.</li></ul>');
-  if(state.feedback&&state.feedback.score)out+='<p class="rlead" style="margin-top:16px">Waardering van de tool: '+state.feedback.score+'/5.</p>';
-  out+='</div>';return out;
+  if(state.answers.concreet)out+=sec('6. Concrete actie',THOUGHT.concreet,'<div class="ractie"><div class="ractieh">🎯 Jouw actie</div><p style="font-weight:600;margin:0 0 8px">'+repVal('concreet')+'</p>'+(c.wanneer?('<span class="rpill">📅 '+esc(c.wanneer)+'</span>'):'')+(c.wie?('<span class="rpill">👥 '+esc(c.wie)+'</span>'):'')+(c.eerste?('<p style="margin:10px 0 0"><b>Eerste stap:</b> '+esc(c.eerste)+'</p>'):'')+'</div>');
+  if(state.answers.afronding)out+=sec('7. Wat je meeneemt',THOUGHT.afronding,'<div class="rblock"><p>'+repVal('afronding')+'</p></div>');
+  out+=sec('Over het JD-R model','','<p>Het Job Demands-Resources model (Bakker &amp; Demerouti; Schaufeli) verklaart werkgeluk uit de balans tussen <b>taakeisen</b> (wat je werk van je vraagt) en <b>hulpbronnen</b> (wat je werk én jijzelf te bieden hebben). Te veel eisen met te weinig hulpbronnen leidt tot uitputting; genoeg hulpbronnen leidt tot bevlogenheid en groei.</p><h3>Toepassing</h3><p>Door bewust hulpbronnen te vergroten (autonomie, steun, feedback, ontwikkeling én persoonlijke kracht) en belemmerende eisen te verkleinen — <b>job crafting</b> — verschuif je van het uitputtings- naar het motivatieproces.</p><h3>Valkuilen</h3><ul><li>Alleen naar de eisen kijken en je hulpbronnen vergeten.</li><li>Te grote stappen ineens willen zetten; klein en concreet werkt beter.</li><li>Uitdaging verwarren met overbelasting.</li><li>Denken dat verandering alleen van je werkgever moet komen — jij hebt zelf ook invloed.</li></ul>');
+  if(state.feedback&&state.feedback.score)out+='<p class="rlead" style="margin-top:16px">Jouw waardering van de tool: '+state.feedback.score+'/5.</p>';
+  out+='<div class="rfoot">Een instrument van GRWN · JD-R model · met zorg gemaakt</div></div>';
+  return out;
 }
-
 (function(){
   var A={};try{A=JSON.parse(localStorage.getItem('fw_a11y')||'{}')}catch(e){}
   if(A.calm===undefined&&window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches)A.calm=true;
@@ -951,7 +1070,7 @@ function buildReportHtml(){
   document.addEventListener('click',function(e){if(!$('comfort').hidden&&!e.target.closest('#comfort')&&!e.target.closest('#comfortBtn')){$('comfort').hidden=true;$('comfortBtn').setAttribute('aria-expanded','false')}});
   ap();
 })();
-document.getElementById('restartBtn').onclick=function(){if(confirm('Opnieuw beginnen? Je antwoorden worden gewist.')){state={mode:null,naam:'',taken:[],focus:null,prio:null,takenTried:false,answers:{},assess:{},longterm:{},gaps:{eisen:null,checked:{},note:{}},concreet:{},afweging:null,step:'werk',ai:{},check:{},feedback:{score:null,waarom:'',tekst:'',sent:false},acties:null,_checking:false,_extracting:false,_eisenLoading:false,_actiesTried:false};save();render()}};
+document.getElementById('restartBtn').onclick=function(){if(confirm('Opnieuw beginnen? Je antwoorden worden gewist.')){state={mode:null,naam:'',taken:[],focus:null,hulpkeuze:null,hkScan:{},prio:null,takenTried:false,answers:{},assess:{},longterm:{},gaps:{eisen:null,checked:{},note:{}},concreet:{},afweging:null,step:'werk',ai:{},check:{},feedback:{score:null,waarom:'',tekst:'',sent:false},acties:null,_checking:false,_extracting:false,_eisenLoading:false,_actiesTried:false};save();render()}};
 
 load();render();
 </script>
