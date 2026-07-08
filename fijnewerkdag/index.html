@@ -223,6 +223,7 @@
 
 
 
+
 const KEY='fw3_v1';
 const MODES={
   zelf:{em:'🧭',naam:'Zelfreflectie',desc:'Je doorloopt het zelf, in je eigen tempo — met per stap concrete hulp om verder te komen.'},
@@ -252,18 +253,18 @@ const S={
     ctx:'We kijken naar je terugkerende taken, niet naar één losse dag. Som ze op — per regel één. Een functieomschrijving alleen is meestal te summier, dus vul aan met wat je in de praktijk doet. De categorieën hieronder helpen je aan een complete lijst.',
     guide:['Wat doe je dagelijks, wekelijks en maandelijks?','Welke overleggen, systemen of mensen horen erbij?','Welke taken kosten of geven je het meeste energie?'],
     tipsI:['Gebruik open vragen (hoe, wat, welke).','Vat samen wat je hoort en check of je het goed begrijpt.','Focus op inzicht en oplossingen, niet op oordeel.']},
-  effect:{titel:'Lange termijn',id:'effect',vraag:'Als je zo doorgaat, waar loopt dit dan op uit?',
+  effect:{titel:'Lange termijn',id:'effect',vraag:'Wat gebeurt er als je deze taak onveranderd blijft doen?',
     ph:'Bijv. Als dit zo blijft loop ik leeg / Ik wil over een half jaar met meer energie en trots op mijn werk staan.',
-    ctx:'De korte scan hieronder laat zien welke kant je op beweegt. Sta daar even bij stil — dat is vaak je motivatie om iets te veranderen.',guide:[]},
+    ctx:'De korte scan hieronder kijkt specifiek naar de taak die je koos: wat doet die met je energie op de lange termijn? Sta daar even bij stil — dat is vaak je motivatie om iets te veranderen.',guide:[]},
   uitdaag:{titel:'Meer uitdaging',id:'ud_nodig',vraag:'Wie of wat heb je nodig om meer uitdagende taken toe te voegen?',
     ph:'Bijv. meer tijd hiervoor, samenwerken met een bepaalde collega, een training, ruimte van mijn leidinggevende…',
     ctx:'Je versterkt wat energie geeft. De scan laat zien hoeveel energie deze taak je geeft; daaronder concrete manieren om er meer ruimte voor te maken.',guide:[]},
-  hulpzelf:{titel:'Hulp: jezelf',id:'hulp_zelf',vraag:'Wat kun jij zélf doen of inzetten om dit lastige deel lichter te maken?',
+  hulpzelf:{titel:'Hulp: jezelf',id:'hulp_zelf',vraag:'Wat kun jij zélf doen of inzetten om deze taak lichter te maken?',
     ph:'Bijv. een talent van me gebruiken, mijn grens aangeven, mijn energie beter verdelen…',
-    ctx:'Denk aan hulp die in jóu zit: je talenten, je veerkracht, je mindset. Doe eerst de scan — die wijst je naar het punt met de meeste winst en geeft concrete acties.',guide:[]},
-  hulporg:{titel:'Hulp: je werk',id:'hulp_org',vraag:'Welke hulp of steun vanuit je werk zou je hierbij helpen?',
+    ctx:'Denk aan hulp die in jóu zit — je talenten, veerkracht en mindset — toegepast op deze taak. Doe eerst de scan: die wijst je naar het punt met de meeste winst en geeft concrete acties.',guide:[]},
+  hulporg:{titel:'Hulp: je werk',id:'hulp_org',vraag:'Welke hulp of steun vanuit je werk zou je bij deze taak helpen?',
     ph:'Bijv. meer autonomie, duidelijkere afspraken, betere systemen, hulp van een collega of leidinggevende…',
-    ctx:'Denk aan hulp om je heen: mensen, feedback, systemen, ruimte. Doe eerst de scan — die wijst je naar de hulpbron met de meeste winst en geeft concrete acties.',guide:[]},
+    ctx:'Denk aan hulp om je heen — mensen, feedback, systemen, ruimte — specifiek voor deze taak. Doe eerst de scan: die wijst je naar de hulpbron met de meeste winst en geeft concrete acties.',guide:[]},
   hulpkeuze:{titel:'Welke hulp?',id:'hulpkeuze',vraag:'Welke hulp kun je het beste inzetten?',
     ctx:'Hulp kan uit twee hoeken komen: vanuit jezelf of vanuit je werk. Doe de korte scan, dan zie je waar jouw grootste kans ligt — daarna kies je zelf.'},
   afweging:{titel:'Afweging',id:'afw_onderbouwing',vraag:'Kun je met deze hulp deze taak weer prettig en werkbaar maken?',
@@ -285,24 +286,24 @@ const ASSESS={
   uitdaag:{titel:'Mini-scan: energie uit deze taak',intro:'Drie korte stellingen over hoeveel energie en betrokkenheid deze taak je geeft.',waarom:'Waarom deze scan? Deze taak geeft je energie — en dat is goud waard. Deze drie stellingen (uit de bevlogenheidsschaal UWES) laten zien hóe sterk die energie is: voel je je vitaal, doe je het met plezier, en ga je erin op? Zo weet je waar je op kunt bouwen om er meer van te doen.',
     items:[{t:'Van deze taak krijg ik energie.',dim:'vitaliteit'},{t:'Ik doe deze taak met plezier en trots.',dim:'toewijding'},{t:'Als ik hiermee bezig ben, gaat de tijd snel.',dim:'opgaan in je werk'}],
     bron:'Gebaseerd op de bevlogenheidsschaal UWES (Schaufeli & Bakker): vitaliteit, toewijding en absorptie.'},
-  hulpzelf:{titel:'Mini-scan: jouw persoonlijke hulpbronnen',intro:'Vier stellingen over wat er in jóu zit.',waarom:'Waarom deze scan? Wat je zélf meebrengt — veerkracht, zelfvertrouwen, optimisme en je grens durven aangeven — bepaalt sterk hoe zwaar een taak voelt. Deze vier stellingen laten zien welke kracht je al hebt om op te leunen, en waar de meeste winst zit. Zo wordt concreter wat jij zelf kunt inzetten. Gebaseerd op persoonlijke hulpbronnen (psychologisch kapitaal).',
-    items:[{t:'Ik geloof dat ik dit lastige deel van mijn werk kan beïnvloeden.',dim:'zelfvertrouwen'},{t:'Als iets tegenzit, herpak ik me meestal snel.',dim:'veerkracht'},{t:'Ik kijk over het algemeen positief naar hoe dit afloopt.',dim:'optimisme'},{t:'Ik geef mijn grens of mening aan wanneer dat nodig is.',dim:'je stem laten horen'}],
+  hulpzelf:{titel:'Mini-scan: jouw persoonlijke hulpbronnen',intro:'Vier stellingen over wat er in jóu zit — toegepast op deze taak.',waarom:'Waarom deze scan? Wat je zélf meebrengt — veerkracht, zelfvertrouwen, optimisme en je grens durven aangeven — bepaalt sterk hoe zwaar déze taak voelt. Deze vier stellingen laten zien welke kracht je al hebt om op te leunen, en waar bij deze taak de meeste winst zit. Gebaseerd op persoonlijke hulpbronnen (psychologisch kapitaal).',
+    items:[{t:'Ik geloof dat ik deze taak lichter kan maken.',dim:'zelfvertrouwen'},{t:'Als deze taak tegenzit, herpak ik me meestal snel.',dim:'veerkracht'},{t:'Ik kijk positief naar hoe deze taak zich ontwikkelt.',dim:'optimisme'},{t:'Ik geef mijn grens of mening aan als deze taak te veel wordt.',dim:'je stem laten horen'}],
     bron:'Gebaseerd op persoonlijke hulpbronnen / psychologisch kapitaal (Xanthopoulou e.a.; Luthans).'},
-  hulporg:{titel:'Mini-scan: hulpbronnen vanuit je werk',intro:'Vier stellingen over de steun om je heen.',waarom:'Waarom deze scan? De steun om je heen — regelruimte, hulp van anderen, feedback en ontwikkelkansen — is de belangrijkste buffer tegen een zware taak. Deze vier stellingen laten zien welke steun er al is en waar de grootste winst ligt om te vragen of te organiseren. Gebaseerd op de werk-hulpbronnen uit het JD-R model.',
-    items:[{t:'Ik heb genoeg vrijheid om zelf te bepalen hóe ik dit werk doe.',dim:'autonomie'},{t:'Ik kan rekenen op steun van collega’s of mijn leidinggevende.',dim:'steun'},{t:'Ik krijg bruikbare feedback of coaching op dit werk.',dim:'feedback'},{t:'Ik krijg de kans om me hierin te ontwikkelen.',dim:'ontwikkeling'}],
+  hulporg:{titel:'Mini-scan: hulpbronnen vanuit je werk',intro:'Vier stellingen over de steun om je heen bij deze taak.',waarom:'Waarom deze scan? De steun om je heen — regelruimte, hulp van anderen, feedback en ontwikkelkansen — is de belangrijkste buffer tegen een zware taak. Deze vier stellingen laten zien welke steun er bij déze taak al is en waar de grootste winst ligt om te vragen of te organiseren. Gebaseerd op de werk-hulpbronnen uit het JD-R model.',
+    items:[{t:'Ik heb genoeg vrijheid om zelf te bepalen hóe ik deze taak doe.',dim:'autonomie'},{t:'Bij deze taak kan ik rekenen op steun van collega’s of mijn leidinggevende.',dim:'steun'},{t:'Ik krijg bruikbare feedback op deze taak.',dim:'feedback'},{t:'Ik krijg de kans om me in deze taak te ontwikkelen.',dim:'ontwikkeling'}],
     bron:'Gebaseerd op de werk-hulpbronnen uit het JD-R model (Bakker & Demerouti): autonomie, steun, feedback, ontwikkeling.'}
 };
 const ACT_ZELF={
-  'zelfvertrouwen':['Schrijf op welk vergelijkbaar probleem je eerder wél oploste','Vraag iemand die je vertrouwt om een eerlijke reality-check'],
-  'veerkracht':['Plan een vast hersteldmoment ná deze taak','Bepaal vooraf: als het tegenzit, dan doe ik…'],
-  'optimisme':['Benoem één ding dat wél in jouw controle ligt','Richt je op de eerstvolgende kleine stap, niet op het hele probleem'],
-  'je stem laten horen':['Bereid één zin voor waarmee je je grens aangeeft','Vraag deze week concreet om wat je nodig hebt']
+  'zelfvertrouwen':['Schrijf op welk vergelijkbaar probleem je eerder wél oploste','Vraag iemand die je vertrouwt om een eerlijke reality-check','Benoem één ding in deze taak dat je al goed kunt'],
+  'veerkracht':['Plan een vast hersteldmoment ná deze taak','Bepaal vooraf: als deze taak tegenzit, dan doe ik…','Neem na deze taak bewust even pauze'],
+  'optimisme':['Benoem één ding in deze taak dat wél in jouw controle ligt','Richt je op de eerstvolgende kleine stap van deze taak','Bedenk wat deze taak je oplevert als het lukt'],
+  'je stem laten horen':['Bereid één zin voor waarmee je je grens bij deze taak aangeeft','Vraag deze week concreet om wat je bij deze taak nodig hebt','Kaart bij je leidinggevende aan wat deze taak zwaar maakt']
 };
 const ACT_ORG={
-  'autonomie':['Vraag om meer ruimte om zelf te bepalen hóe je dit doet','Stel voor een deel van je werk zelf in te delen'],
-  'steun':['Vraag een collega om mee te denken of samen te doen','Bespreek met je leidinggevende welke steun je mist'],
-  'feedback':['Vraag gericht om feedback op dit specifieke werk','Plan een kort evaluatiemoment na afloop'],
-  'ontwikkeling':['Zoek een training of iemand die je dit kan leren','Vraag om een taak waarin je je hierin kunt ontwikkelen']
+  'autonomie':['Vraag om meer ruimte om zelf te bepalen hóe je deze taak doet','Stel voor deze taak op je eigen manier in te delen','Bespreek welke regels rond deze taak kunnen vervallen'],
+  'steun':['Vraag een collega om bij deze taak mee te denken of samen te doen','Bespreek met je leidinggevende welke steun je bij deze taak mist','Zoek iemand die deze taak al goed beheerst'],
+  'feedback':['Vraag gericht om feedback op deze taak','Plan een kort evaluatiemoment na deze taak','Vraag hoe anderen deze taak aanpakken'],
+  'ontwikkeling':['Zoek uitleg of een training die deze taak makkelijker maakt','Vraag om begeleiding bij het lastige deel van deze taak','Trek tijd uit om deze taak onder de knie te krijgen']
 };
 const ACT_UD=['Vraag om meer van dit soort taken','Blok vaste tijd voor dit werk in je agenda','Zoek een project waarin dit centraal staat','Deel je ambitie met je leidinggevende','Combineer het met een taak die minder leuk is'];
 const CRAFT=[
@@ -312,14 +313,14 @@ const CRAFT=[
   {kop:'Meer energie uit je werk halen',opts:['Een deel dat je leuk vindt uitbreiden','Betekenis toevoegen: waarvoor doe je het?']}
 ];
 const LONG={
-  waarom:'Waarom deze scan? De lange termijn merk je vaak pas als het al te laat is. Deze zes stellingen meten twee dingen die wetenschappelijk voorspellen waar je heen gaat: hoeveel energie je verliest (uitputting) en hoeveel je werk je nog oplevert (bevlogenheid). Samen laten ze zien of je richting opbranden of richting groei beweegt — zodat je nú kunt bijsturen. Gebaseerd op het JD-R model en de UWES-bevlogenheidsschaal.',
+  waarom:'Waarom deze scan? Deze zes stellingen gaan specifiek over de taak die je koos — niet over je hele werk. Ze meten twee dingen: hoeveel deze taak je energie kóst (uitputting) en hoeveel hij je énergie geeft (bevlogenheid). Zo zie je wat er gebeurt als je deze taak onveranderd blijft doen: put hij je uit, of houdt hij je op de been? Gebaseerd op het JD-R model en de UWES-bevlogenheidsschaal.',
   items:[
-    {t:'Aan het eind van mijn werkdag voel ik me leeg.',g:'u'},
-    {t:'Ik moet steeds meer moeite doen om mijn werk vol te houden.',g:'u'},
-    {t:'’s Ochtends kost het me moeite om er weer voor te gaan.',g:'u'},
-    {t:'Ik voel me energiek tijdens mijn werk.',g:'b'},
-    {t:'Ik ben enthousiast over mijn werk.',g:'b'},
-    {t:'Als ik werk, gaat de tijd vaak snel voorbij.',g:'b'}
+    {t:'Na deze taak voel ik me leeg of uitgeput.',g:'u'},
+    {t:'Deze taak kost me steeds meer moeite.',g:'u'},
+    {t:'Ik zie op tegen deze taak.',g:'u'},
+    {t:'Deze taak geeft me energie.',g:'b'},
+    {t:'Ik doe deze taak met plezier.',g:'b'},
+    {t:'Als ik met deze taak bezig ben, gaat de tijd snel.',g:'b'}
   ],
   bron:'Gebaseerd op de twee JD-R-processen: het uitputtingsproces (energieverlies) en het motivatieproces (bevlogenheid, o.a. UWES).'
 };
@@ -564,20 +565,20 @@ function longResult(){
   const a=longAverages();if(!a.done)return '';
   const hiU=a.u>=3.5, hiB=a.b>=3;
   let cls,kop,txt;
-  if(hiU&&!hiB){cls='bad';kop='Richting opbranden';txt='Je energie loopt leeg en je betrokkenheid is laag. Dit is het uitputtingsproces uit JD-R. Als het zo doorgaat, groeit het risico dat je écht vastloopt. Juist nu ingrijpen loont.';}
-  else if(hiU&&hiB){cls='warn';kop='Bevlogen, maar het kost veel';txt='Je bent betrokken én het vraagt veel van je. Dat houd je een tijd vol, maar zonder voldoende herstel kan het omslaan in uitputting. Bewaak bewust je energie.';}
-  else if(!hiU&&hiB){cls='good';kop='Gezonde koers';txt='Genoeg energie en betrokkenheid — je zit in het motivatieproces. Als je zo doorgaat, groei je verder. Mooi vertrekpunt om je sterke punten uit te bouwen.';}
-  else{cls='warn';kop='Vlak';txt='Weinig energieverlies, maar ook weinig bevlogenheid — het werk laat je een beetje koud. Op termijn kan dat gaan vervelen. Meer uitdaging of betekenis helpt.';}
+  if(hiU&&!hiB){cls='bad';kop='Richting opbranden';txt='Deze taak put je uit: hij kost energie en levert weinig op. Blijf je hem onveranderd doen, dan groeit het risico dat je vastloopt. Juist déze taak nu aanpakken loont.';}
+  else if(hiU&&hiB){cls='warn';kop='Bevlogen, maar het kost veel';txt='Deze taak boeit je én kost je veel. Dat gaat een tijd goed, maar zonder aanpassing kan hij je op termijn uitputten. Bewaak bewust je energie rond deze taak.';}
+  else if(!hiU&&hiB){cls='good';kop='Gezonde koers';txt='Deze taak geeft meer dan hij kost — een gezonde balans. Mooi vertrekpunt om er meer uit te halen of hem uit te bouwen.';}
+  else{cls='warn';kop='Vlak';txt='Deze taak kost je weinig, maar geeft je ook weinig. Op termijn kan hij gaan vervelen. Meer uitdaging of betekenis in deze taak helpt.';}
   const sc='<span class="ctx" style="font-size:12.5px">Energieverlies: '+a.u.toFixed(1)+'/5 · Bevlogenheid: '+a.b.toFixed(1)+'/5</span>';
   return '<div class="qbox '+cls+'"><h4>'+kop+'</h4><p style="font-size:14px;line-height:1.55">'+txt+'</p>'+sc+'</div>';
 }
 function renderEffect(){
-  const d=S.effect;
+  const d=S.effect;const ft=focusTask();
   let rows=LONG.items.map(function(it,i){return scaleRow(it.t, state.longterm['i'+i], (function(ii){return function(v){return 'setLong('+ii+','+v+')';}})(i));}).join('');
-  const panel=(state.mode==='interviewer')?'':('<div class="panel"><div class="ph">🧭 Korte scan: waar beweeg je naartoe?</div>'+(LONG.waarom?('<div class="rgedachte">'+esc(LONG.waarom)+'</div>'):'')+LONGMEER+'<p class="ctx" style="margin:0 0 8px">Denk aan de afgelopen weken.</p><div class="asscalehead"><span>1 = oneens</span><span>5 = eens</span></div>'+rows+longResult()+longExamples()+'<p style="color:var(--muted);font-size:12px;margin-top:10px">'+esc(LONG.bron)+'</p></div>');
+  const panel=(state.mode==='interviewer')?'':('<div class="panel"><div class="ph">🧭 Korte scan: waar beweeg je naartoe?</div>'+(ft?('<p class="ctx" style="margin:0 0 6px">Deze scan gaat over je gekozen taak: <b>'+esc(ft.tekst)+'</b>.</p>'):'')+(LONG.waarom?('<div class="rgedachte">'+esc(LONG.waarom)+'</div>'):'')+LONGMEER+'<p class="ctx" style="margin:0 0 8px">Denk aan de afgelopen weken.</p><div class="asscalehead"><span>1 = oneens</span><span>5 = eens</span></div>'+rows+longResult()+longExamples()+'<p style="color:var(--muted);font-size:12px;margin-top:10px">'+esc(LONG.bron)+'</p></div>');
   return '<div class="card"><span class="eyebrow">'+esc(d.titel)+'</span><h1>'+esc(d.vraag)+'</h1><p class="ctx">'+esc(d.ctx)+'</p>'+
     panel+
-    '<p class="ctx" style="margin-top:14px"><b>Jouw reflectie:</b> wat betekent dit beeld voor jou — wat wil je dat er over een half jaar anders is?</p>'+
+    '<p class="ctx" style="margin-top:14px"><b>Jouw reflectie:</b> wat betekent dit voor deze taak — wat wil je dat er over een half jaar anders is?</p>'+
     fieldHtml(d)+guideHtml(d)+tipsHtml(d)+navBtns()+'</div>';
 }
 
@@ -596,15 +597,17 @@ function assessResult(k){
   const cfg=ASSESS[k];const ans=state.assess[k]||{};
   const vals=cfg.items.map(function(_,i){return ans['i'+i];});
   const avg=vals.reduce(function(a,b){return a+b;},0)/vals.length;
-  let lo=0,hi=0;for(let i=1;i<vals.length;i++){if(vals[i]<vals[lo])lo=i;if(vals[i]>vals[hi])hi=i;}
-  const loDim=cfg.items[lo].dim,hiDim=cfg.items[hi].dim;
+  const order=vals.map(function(v,i){return {i:i,v:v};}).sort(function(a,b){return a.v-b.v;});
+  const hiDim=cfg.items[order[order.length-1].i].dim;
   if(k==='uitdaag'){
     const chips=ACT_UD.map(function(t){return chip('ud_nodig',t);}).join('');
     return '<b>Energie uit deze taak:</b> '+(avg>=3.5?'duidelijk aanwezig — een mooi vertrekpunt om uit te bouwen.':'aanwezig, maar nog beperkt. Juist daarom loont het om er bewust meer ruimte voor te maken.')+'<div class="chips">'+chips+'</div><p class="ctx" style="margin:4px 0 0">Tik een idee aan — het komt in je antwoord te staan.</p>';
   }
   const map=(k==='hulpzelf')?ACT_ZELF:ACT_ORG;const id=(k==='hulpzelf')?'hulp_zelf':'hulp_org';
-  const acts=(map[loDim]||[]).map(function(t){return chip(id,t);}).join('');
-  return '<b>Je sterkste punt:</b> '+esc(hiDim)+'. <b>Meeste winst:</b> '+esc(loDim)+'.<br>Concrete dingen die je hiervoor kunt doen:<div class="chips">'+acts+'</div><p class="ctx" style="margin:4px 0 0">Tik aan wat past — het komt in je antwoord, dat je nog kunt aanpassen.</p>';
+  const lows=[order[0].i, order[1].i];
+  let acts='';lows.forEach(function(idx){(map[cfg.items[idx].dim]||[]).forEach(function(t){acts+=chip(id,t);});});
+  const loNames=lows.map(function(idx){return cfg.items[idx].dim;}).join(' en ');
+  return '<b>Je sterkste punt bij deze taak:</b> '+esc(hiDim)+'. <b>Meeste winst:</b> '+esc(loNames)+'.<br>Concrete acties die je hiervoor kunt inzetten:<div class="chips">'+acts+'</div><p class="ctx" style="margin:4px 0 0">Tik aan wat past — het komt in je antwoord, dat je nog kunt aanpassen.</p>';
 }
 function renderUitdaag(){
   const d=S.uitdaag;const ft=focusTask();
@@ -623,36 +626,24 @@ function renderHulp(k){
 function renderAfweging(){
   const d=S.afweging;const ft=focusTask();
   if(state.gaps.eisen===null&&!state._eisenLoading){fetchEisen();}
+  const dir=(state.hulpkeuze==='org')?'de steun vanuit je werk':'je eigen kracht';
+  const notePh=(state.hulpkeuze==='org')?'Welke steun vanuit je werk staat hier tegenover? (bijv. hulp van een collega, meer tijd, duidelijke afspraken)':'Welke eigen kracht zet je hier tegenover? (bijv. je veerkracht, een talent, je grens aangeven)';
+  const intro='<div class="rgedachte"><b>Wat doen we hier?</b> Elke taak stelt bepaalde eisen aan je — denk aan tijd, focus of afhankelijkheid van anderen. Hieronder staat een <b>voorzet</b> van die eisen: een suggestie die je vrij mag aanpassen, aanvullen of weghalen. Loop ze langs en vink per eis aan of je er met '+dir+' genoeg tegenover hebt staan, en noteer wát dat is. Zo zie je of je hulp genoeg is. Daarna beslis jij zelf: is het genoeg, of nog niet?</div>';
   let body='';
-  if(state._eisenLoading){body='<p class="ctx"><span class="spin"></span>Ik zet de eisen van je taak op een rij…</p>';}
-  else if(!state.gaps.eisen||!state.gaps.eisen.length){body='<p class="ctx">Voeg hieronder zelf de belangrijkste eisen van deze taak toe.</p>';}
+  if(state._eisenLoading)body='<p class="ctx"><span class="spin"></span>Ik zet een voorzet van de taakeisen klaar…</p>';
   const eisen=state.gaps.eisen||[];
-  const rows=eisen.map(function(e,i){
-    const ch=!!state.gaps.checked[i];
-    return '<div class="gap"><input type="checkbox" '+(ch?'checked':'')+' onclick="toggleGap('+i+')" aria-label="Hulp aanwezig"><div class="gt"><b>'+esc(e)+'</b>'+
-      '<input type="text" placeholder="Welke hulp staat hier tegenover? (van jezelf of je werk)" value="'+esc(state.gaps.note[i]||'')+'" oninput="gapNote('+i+',this.value)"></div></div>';
-  }).join('');
-  const allc=eisen.length>0&&eisen.every(function(_,i){return state.gaps.checked[i];});
-  state.afweging=allc?'ja':(eisen.length?'nee':null);
-  let concl='';
-  if(eisen.length){
-    if(allc){
-      concl='<div class="qbox good"><h4>Bij elke eis staat hulp</h4><p class="ctx" style="margin:4px 0 8px">Mooi. Beschrijf in één zin waaróm dit geheel genoeg is om deze taak weer prettig te maken — dan weet je het zeker.</p>'+
-        '<textarea id="'+d.id+'" placeholder="Bijv. Met meer regelruimte én hulp van een collega kan ik de piek opvangen." oninput="onAnswer(\'afweging\',\''+d.id+'\',this.value)">'+esc(state.answers[d.id]||'')+'</textarea></div>';
-    } else {
-      concl='<div class="qbox warn"><h4>Er zijn nog gaten</h4><p class="ctx" style="margin:4px 0 0">Bij één of meer eisen staat nog geen hulp. Dat is niet erg — bij de volgende stap (Andere opties) kijken we hoe je die gaten kunt dichten.</p></div>';
-    }
-  }
-  const onderbouwd=state.answers[d.id]&&state.answers[d.id].trim();
+  const rows=eisen.map(function(e,i){const ch=!!state.gaps.checked[i];
+    return '<div class="gap"><input type="checkbox" '+(ch?'checked':'')+' onclick="toggleGap('+i+')" aria-label="Hulp aanwezig"><div class="gt"><b>'+esc(e)+'</b><input type="text" placeholder="'+esc(notePh)+'" value="'+esc(state.gaps.note[i]||'')+'" oninput="gapNote('+i+',this.value)"></div></div>';}).join('');
+  const tot=eisen.length;let cov=0;eisen.forEach(function(_,i){if(state.gaps.checked[i])cov++;});
+  const tip=tot?('<p class="ctx" style="margin-top:10px">Je hebt <b>'+cov+' van de '+tot+'</b> eisen gedekt. '+(cov<tot?'Er zijn nog gaten — dat pleit voor “nog niet”.':'Alles gedekt — dat pleit voor “ja, dit is genoeg”.')+'</p>'):'';
+  const choice='<p class="ctx" style="margin-top:16px"><b>'+esc(d.vraag)+'</b></p><div class="btnrow" style="margin-top:6px"><button class="btn '+(state.afweging==='ja'?'':'ghost')+'" onclick="setAfw(\'ja\')">Ja, dit is genoeg</button><button class="btn '+(state.afweging==='nee'?'mag':'ghost')+'" onclick="setAfw(\'nee\')">Nee, nog niet</button></div>';
   let primary='';
-  if(!eisen.length){primary='<button class="btn" onclick="advance()">Volgende →</button>';}
-  else if(allc){primary=onderbouwd?'<button class="btn" onclick="advance()">Volgende →</button>':'<button class="btn" disabled title="Beschrijf eerst kort waarom het genoeg is">Volgende →</button>';}
-  else {primary='<button class="btn" onclick="advance()">Verder naar Andere opties →</button>';}
-  return '<div class="card"><span class="eyebrow">'+esc(d.titel)+'</span><h1>'+esc(d.vraag)+'</h1><p class="ctx">'+esc(d.ctx)+'</p>'+
-    AFWINTRO+(ft?('<p class="ctx">Taak: <b>'+esc(ft.tekst)+'</b></p>'):'')+
-    body+rows+
+  if(state.afweging==='ja')primary='<button class="btn" onclick="advance()">Volgende →</button>';
+  else if(state.afweging==='nee')primary='<button class="btn mag" onclick="advance()">Naar andere opties →</button>';
+  return '<div class="card"><span class="eyebrow">'+esc(d.titel)+'</span><h1>'+esc(d.vraag)+'</h1>'+
+    (ft?('<p class="ctx">Taak: <b>'+esc(ft.tekst)+'</b></p>'):'')+intro+body+rows+
     '<div class="addrow" style="margin-top:10px"><input id="newEis" placeholder="Zelf een eis van deze taak toevoegen…" onkeydown="if(event.key===\'Enter\')addEis()"><button class="btn ghost sm" onclick="addEis()">Toevoegen</button></div>'+
-    concl+
+    tip+choice+
     '<div class="btnrow"><button class="btn ghost" onclick="prevStep()">← Vorige</button>'+primary+'</div></div>';
 }
 function toggleGap(i){state.gaps.checked[i]=!state.gaps.checked[i];save();render()}
@@ -682,6 +673,7 @@ function renderAndere(){
 
 /* ---------- stap 8: concrete actie ---------- */
 function setConc(f,v){state.concreet[f]=v;save()}
+function setActie(v){state.answers.concreet=v;if(state.check.concreet)state.check.concreet=null;save();render()}
 function renderConcreet(){
   const d=S.concreet;const c=state.concreet||{};
   if(state.mode==='interviewer'){
@@ -827,21 +819,21 @@ const GENERIC_EISEN=['Deze taak kost tijd en aandacht','Deze taak vraagt focus e
 function longExamples(){
   const a=longAverages();if(!a.done)return '';
   const hiU=a.u>=3.5,hiB=a.b>=3;let ex;
-  if(hiU&&!hiB)ex=['Ik wil voorkomen dat ik opbrand; over een half jaar wil ik mijn werkdag weer met energie afsluiten.','Ik ga de taak die me het meest uitput als eerste aanpakken.','Ik wil hulp durven vragen vóór het te zwaar wordt.'];
-  else if(hiU&&hiB)ex=['Ik ben betrokken, maar wil beter op mijn herstel letten zodat ik het volhoud.','Ik wil vaste rustmomenten inbouwen rond mijn drukste taken.','Ik wil grenzen stellen zodat mijn enthousiasme me niet opbrandt.'];
-  else if(!hiU&&hiB)ex=['Ik zit lekker in mijn werk en wil dit vasthouden en uitbouwen.','Ik wil meer tijd maken voor de taken die me energie geven.','Ik wil mijn sterke punten vaker bewust inzetten.'];
-  else ex=['Mijn werk laat me een beetje koud; ik wil er meer betekenis of uitdaging in vinden.','Ik wil op zoek naar taken die me weer prikkelen.','Ik wil met mijn leidinggevende bespreken hoe ik meer uitdaging kan krijgen.'];
+  if(hiU&&!hiB)ex=['Ik wil voorkomen dat deze taak me uitput; over een half jaar wil ik hem met meer rust doen.','Ik ga deze taak als eerste aanpakken omdat hij me het meest kost.','Ik wil bij deze taak hulp durven vragen vóór het te zwaar wordt.'];
+  else if(hiU&&hiB)ex=['Deze taak boeit me, maar ik wil beter op mijn herstel letten eromheen.','Ik wil vaste rustmomenten inbouwen rond deze taak.','Ik wil grenzen stellen zodat deze taak me niet opbrandt.'];
+  else if(!hiU&&hiB)ex=['Deze taak bevalt me; ik wil hem vasthouden en uitbouwen.','Ik wil meer tijd maken voor deze taak omdat hij me energie geeft.','Ik wil deze taak vaker bewust inzetten als bron van energie.'];
+  else ex=['Deze taak laat me koud; ik wil er meer betekenis of uitdaging in vinden.','Ik wil deze taak anders aanpakken zodat hij me meer prikkelt.','Ik wil met mijn leidinggevende bespreken hoe deze taak boeiender kan.'];
   const chips=ex.map(function(t){return chip('effect',t);}).join('');
   return '<div style="margin-top:12px"><p class="ctx" style="margin:0 0 6px"><b>Concrete voorbeelden voor je reflectie</b> — tik aan wat past, je kunt het daarna aanpassen:</p><div class="chips" style="margin:0">'+chips+'</div></div>';
 }
-const LONGMEER='<details class="jdr" style="margin:0 0 8px"><summary>Meer over deze scan — wat, waarom en hoe</summary><div class="jdrbody"><p><b>Wat meet deze scan?</b> Zes korte stellingen over de afgelopen weken. Drie gaan over <b>energieverlies</b> (voel je je leeg, kost het steeds meer moeite) en drie over <b>bevlogenheid</b> (energie, enthousiasme, opgaan in je werk).</p><p><b>Achterliggende theorie en bronnen.</b> Het Job Demands-Resources model (Bakker &amp; Demerouti; Schaufeli) beschrijft twee routes: een <i>uitputtingsproces</i> waarin hoge eisen met te weinig hulpbronnen leiden tot opbranden, en een <i>motivatieproces</i> waarin hulpbronnen leiden tot bevlogenheid. Bevlogenheid wordt gemeten met de wetenschappelijk gevalideerde UWES-schaal (vitaliteit, toewijding, absorptie).</p><p><b>Hoe gebruik je de uitslag?</b> De twee scores samen laten zien waar je nu staat en welke kant je op beweegt als er niets verandert: richting opbranden, richting groei, of ergens daartussen. Dat inzicht is je vertrekpunt: het maakt duidelijk hoe urgent verandering is en geeft richting aan de rest van deze reflectie.</p></div></details>';
+const LONGMEER='<details class="jdr" style="margin:0 0 8px"><summary>Meer over deze scan — wat, waarom en hoe</summary><div class="jdrbody"><p><b>Wat meet deze scan?</b> Zes stellingen over de taak die je koos. Drie over hoeveel de taak je energie <b>kost</b> (uitputting) en drie over hoeveel energie de taak je <b>geeft</b> (bevlogenheid).</p><p><b>Achterliggende theorie en bronnen.</b> Het Job Demands-Resources model (Bakker &amp; Demerouti; Schaufeli) beschrijft twee routes: taken die vooral eisen stellen putten uit, taken met genoeg hulpbronnen maken bevlogen. Bevlogenheid meten we met de gevalideerde UWES-schaal (vitaliteit, toewijding, absorptie), hier toegespitst op deze ene taak.</p><p><b>Hoe gebruik je de uitslag?</b> De twee scores laten zien wat deze taak op de lange termijn met je doet als je niets verandert: uitputtend, energiegevend of ergens daartussen. Dat inzicht bepaalt hoe urgent het is om juist deze taak aan te pakken.</p></div></details>';
 const HKSCAN={
-  waarom:'Waarom deze scan? Hulp komt uit twee hoeken: uit jóu (je veerkracht, mindset en aanpak) of uit je wérk (regelruimte, steun, feedback, ontwikkeling). Vaak zit je grootste winst vooral in één van de twee. Deze vier stellingen laten zien waar dat voor jou geldt, zodat je je energie op de meest kansrijke kant richt. Gebaseerd op het onderscheid tussen persoonlijke hulpbronnen en werk-hulpbronnen in het JD-R model.',
+  waarom:'Waarom deze scan? Hulp bij deze taak komt uit twee hoeken: uit jóu (je veerkracht, mindset en aanpak) of uit je wérk (regelruimte, steun, feedback, ontwikkeling). Vaak zit je grootste winst vooral in één van de twee. Deze vier stellingen laten zien waar dat voor jou bij deze taak geldt, zodat je je energie op de meest kansrijke kant richt. Gebaseerd op het onderscheid tussen persoonlijke en werk-hulpbronnen in het JD-R model.',
   items:[
-    {t:'Ik kan zélf veel doen om dit deel lichter te maken.',g:'zelf'},
-    {t:'Mijn eigen aanpak of houding maakt hier een groot verschil.',g:'zelf'},
-    {t:'Wat ik nodig heb moet vooral van mijn werk of organisatie komen.',g:'org'},
-    {t:'Zonder meer ruimte of steun van mijn werk gaat dit niet lukken.',g:'org'}
+    {t:'Ik kan zélf veel doen om deze taak lichter te maken.',g:'zelf'},
+    {t:'Mijn eigen aanpak of houding maakt bij deze taak een groot verschil.',g:'zelf'},
+    {t:'Wat ik voor deze taak nodig heb moet vooral van mijn werk komen.',g:'org'},
+    {t:'Zonder meer ruimte of steun van mijn werk lukt deze taak niet.',g:'org'}
   ]
 };
 function setHk(i,v){state.hkScan['i'+i]=v;save();render()}
@@ -891,7 +883,7 @@ function actiesHtml(){
   }
   const items=state.acties.map(function(a){
     return '<div class="qbox" style="margin:8px 0"><b style="font-size:14px">'+esc(a.actie)+'</b>'+
-      '<div class="chips" style="margin:8px 0 0"><button class="chip" data-v="'+esc(a.actie)+'" onclick="insertA(\'concreet\',this.dataset.v)">+ Gebruik als actie</button>'+
+      '<div class="chips" style="margin:8px 0 0"><button class="chip" data-v="'+esc(a.actie)+'" onclick="setActie(this.dataset.v)">+ Gebruik als actie</button>'+
       (a.eerste_stap?('<button class="chip" data-v="'+esc(a.eerste_stap)+'" onclick="pickEerste(this.dataset.v)">→ Eerste stap: '+esc(a.eerste_stap)+'</button>'):'')+'</div></div>';
   }).join('');
   return '<div class="panel"><div class="ph">💡 Voorgestelde acties (op basis van jouw antwoorden)</div>'+items+'<button class="btn ghost sm" onclick="askActies()">↻ Opnieuw voorstellen</button></div>';
