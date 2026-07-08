@@ -579,6 +579,18 @@
   </div>
 </div>
 
+<!-- BEROEP BEVESTIGEN -->
+<div class="modal" id="beroepModal">
+  <div class="modal-box">
+    <h3 class="pixel">🎯 JE BEROEP BEVESTIGEN</h3>
+    <div id="brBody"></div>
+    <div class="modal-actions">
+      <button class="cancel-btn" id="brCancel">Aanpassen</button>
+      <button class="save-btn" id="brStart">Dit klopt, start ▶</button>
+    </div>
+  </div>
+</div>
+
 <!-- VICTORY / UITGESPEELD -->
 <div class="victory" id="victory">
   <div class="victory-box">
@@ -998,7 +1010,47 @@ $("resetBtn").onclick=()=>{ if(confirm("Weet je zeker dat je opnieuw wilt beginn
 $("statusBtn").onclick=()=>{ if(S.started){ $("dash").classList.toggle("show"); } };
 
 /* start */
-$("startBtn").onclick=startGame;
+$("startBtn").onclick=function(){ if(S.mode==="SCHOOL"){ startGame(); } else { beginWerk(); } };
+/* ---- Beroep met zekerheid bevestigen (alleen WERK-modus) ---- */
+function brEsc(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
+function openBeroepModal(){ $("beroepModal").classList.add("show"); }
+function closeBeroepModal(){ $("beroepModal").classList.remove("show"); }
+window.pickBeroep=function(v){ var i=$("brInput"); if(i){ i.value=v; i.focus(); } };
+async function beginWerk(){
+  var functie=$("inFunctie").value.trim(), sector=$("inSector").value.trim();
+  if(!functie){ return; }
+  if(S.provider==="demo"){ S.beroep=functie; S.beroepContext=""; startGame(); return; }
+  openBeroepModal();
+  $("brBody").innerHTML='<div style="text-align:center;padding:22px 0;color:var(--muted)">⏳ Even je beroep scherp krijgen…</div>';
+  try{
+    var r=await fetch("/api/beroep",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({functie:functie,sector:sector})});
+    var d=await r.json();
+    if(r.ok && d.beroep){ renderBeroep(d); } else { renderBeroepFallback(functie); }
+  }catch(e){ renderBeroepFallback(functie); }
+}
+function brInputHtml(val){ return '<label style="font-weight:700;font-size:14px;display:block;margin:12px 0 6px">Jouw exacte beroep</label><input id="brInput" value="'+brEsc(val)+'" style="width:100%;background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:10px;font-size:14px;font-family:Inter;color:var(--text)">'; }
+function renderBeroep(d){
+  S._brCtx=d.context||"";
+  var opts=(d.opties&&d.opties.length)?('<div style="display:flex;flex-wrap:wrap;gap:8px;margin:10px 0">'+d.opties.map(function(o){return '<button type="button" onclick="pickBeroep(this.dataset.v)" data-v="'+brEsc(o)+'" style="background:var(--panel2);border:1px solid var(--border);border-radius:999px;padding:8px 13px;font-size:13px;font-weight:700;color:var(--text);cursor:pointer;font-family:Inter">'+brEsc(o)+'</button>';}).join('')+'</div>'):'';
+  var q=(!d.zeker && d.vraag)?('<div style="background:var(--panel2);border-radius:10px;padding:10px 12px;font-size:13.5px;margin:6px 0">'+brEsc(d.vraag)+'</div>'):'';
+  $("brBody").innerHTML=
+    '<p style="font-size:14px;color:var(--muted);margin-bottom:6px">'+(d.zeker?'We hebben je beroep zo begrepen — klopt dit?':'Om de content precies te laten passen, willen we je beroep scherp krijgen.')+'</p>'+
+    q+opts+brInputHtml(d.beroep||"")+
+    '<div style="font-size:12px;color:var(--muted);margin-top:8px;line-height:1.5">Pas dit gerust aan tot het precies klopt — hierop stemmen we alle voorbeelden en opdrachten af.</div>';
+}
+function renderBeroepFallback(f){
+  S._brCtx="";
+  $("brBody").innerHTML=
+    '<p style="font-size:14px;color:var(--muted);margin-bottom:6px">Vul hieronder je <b>exacte</b> beroep in, zodat de content precies past.</p>'+
+    brInputHtml(f)+
+    '<div style="font-size:12px;color:var(--muted);margin-top:8px;line-height:1.5">Tip: bijv. "Docent biologie voortgezet onderwijs" in plaats van alleen "docent".</div>';
+}
+$("brCancel").onclick=function(){ closeBeroepModal(); var f=$("inFunctie"); if(f) f.focus(); };
+$("brStart").onclick=function(){
+  var v=($("brInput")&&$("brInput").value.trim())||$("inFunctie").value.trim();
+  S.beroep=v; S.beroepContext=S._brCtx||"";
+  closeBeroepModal(); startGame();
+};
 function startFreeChat(){
   S.freeChat=true; S.started=true; S.transcript=[]; S.finished=false;
   $("setup").style.display="none"; var _hl=document.getElementById("homeLb"); if(_hl)_hl.style.display="none"; $("chat").style.display="flex"; $("inputArea").style.display="block";
@@ -1028,7 +1080,8 @@ function startGame(){
   } else {
     S.schoolLevel="";
     const functie=$("inFunctie").value.trim(), sector=$("inSector").value.trim();
-    S.role=functie + (sector?(" — sector/organisatie: "+sector):"");
+    const beroep=(S.beroep&&S.beroep.trim())?S.beroep.trim():functie;
+    S.role=beroep + (sector?(" — sector/organisatie: "+sector):"");
     modeTxt="Werk";
     const lft=$("inLeeftijd").value, opl=$("inOpleiding").value;
     S.profile="leeftijd: "+(lft||"onbekend")+"; opleidingsniveau: "+(opl||"onbekend");
@@ -1038,7 +1091,8 @@ function startGame(){
   $("dash").classList.add("show");
   renderDash();
   // kickoff
-  const sys=SYSTEM_PROMPT.replace(/{{NAME}}/g,S.name).replace(/{{ROLE}}/g,S.role).replace(/{{COACH}}/g,S.coach).replace(/{{MODE}}/g,modeTxt).replace(/{{EXPERIENCE}}/g,S.experience||"onbekend").replace(/{{NIVEAU}}/g,S.profile||"onbekend").replace(/{{PERSONA}}/g,S.persona||"geen");
+  let sys=SYSTEM_PROMPT.replace(/{{NAME}}/g,S.name).replace(/{{ROLE}}/g,S.role).replace(/{{COACH}}/g,S.coach).replace(/{{MODE}}/g,modeTxt).replace(/{{EXPERIENCE}}/g,S.experience||"onbekend").replace(/{{NIVEAU}}/g,S.profile||"onbekend").replace(/{{PERSONA}}/g,S.persona||"geen");
+  if(S.mode!=="SCHOOL" && S.beroepContext){ sys += "\n\n=== PRECIES BEROEP (BELANGRIJK) ===\nDe gebruiker werkt exact als: "+(S.beroep||S.role)+".\nTypische dagelijkse taken en context: "+S.beroepContext+"\nMaak ALLE voorbeelden, opdrachten en uitleg specifiek en herkenbaar voor dit beroep. Doe geen aannames over een ander beroep."; }
   S.history=[{role:"system",content:sys}];
   saveState();
   if(S.provider==="demo"){ demoKickoff(); }
