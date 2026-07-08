@@ -195,6 +195,11 @@
   .hkbtn b{display:block;font-size:15px;color:var(--ink);margin-bottom:3px}
   .hkbtn span{font-size:13px;color:var(--muted)}
   @media print{.chart{max-width:260px}}
+
+  .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(10px);background:var(--ink);color:#fff;padding:11px 20px;border-radius:999px;font-size:14px;font-weight:600;box-shadow:0 10px 28px rgba(23,48,73,.28);opacity:0;transition:.2s;z-index:90;pointer-events:none;max-width:90vw;text-align:center}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  .gap .x{flex:none;align-self:flex-start;border:0;background:none;color:var(--muted);cursor:pointer;font-size:15px;padding:2px 4px;line-height:1}
+  .gap .gt b{overflow-wrap:anywhere}
 </style>
 </head>
 <body>
@@ -224,6 +229,7 @@
 
 
 
+
 const KEY='fw3_v1';
 const MODES={
   zelf:{em:'🧭',naam:'Zelfreflectie',desc:'Je doorloopt het zelf, in je eigen tempo — met per stap concrete hulp om verder te komen.'},
@@ -244,6 +250,7 @@ const CATS=[
 ];
 var state={mode:null,naam:'',taken:[],focus:null,hulpkeuze:null,hkScan:{},prio:null,takenTried:false,answers:{},assess:{},longterm:{},gaps:{eisen:null,checked:{},note:{}},concreet:{},afweging:null,step:'werk',ai:{},check:{},feedback:{score:null,waarom:'',tekst:'',sent:false},acties:null,_checking:false,_extracting:false,_eisenLoading:false,_actiesTried:false};
 function save(){try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}}
+function showToast(msg){var t=document.getElementById('toast');if(!t){t=document.createElement('div');t.id='toast';t.className='toast';document.body.appendChild(t);}t.textContent=msg;t.classList.add('show');clearTimeout(window._tt);window._tt=setTimeout(function(){t.classList.remove('show');},1700);}
 function load(){try{const s=localStorage.getItem(KEY);if(s)state=Object.assign(state,JSON.parse(s))}catch(e){}}
 function esc(s){return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
 
@@ -254,7 +261,7 @@ const S={
     guide:['Wat doe je dagelijks, wekelijks en maandelijks?','Welke overleggen, systemen of mensen horen erbij?','Welke taken kosten of geven je het meeste energie?'],
     tipsI:['Gebruik open vragen (hoe, wat, welke).','Vat samen wat je hoort en check of je het goed begrijpt.','Focus op inzicht en oplossingen, niet op oordeel.']},
   effect:{titel:'Lange termijn',id:'effect',vraag:'Wat gebeurt er als je deze taak onveranderd blijft doen?',
-    ph:'Bijv. Als dit zo blijft loop ik leeg / Ik wil over een half jaar met meer energie en trots op mijn werk staan.',
+    ph:'Bijv. Ik merk dat deze taak me steeds meer kost / Deze taak geeft me juist energie, dat verraste me.',
     ctx:'De korte scan hieronder kijkt specifiek naar de taak die je koos: wat doet die met je energie op de lange termijn? Sta daar even bij stil — dat is vaak je motivatie om iets te veranderen.',guide:[]},
   uitdaag:{titel:'Meer uitdaging',id:'ud_nodig',vraag:'Wie of wat heb je nodig om meer uitdagende taken toe te voegen?',
     ph:'Bijv. meer tijd hiervoor, samenwerken met een bepaalde collega, een training, ruimte van mijn leidinggevende…',
@@ -389,7 +396,7 @@ function fieldHtml(d){
   return '<textarea id="'+d.id+'" placeholder="'+esc(d.ph||'Jouw antwoord…')+'" oninput="onAnswer(\''+state.step+'\',\''+d.id+'\',this.value)">'+esc(state.answers[d.id]||'')+'</textarea>';
 }
 function onAnswer(step,id,v){state.answers[id]=v;if(state.check[step])state.check[step]=null;save()}
-function insertA(id,txt){const cur=state.answers[id]||'';state.answers[id]=cur?(cur.replace(/\s*$/,'')+'\n'+txt):txt;if(state.check[state.step])state.check[state.step]=null;save();render()}
+function insertA(id,txt){const cur=state.answers[id]||'';state.answers[id]=cur?(cur.replace(/\s*$/,'')+'\n'+txt):txt;if(state.check[state.step])state.check[state.step]=null;save();render();showToast('Toegevoegd aan je antwoord ✓')}
 function chip(id,t){return '<button class="chip" data-v="'+esc(t)+'" onclick="insertA(\''+id+'\',this.dataset.v)">+ '+esc(t)+'</button>';}
 function guideHtml(d){
   if(!d.guide||!d.guide.length)return '';
@@ -578,7 +585,7 @@ function renderEffect(){
   const panel=(state.mode==='interviewer')?'':('<div class="panel"><div class="ph">🧭 Korte scan: waar beweeg je naartoe?</div>'+(ft?('<p class="ctx" style="margin:0 0 6px">Deze scan gaat over je gekozen taak: <b>'+esc(ft.tekst)+'</b>.</p>'):'')+(LONG.waarom?('<div class="rgedachte">'+esc(LONG.waarom)+'</div>'):'')+LONGMEER+'<p class="ctx" style="margin:0 0 8px">Denk aan de afgelopen weken.</p><div class="asscalehead"><span>1 = oneens</span><span>5 = eens</span></div>'+rows+longResult()+longExamples()+'<p style="color:var(--muted);font-size:12px;margin-top:10px">'+esc(LONG.bron)+'</p></div>');
   return '<div class="card"><span class="eyebrow">'+esc(d.titel)+'</span><h1>'+esc(d.vraag)+'</h1><p class="ctx">'+esc(d.ctx)+'</p>'+
     panel+
-    '<p class="ctx" style="margin-top:14px"><b>Jouw reflectie:</b> wat betekent dit voor deze taak — wat wil je dat er over een half jaar anders is?</p>'+
+    '<p class="ctx" style="margin-top:14px"><b>Even stilstaan:</b> herken je dit beeld? Wat roept het bij je op? (Wat je eraan kunt doen, komt straks — hier gaat het om het besef.)</p>'+
     fieldHtml(d)+guideHtml(d)+tipsHtml(d)+navBtns()+'</div>';
 }
 
@@ -623,17 +630,18 @@ function renderHulp(k){
 }
 
 /* ---------- stap 6: afweging (gap-analyse) ---------- */
+function setAfw(v){state.afweging=v;save();render()}
 function renderAfweging(){
   const d=S.afweging;const ft=focusTask();
   if(state.gaps.eisen===null&&!state._eisenLoading){fetchEisen();}
   const dir=(state.hulpkeuze==='org')?'de steun vanuit je werk':'je eigen kracht';
-  const notePh=(state.hulpkeuze==='org')?'Welke steun vanuit je werk staat hier tegenover? (bijv. hulp van een collega, meer tijd, duidelijke afspraken)':'Welke eigen kracht zet je hier tegenover? (bijv. je veerkracht, een talent, je grens aangeven)';
+  const notePh=(state.hulpkeuze==='org')?'Welke steun vanuit je werk? (bijv. hulp van een collega)':'Welke eigen kracht? (bijv. je veerkracht)';
   const intro='<div class="rgedachte"><b>Wat doen we hier?</b> Elke taak stelt bepaalde eisen aan je — denk aan tijd, focus of afhankelijkheid van anderen. Hieronder staat een <b>voorzet</b> van die eisen: een suggestie die je vrij mag aanpassen, aanvullen of weghalen. Loop ze langs en vink per eis aan of je er met '+dir+' genoeg tegenover hebt staan, en noteer wát dat is. Zo zie je of je hulp genoeg is. Daarna beslis jij zelf: is het genoeg, of nog niet?</div>';
   let body='';
   if(state._eisenLoading)body='<p class="ctx"><span class="spin"></span>Ik zet een voorzet van de taakeisen klaar…</p>';
   const eisen=state.gaps.eisen||[];
   const rows=eisen.map(function(e,i){const ch=!!state.gaps.checked[i];
-    return '<div class="gap"><input type="checkbox" '+(ch?'checked':'')+' onclick="toggleGap('+i+')" aria-label="Hulp aanwezig"><div class="gt"><b>'+esc(e)+'</b><input type="text" placeholder="'+esc(notePh)+'" value="'+esc(state.gaps.note[i]||'')+'" oninput="gapNote('+i+',this.value)"></div></div>';}).join('');
+    return '<div class="gap"><input type="checkbox" '+(ch?'checked':'')+' onclick="toggleGap('+i+')" aria-label="Hulp aanwezig"><div class="gt"><b>'+esc(e)+'</b><input type="text" placeholder="'+esc(notePh)+'" value="'+esc(state.gaps.note[i]||'')+'" oninput="gapNote('+i+',this.value)"></div><button class="x" onclick="delEis('+i+')" aria-label="Verwijder deze eis">✕</button></div>';}).join('');
   const tot=eisen.length;let cov=0;eisen.forEach(function(_,i){if(state.gaps.checked[i])cov++;});
   const tip=tot?('<p class="ctx" style="margin-top:10px">Je hebt <b>'+cov+' van de '+tot+'</b> eisen gedekt. '+(cov<tot?'Er zijn nog gaten — dat pleit voor “nog niet”.':'Alles gedekt — dat pleit voor “ja, dit is genoeg”.')+'</p>'):'';
   const choice='<p class="ctx" style="margin-top:16px"><b>'+esc(d.vraag)+'</b></p><div class="btnrow" style="margin-top:6px"><button class="btn '+(state.afweging==='ja'?'':'ghost')+'" onclick="setAfw(\'ja\')">Ja, dit is genoeg</button><button class="btn '+(state.afweging==='nee'?'mag':'ghost')+'" onclick="setAfw(\'nee\')">Nee, nog niet</button></div>';
@@ -643,10 +651,13 @@ function renderAfweging(){
   return '<div class="card"><span class="eyebrow">'+esc(d.titel)+'</span><h1>'+esc(d.vraag)+'</h1>'+
     (ft?('<p class="ctx">Taak: <b>'+esc(ft.tekst)+'</b></p>'):'')+intro+body+rows+
     '<div class="addrow" style="margin-top:10px"><input id="newEis" placeholder="Zelf een eis van deze taak toevoegen…" onkeydown="if(event.key===\'Enter\')addEis()"><button class="btn ghost sm" onclick="addEis()">Toevoegen</button></div>'+
+    (eisen.length?'<div style="margin-top:6px"><button class="btn ghost sm" onclick="clearEisen()">🗑 Alle suggesties wissen</button></div>':'')+
     tip+choice+
     '<div class="btnrow"><button class="btn ghost" onclick="prevStep()">← Vorige</button>'+primary+'</div></div>';
 }
 function toggleGap(i){state.gaps.checked[i]=!state.gaps.checked[i];save();render()}
+function delEis(i){if(!state.gaps.eisen)return;state.gaps.eisen.splice(i,1);const nc={},nn={};Object.keys(state.gaps.checked).forEach(function(k){var ki=+k;if(ki<i)nc[ki]=state.gaps.checked[k];else if(ki>i)nc[ki-1]=state.gaps.checked[k];});Object.keys(state.gaps.note).forEach(function(k){var ki=+k;if(ki<i)nn[ki]=state.gaps.note[k];else if(ki>i)nn[ki-1]=state.gaps.note[k];});state.gaps.checked=nc;state.gaps.note=nn;save();render()}
+function clearEisen(){state.gaps.eisen=[];state.gaps.checked={};state.gaps.note={};save();render()}
 function gapNote(i,v){state.gaps.note[i]=v;save()}
 function addEis(){const el=document.getElementById('newEis');const v=(el.value||'').trim();if(!v)return;if(state.gaps.eisen===null)state.gaps.eisen=[];state.gaps.eisen.push(v);el.value='';save();render()}
 async function fetchEisen(){
@@ -673,7 +684,7 @@ function renderAndere(){
 
 /* ---------- stap 8: concrete actie ---------- */
 function setConc(f,v){state.concreet[f]=v;save()}
-function setActie(v){state.answers.concreet=v;if(state.check.concreet)state.check.concreet=null;save();render()}
+function setActie(v){state.answers.concreet=v;if(state.check.concreet)state.check.concreet=null;save();render();showToast('Actie ingevuld ✓')}
 function renderConcreet(){
   const d=S.concreet;const c=state.concreet||{};
   if(state.mode==='interviewer'){
@@ -827,6 +838,7 @@ function longExamples(){
   return '<div style="margin-top:12px"><p class="ctx" style="margin:0 0 6px"><b>Concrete voorbeelden voor je reflectie</b> — tik aan wat past, je kunt het daarna aanpassen:</p><div class="chips" style="margin:0">'+chips+'</div></div>';
 }
 const LONGMEER='<details class="jdr" style="margin:0 0 8px"><summary>Meer over deze scan — wat, waarom en hoe</summary><div class="jdrbody"><p><b>Wat meet deze scan?</b> Zes stellingen over de taak die je koos. Drie over hoeveel de taak je energie <b>kost</b> (uitputting) en drie over hoeveel energie de taak je <b>geeft</b> (bevlogenheid).</p><p><b>Achterliggende theorie en bronnen.</b> Het Job Demands-Resources model (Bakker &amp; Demerouti; Schaufeli) beschrijft twee routes: taken die vooral eisen stellen putten uit, taken met genoeg hulpbronnen maken bevlogen. Bevlogenheid meten we met de gevalideerde UWES-schaal (vitaliteit, toewijding, absorptie), hier toegespitst op deze ene taak.</p><p><b>Hoe gebruik je de uitslag?</b> De twee scores laten zien wat deze taak op de lange termijn met je doet als je niets verandert: uitputtend, energiegevend of ergens daartussen. Dat inzicht bepaalt hoe urgent het is om juist deze taak aan te pakken.</p></div></details>';
+const HKWHY='<div class="rgedachte"><b>Waarom deze keuze?</b> Hulp bij een lastige taak komt uit twee bronnen: uit <b>jezelf</b> (je eigen kracht, veerkracht en aanpak) of uit je <b>omgeving</b> (steun, ruimte en middelen vanuit je werk). Door bewust te kiezen waar je éérst kijkt, richt je je energie op de bron die voor jou nu het meeste oplevert, in plaats van je te verliezen in alles tegelijk. De korte scan hieronder helpt je die keuze te maken; jij beslist zelf.</div>';
 const HKSCAN={
   waarom:'Waarom deze scan? Hulp bij deze taak komt uit twee hoeken: uit jóu (je veerkracht, mindset en aanpak) of uit je wérk (regelruimte, steun, feedback, ontwikkeling). Vaak zit je grootste winst vooral in één van de twee. Deze vier stellingen laten zien waar dat voor jou bij deze taak geldt, zodat je je energie op de meest kansrijke kant richt. Gebaseerd op het onderscheid tussen persoonlijke en werk-hulpbronnen in het JD-R model.',
   items:[
@@ -849,10 +861,10 @@ function renderHulpkeuze(){
     advies='<div class="qbox good" style="margin-top:10px"><h4>Advies: hulp vanuit '+(rec==='zelf'?'jezelf':'je werk')+'</h4><p style="font-size:14px;margin:0">Op basis van je antwoorden lijkt de meeste winst te zitten in hulp vanuit '+(rec==='zelf'?'<b>jezelf</b> — je hebt hier zelf veel invloed op.':'<b>je werk</b> — hier is ruimte of steun van je organisatie het meest nodig.')+' Maar kies gerust wat voor jou het beste klopt.</p></div>';
   }
   const scan=(state.mode==='interviewer')?'':('<div class="panel"><div class="ph">🧭 Korte scan: waar zit jouw grootste kans?</div><div class="rgedachte">'+esc(HKSCAN.waarom)+'</div><div class="asscalehead"><span>1 = oneens</span><span>5 = eens</span></div>'+rows+advies+'</div>');
-  const choose='<p class="ctx" style="margin-top:8px"><b>Kies waar je op wilt focussen:</b></p><div class="hkchoose">'+
+  const choose='<p class="ctx" style="margin-top:10px"><b>Waar wil je als eerste hulp zoeken?</b> Je kunt later altijd de andere kant nog bekijken.</p><div class="hkchoose">'+
     '<button class="hkbtn'+(state.hulpkeuze==='zelf'?' on':'')+'" onclick="setHulpkeuze(\'zelf\')"><b>💪 Hulp vanuit jezelf</b><span>Je veerkracht, talenten, mindset en grenzen.</span></button>'+
     '<button class="hkbtn'+(state.hulpkeuze==='org'?' on':'')+'" onclick="setHulpkeuze(\'org\')"><b>🏢 Hulp vanuit je werk</b><span>Autonomie, steun, feedback en ontwikkeling.</span></button></div>';
-  return '<div class="card"><span class="eyebrow">'+esc(d.titel)+'</span><h1>'+esc(d.vraag)+'</h1><p class="ctx">'+esc(d.ctx)+'</p>'+
+  return '<div class="card"><span class="eyebrow">'+esc(d.titel)+'</span><h1>'+esc(d.vraag)+'</h1><p class="ctx">'+esc(d.ctx)+'</p>'+HKWHY+
     scan+choose+
     '<div class="btnrow"><button class="btn ghost" onclick="prevStep()">← Vorige</button>'+(state.hulpkeuze?'<button class="btn" onclick="nextStep()">Volgende →</button>':'')+'</div></div>';
 }
@@ -888,7 +900,7 @@ function actiesHtml(){
   }).join('');
   return '<div class="panel"><div class="ph">💡 Voorgestelde acties (op basis van jouw antwoorden)</div>'+items+'<button class="btn ghost sm" onclick="askActies()">↻ Opnieuw voorstellen</button></div>';
 }
-function pickEerste(v){setConc('eerste',v);render()}
+function pickEerste(v){setConc('eerste',v);render();showToast('Eerste stap ingevuld ✓')}
 async function askActies(){
   state._actiesTried=true;
   const b=document.getElementById('actiesBtn');if(b){b.disabled=true;b.innerHTML='<span class="spin"></span>Even meedenken…';}
