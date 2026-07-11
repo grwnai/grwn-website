@@ -19,6 +19,10 @@
     {
       "source": "/fijnewerkdag",
       "destination": "/fijnewerkdag/index.html"
+    },
+    {
+      "source": "/wallpapers",
+      "destination": "/wallpapers/index.html"
     }
   ]
 }

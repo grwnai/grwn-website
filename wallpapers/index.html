@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wallpapers · GRWN</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet">
+<style>
+  :root{--ink:#173049;--cerulean:#2274A5;--cerulean-d:#1A5D85;--magenta:#E83F6F;--magenta-d:#C72C58;--mint:#E4F0F6;--bg:#F6F9FB;--muted:#5C6873;--line:#EAEEF1}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:Inter,system-ui,-apple-system,sans-serif;color:var(--ink);background:var(--bg);line-height:1.6;-webkit-font-smoothing:antialiased}
+  a{color:var(--cerulean-d)}
+  .nav{position:sticky;top:0;z-index:10;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 20px;background:rgba(255,255,255,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  .nav .logo img{height:24px;display:block}
+  .nav .logo .fb{font-weight:800;font-size:19px;color:var(--ink)} .nav .logo .fb b{color:var(--magenta)}
+  .nav a.back{font-size:13px;font-weight:600;text-decoration:none;color:var(--cerulean-d)}
+  .wrap{max-width:1040px;margin:0 auto;padding:34px 20px 60px}
+  .eyebrow{display:inline-block;font-size:12px;font-weight:700;letter-spacing:.04em;color:var(--cerulean-d);background:var(--mint);padding:5px 12px;border-radius:20px}
+  h1{font-size:30px;letter-spacing:-.01em;margin:14px 0 8px}
+  .lead{color:var(--muted);font-size:16px;max-width:640px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-top:30px}
+  @media(max-width:720px){.grid{grid-template-columns:1fr}}
+  .card{background:#fff;border:1px solid var(--line);border-radius:18px;overflow:hidden;box-shadow:0 6px 22px rgba(23,48,73,.05)}
+  .thumb{aspect-ratio:16/9;width:100%;object-fit:cover;display:block;background:var(--ink)}
+  .card .body{padding:16px 18px 18px}
+  .card h3{font-size:17px;margin-bottom:2px}
+  .card p{font-size:13.5px;color:var(--muted);margin-bottom:14px}
+  .btn{display:inline-flex;align-items:center;gap:8px;border:0;border-radius:999px;font:inherit;font-weight:700;font-size:14.5px;padding:11px 20px;cursor:pointer;background:var(--cerulean);color:#fff;text-decoration:none;box-shadow:0 8px 22px rgba(34,116,165,.22)}
+  .btn:hover{background:var(--cerulean-d)}
+  .tip{margin-top:30px;background:#fff;border:1px solid var(--line);border-left:3px solid var(--cerulean);border-radius:12px;padding:14px 16px;font-size:14px;color:var(--ink)}
+  .foot{text-align:center;font-size:12px;color:var(--muted);padding:20px}
+</style>
+</head>
+<body>
+  <nav class="nav">
+    <a class="logo" href="/" aria-label="Naar GRWN"><img src="/grwn-logo.svg" alt="GRWN" onerror="this.style.display='none';this.insertAdjacentHTML('afterend','<span class=&quot;fb&quot;>GR<b>W</b>N</span>')"></a>
+    <a class="back" href="/">&larr; naar GRWN</a>
+  </nav>
+  <div class="wrap">
+    <span class="eyebrow">Downloads</span>
+    <h1>GRWN wallpapers</h1>
+    <p class="lead">Achtergronden met het GRWN-logo, in 5K (5120&times;2880) &mdash; perfect voor je 27-inch iMac en andere schermen. Kies je stijl en download.</p>
+
+    <div class="grid">
+      <div class="card">
+        <img class="thumb" src="/wallpapers/GRWN-wallpaper-5120x2880-dark.png" alt="GRWN wallpaper donker" loading="lazy">
+        <div class="body">
+          <h3>Donker</h3>
+          <p>Ink &amp; cerulean met een zachte gloed. 5120&times;2880 &middot; PNG</p>
+          <a class="btn" href="/wallpapers/GRWN-wallpaper-5120x2880-dark.png" download="GRWN-wallpaper-dark-5120x2880.png">&#8681; Download</a>
+        </div>
+      </div>
+      <div class="card">
+        <img class="thumb" src="/wallpapers/GRWN-wallpaper-5120x2880-light.png" alt="GRWN wallpaper licht" loading="lazy">
+        <div class="body">
+          <h3>Licht</h3>
+          <p>Wolk &amp; mint, rustig en clean. 5120&times;2880 &middot; PNG</p>
+          <a class="btn" href="/wallpapers/GRWN-wallpaper-5120x2880-light.png" download="GRWN-wallpaper-light-5120x2880.png">&#8681; Download</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="tip"><b>Instellen op je Mac:</b> download de afbeelding, klik er met rechts op en kies &ldquo;Stel in als bureaubladachtergrond&rdquo;, of ga naar Systeeminstellingen &rarr; Achtergrond.</div>
+  </div>
+  <div class="foot">Een pagina van <a href="/">GRWN</a></div>
+</body>
+</html>
