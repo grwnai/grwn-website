@@ -1,4 +1,4 @@
-// GRWN feedback-backend — verzamelt feedback van spelers tijdens het spelen.
+// LVL UP feedback-backend — verzamelt feedback van spelers tijdens het spelen.
 // Slaat op in Supabase. Env (al gezet via de integratie): SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY.
 export const config = { maxDuration: 10 };
 

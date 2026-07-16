@@ -1,4 +1,4 @@
-// GRWN score-backend — leaderboard + doorlopende AI-score.
+// LVL UP score-backend — leaderboard + doorlopende AI-score.
 // Slaat scores op in Supabase (Postgres) en levert de leaderboard.
 // Env (zet in Vercel): SUPABASE_URL, SUPABASE_KEY (service_role key).
 export const config = { maxDuration: 10 };
